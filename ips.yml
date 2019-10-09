@@ -1,0 +1,4 @@
+udma_i2s:
+  branch: master
+  commit: ea9b73f
+  server: https://github.com/pulp-platform/udma_i2s.git
