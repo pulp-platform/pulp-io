@@ -4,5 +4,4 @@ udma_subsystem:
       - src/udma_subsystem.sv
   include:
     files:
-  ips:
-    files:
+
