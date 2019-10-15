@@ -2,7 +2,7 @@
 # @Author: Alfio Di Mauro
 # @Date:   2019-10-09 12:32:50
 # @Last Modified by:   Alfio Di Mauro
-# @Last Modified time: 2019-10-09 18:27:53
+# @Last Modified time: 2019-10-15 18:19:55
 # -*- coding: utf-8 -*-
 # @Author: Alfio Di Mauro
 # @Date:   2019-06-18 10:36:05
@@ -97,8 +97,12 @@ def extract_ip_info(directory):
       															  }
       with open("src_files.yml", 'r') as stream:
           data_loaded = yaml.safe_load(stream)
+          ######---------------------------------------------------------------------|this must be selected from a yml file       |
           ips_rtl_files[os.path.basename(os.path.normpath(directory))] = data_loaded[os.path.basename(os.path.normpath(directory))]
           ips_rtl_files[os.path.basename(os.path.normpath(directory))]['abs_path'] = os.path.normpath(directory)
+            
+
+          
 
 def walklevel(some_dir, level=1):
     some_dir = some_dir.rstrip(os.path.sep)

@@ -1,3 +1,7 @@
+tech_cells_generic:
+  branch: master
+  commit: b356526
+  server: https://github.com/pulp-platform/tech_cells_generic.git
 udma_adc_rx:
   branch: master
   commit: 24e1c7d
