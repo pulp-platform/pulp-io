@@ -5,6 +5,7 @@ before_script:
   - echo "Before script section"
   - source CI_fetch_ips.sh
   - cd ..
+  - bash
   - conda activate general
   - python extract_info.py 
   
