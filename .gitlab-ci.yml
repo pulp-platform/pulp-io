@@ -6,6 +6,8 @@ before_script:
   - source CI_fetch_ips.sh
   - cd ..
   - bash
+  - export PATH="/home/adimauro/miniconda37/bin:$PATH"
+  - which python
   - conda activate general
   - python extract_info.py 
   
