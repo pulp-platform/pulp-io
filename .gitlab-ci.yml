@@ -14,6 +14,7 @@ build1:
   stage: build
   script:
     - echo "Do your build here"
+    - cd sim
     - vsim -c -do CI_build.do
 
 test1:
