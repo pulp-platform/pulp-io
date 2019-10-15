@@ -8,7 +8,7 @@ before_script:
   - bash
   - export PATH="/home/adimauro/miniconda37/bin:$PATH"
   - which python
-  - conda activate general
+  - source activate general
   - python extract_info.py 
   
 
