@@ -18,14 +18,15 @@ after_script:
 build1:
   stage: build
   script:
-    - echo "Do your build here"
+    - echo "Just build"
     - cd sim
     - vsim -c -do CI_build.do
 
 test1:
   stage: test
   script:
-    - echo "Do a test here"
+    - echo "Build and simulate"
+    - cd sim
     - vsim -c -do CI_sim.do
 
 deploy1:
