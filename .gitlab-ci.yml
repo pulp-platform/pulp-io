@@ -25,7 +25,7 @@ build1:
 test1:
   stage: test
   script:
-    - echo "Build and simulate"
+    - echo "Simulate"
     - cd sim
     - vsim -c -do CI_sim.do
 
