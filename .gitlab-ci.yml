@@ -5,7 +5,7 @@ before_script:
   - echo "Before script section"
   - source CI_fetch_ips.sh
   - cd ..
-  - cd python extract_info.py 
+  - python extract_info.py 
   
 
 after_script:
