@@ -70,6 +70,27 @@ if [catch {package require Tk}] {set tk_ok 0}
 # Prefer a fixed point font for the transcript
 set PrefMain(font) {Courier 10 roman normal}
 
+# Compile out of date files
+set time_now [clock seconds]
+if [catch {set last_compile_time}] {
+  set last_compile_time 0
+}
+foreach {library file_list} $library_file_list {
+  vlib $library
+  vmap work $library
+  foreach file $file_list {
+    if { $last_compile_time < [file mtime $file] } {
+      if [regexp {.vhdl?$} $file] {
+        vcom -93 $file
+      } else {
+        vlog $file +incdir+$include_dir -svinputport=net
+      }
+      set last_compile_time 0
+    }
+  }
+}
+set last_compile_time $time_now
+
 # Load the simulation
 eval vsim -c -voptargs=+acc=mbcnprv $top_level -L design_library -L ips_dep_library
 
