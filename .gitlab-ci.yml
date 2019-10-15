@@ -14,7 +14,7 @@ build1:
   stage: build
   script:
     - echo "Do your build here"
-    - eval 'vsim -c -do simulate_batch.tcl'
+    - vsim -c -do CI_build.do
 
 test1:
   stage: test
