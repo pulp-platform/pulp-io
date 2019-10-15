@@ -5,7 +5,7 @@ before_script:
   - echo "Before script section"
   - source CI_fetch_ips.sh
   - cd ..
-  - pip install pyyaml pprint tqdm os subprocess shutil warnings
+  - pip install pyyaml pprint tqdm subprocess shutil warnings
   - python extract_info.py 
   
 
