@@ -7,7 +7,6 @@ before_script:
   - cd ..
   - bash
   - export PATH="/home/adimauro/miniconda37/bin:$PATH"
-  - which python
   - source activate general
   - python extract_info.py 
   
@@ -27,11 +26,7 @@ test1:
   stage: test
   script:
     - echo "Do a test here"
-
-test2:
-  stage: test
-  script:
-    - echo "Do another parallel test here"
+    - vsim -c -do CI_sim.do
 
 deploy1:
   stage: deploy

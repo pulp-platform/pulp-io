@@ -92,40 +92,10 @@ foreach {library file_list} $library_file_list {
 set last_compile_time $time_now
 
 # Load the simulation
-eval vsim -c -voptargs=+acc=mbcnprv $top_level -L design_library -L ips_dep_library
-
-
-# If waves are required
-if [llength $wave_patterns] {
-  noview wave
-  foreach pattern $wave_patterns {
-    add wave $pattern
-    add list -r $pattern
-  }
-  configure wave -signalnamewidth 1
-  foreach {radix signals} $wave_radices {
-    foreach signal $signals {
-      catch {property wave -radix $radix $signal}
-    }
-  }
-}
+#eval vsim -c -voptargs=+acc=mbcnprv $top_level -L design_library -L ips_dep_library
 
 # Run the simulation
 #run -all
-
-# If waves are required
-if [llength $wave_patterns] {
-  if $tk_ok {wave zoomfull}
-}
-
-puts {
-  Script commands are:
-
-	r  = Recompile changed and dependent files
-	rw = Recompile changed and dependent files, and run wave script
-	rr = Recompile everything
-	q  = Quit without confirmation
-}
 
 # How long since project began?
 if {[file isfile start_time.txt] == 0} {
