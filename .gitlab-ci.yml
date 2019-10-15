@@ -27,7 +27,7 @@ test1:
   script:
     - echo "Simulate"
     - cd sim
-    - vsim -c -do CI_sim.do
+    - vsim -c -do CI_sim_1.do
 
 deploy1:
   stage: deploy
