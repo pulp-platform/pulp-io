@@ -10,13 +10,13 @@ after_script:
   - echo "After script section"
   - echo "For example you might do some cleanup here"
 
-comp_job:
+build1:
   stage: build
   script:
     - echo "Do your build here"
     - eval 'vsim -c -do simulate_batch.tcl'
 
-sim_job:
+test1:
   stage: sim
   script:
     - echo "Do a test here"
