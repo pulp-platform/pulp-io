@@ -53,9 +53,9 @@ set wave_radices {
 # After sourcing the script from ModelSim for the
 # first time use these commands to recompile.
 
-proc rw  {} {uplevel #0 source compile.tcl
+proc rw  {} {uplevel #0 source simulate.tcl
             w }
-proc r  {} {uplevel #0 source compile.tcl
+proc r  {} {uplevel #0 source simulate.tcl
              }            
 proc rr {} {global last_compile_time
             set last_compile_time 0
@@ -78,18 +78,7 @@ if [catch {set last_compile_time}] {
 foreach {library file_list} $library_file_list {
   vlib $library
   vmap work $library
-  foreach file $file_list {
-    if { $last_compile_time < [file mtime $file] } {
-      if [regexp {.vhdl?$} $file] {
-        vcom -93 $file
-      } else {
-        vlog $file +incdir+$include_dir -svinputport=net
-      }
-      set last_compile_time 0
-    }
-  }
 }
-set last_compile_time $time_now
 
 # Load the simulation
 eval vsim -c -voptargs=+acc=mbcnprv $top_level -L design_library -L ips_dep_library

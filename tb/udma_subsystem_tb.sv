@@ -22,7 +22,7 @@ module udma_subsystem_tb;
 	logic sys_clk_i;
 	logic sys_resetn_i;
 	logic periph_clk_i;
-	logic [11:0] udma_apb_paddr;
+	logic [31:0] udma_apb_paddr;
 	logic [31:0] udma_apb_pwdata;
 	logic udma_apb_pwrite;
 	logic udma_apb_psel;
@@ -34,23 +34,23 @@ module udma_subsystem_tb;
 	logic event_valid_i;
 	logic [7:0] event_data_i;
 	logic event_ready_o;
-	logic [3:0] spi_clk;
-	logic [3:0][3:0] spi_csn;
-	logic [3:0][3:0] spi_oen;
-	logic [3:0][3:0] spi_sdo;
-	logic [3:0][3:0] spi_sdi;
-	logic [0:0] i2c_scl_i;
-	logic [0:0] i2c_scl_o;
-	logic [0:0] i2c_scl_oe;
-	logic [0:0] i2c_sda_i;
-	logic [0:0] i2c_sda_o;
-	logic [0:0] i2c_sda_oe;
+	logic  spi_clk;
+	logic [3:0] spi_csn;
+	logic [3:0] spi_oen;
+	logic [3:0] spi_sdo;
+	logic [3:0] spi_sdi;
+	logic [1:0] i2c_scl_i;
+	logic [1:0] i2c_scl_o;
+	logic [1:0] i2c_scl_oe;
+	logic [1:0] i2c_sda_i;
+	logic [1:0] i2c_sda_o;
+	logic [1:0] i2c_sda_oe;
 	logic cam_clk_i;
 	logic [7:0] cam_data_i;
 	logic cam_hsync_i;
 	logic cam_vsync_i;
-	logic [3:0] uart_rx_i;
-	logic [3:0] uart_tx_o;
+	logic uart_rx_i;
+	logic uart_tx_o;
 	logic sdio_clk_o;
 	logic sdio_cmd_o;
 	logic sdio_cmd_i;
@@ -67,14 +67,11 @@ module udma_subsystem_tb;
 	logic i2s_slave_sck_o;
 	logic i2s_slave_sck_oe;
 udma_subsystem #(
-	.L2_DATA_WIDTH (32),
-	.L2_ADDR_WIDTH (19),
-	.CAM_DATA_WIDTH(8),
-	.APB_ADDR_WIDTH(12),
-	.TRANS_SIZE    (20),
-	.N_SPI         (4),
-	.N_UART        (4),
-	.N_I2C         (1)
+	.L2_ADDR_WIDTH (13),
+	.APB_ADDR_WIDTH(32),
+	.N_SPI         (1),
+	.N_UART        (1),
+	.N_I2C         (2)
 ) i_udma_subsystem (
 	.L2_ro_wen_o     (L2_ro_wen_o     ),
 	.L2_ro_req_o     (L2_ro_req_o     ),

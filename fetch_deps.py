@@ -18,52 +18,46 @@ base_folder = os.getcwd()
 ips_folder_abs = base_folder + "/" + ips_folder
 
 with open("ips_list.yml", 'r') as stream:
-  with open ("CI_fetch_ips_temp.sh", 'w') as bash_script:
-    ips_data = yaml.safe_load(stream)
-    #bash_script.write("#!/bin/bash")
-    #bash_script.write("mkdir ips_local_dep")
-    #bash_script.write("cd ips_local_dep")
-    subprocess.check_output("mkdir " + ips_folder, shell=True)
-    for ip in ips_data.keys():
-    	print(ip)
-    	composed_url = ""
-    	try:
-    	    if "server" in ips_data[ip].keys():
-    	        composed_url = ips_data[ip]['server']
-    	    else:
-    	        composed_url = default_server
-    	except AttributeError:
-    	    print("Using Default server for " + ip + " ip")
+  ips_data = yaml.safe_load(stream)
+  subprocess.check_output("mkdir " + ips_folder, shell=True)
+  for ip in ips_data.keys():
+  	print(ip)
+  	composed_url = ""
+  	try:
+  	    if "server" in ips_data[ip].keys():
+  	        composed_url = ips_data[ip]['server']
+  	    else:
+  	        composed_url = default_server
+  	except AttributeError:
+  	    print("Using Default server for " + ip + " ip")
 
-    	try:
-    	    if "group" in ips_data[ip].keys():
-    	        composed_url = composed_url + "/" + ips_data[ip]['group']
-    	    else:
-    	        composed_url = composed_url + "/" + default_group
-    	except AttributeError:
-    	    print("Using Default group for " + ip + " ip")
+  	try:
+  	    if "group" in ips_data[ip].keys():
+  	        composed_url = composed_url + "/" + ips_data[ip]['group']
+  	    else:
+  	        composed_url = composed_url + "/" + default_group
+  	except AttributeError:
+  	    print("Using Default group for " + ip + " ip")
 
-    	composed_url = composed_url + "/" + ip + ".git"
+  	composed_url = composed_url + "/" + ip + ".git"
 
-    	#print(composed_url)
-    	os.chdir(ips_folder)
-    	#print(os.getcwd())
-    	cmd = "git clone " + composed_url
-    	subprocess.check_output(cmd, shell=True)
+  	os.chdir(ips_folder)
+  	cmd = "git clone " + composed_url
+  	subprocess.check_output(cmd, shell=True)
 
-    	try:
-    	    if "commit" in ips_data[ip].keys():
-    	        commit_hash = ips_data[ip]['commit']
-    	        os.chdir(ip)
-    	        cmd = "git checkout " + commit_hash
-    	        subprocess.check_output(cmd, shell=True)
-    	    else:
-    	        print("No commit provided")
-    	except AttributeError:
-    	    print("Using most recent commit for " + ip + " ip")
+  	try:
+  	    if "commit" in ips_data[ip].keys():
+  	        commit_hash = ips_data[ip]['commit']
+  	        os.chdir(ip)
+  	        cmd = "git checkout " + commit_hash
+  	        subprocess.check_output(cmd, shell=True)
+  	    else:
+  	        print("No commit provided")
+  	except AttributeError:
+  	    print("Using most recent commit for " + ip + " ip")
 
-    	os.chdir(base_folder)
+  	os.chdir(base_folder)
 
 
 
-      #bash_script.write()
+    #bash_script.write()

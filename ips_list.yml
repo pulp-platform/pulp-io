@@ -1,13 +1,13 @@
 axi_slice_dc:
-  commit: e5db7e25dd9afefb764e39cd730806a4289d1846
+  commit: 5f889f887e58f6d5dadd79616b16e1a63381d569
   group: pulp-platform
   server: https://github.com
 common_cells:
-  commit: b86af02f630977efe570961444583cac03d8e2c2
+  commit: 0b8c10c21c9f810509bbd7bf86cfbdc4e6626c8e
   group: pulp-platform
   server: https://github.com
 tech_cells_generic:
-  commit: b35652608124b7ea813818b14a00ca76edd7599d
+  commit: 0532e53c1a323db4a55381d123c55bdc4fab06f6
   group: pulp-platform
   server: https://github.com
 udma_adc_rx:
@@ -19,11 +19,11 @@ udma_adc_ts:
   group: pulp-platform
   server: https://github.com
 udma_camera:
-  commit: d0f71b80ac246b13ce3278678e787ddcd1cccf27
+  commit: vega_v1.0.2
   group: pulp-platform
   server: https://github.com
 udma_core:
-  commit: f5d7cc35d5103f91069cd08adffd3594f3dcabb0
+  commit: vega_v1.0.6
   group: pulp-platform
   server: https://github.com
 udma_external_per:
@@ -31,7 +31,7 @@ udma_external_per:
   group: pulp-platform
   server: https://github.com
 udma_filter:
-  commit: 9fe2568e3b3b39f5ea41235792c4ea9c0035b289
+  commit: vega_v1.0.3
   group: pulp-platform
   server: https://github.com
 udma_hyperbus:
@@ -39,11 +39,11 @@ udma_hyperbus:
   group: pulp-platform
   server: https://github.com
 udma_i2c:
-  commit: 0402233f1f1b82491fad0729e3a353a2ab87c681
+  commit: vega_v1.0.0
   group: pulp-platform
   server: https://github.com
 udma_i2s:
-  commit: ea9b73ffdfadba779449631fd3135c6c2c3c2952
+  commit: 407e4c6fb89854aae67ac7f89276f77a775b0e95
   group: pulp-platform
   server: https://github.com
 udma_jtag_fifo:
@@ -51,14 +51,14 @@ udma_jtag_fifo:
   group: pulp-platform
   server: https://github.com
 udma_qspi:
-  commit: ec08ef33e23e7bf10621b6a744bc1e37b7ae3946
+  commit: vega_v1.0.0
   group: pulp-platform
   server: https://github.com
 udma_sdio:
-  commit: 00061b1fb9475d6b46e6c084278265c863f2a6cd
+  commit: vega_v1.0.5
   group: pulp-platform
   server: https://github.com
 udma_uart:
-  commit: 7741356380ed7338c557ce0b67d742f49b2a1b4b
+  commit: vega_v1.0.1
   group: pulp-platform
   server: https://github.com

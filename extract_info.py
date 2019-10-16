@@ -2,7 +2,7 @@
 # @Author: Alfio Di Mauro
 # @Date:   2019-06-18 10:36:05
 # @Last Modified by:   Alfio Di Mauro
-# @Last Modified time: 2019-10-16 16:08:16
+# @Last Modified time: 2019-10-16 16:32:56
 import yaml
 import io
 import pprint
@@ -72,8 +72,6 @@ def prepare_for_synth(dictionary,synth_folder,mode='w',):
 
 
 ############################################################################################################ ips ips_infos
-
-
 def extract_ip_info(directory):
       #print("Checking version: " + directory)
       cmd = "git log -n 1 | grep commit"
