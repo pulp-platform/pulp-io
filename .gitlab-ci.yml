@@ -34,10 +34,10 @@ rtl:
   script:
     - cd sim
     - vsim -c -do CI_build.do
-    artifacts:
-      paths:
-        - ips/*
-        - sim/*
+  artifacts:
+    paths:
+      - ips/*
+      - sim/*
 
 
 sim:
