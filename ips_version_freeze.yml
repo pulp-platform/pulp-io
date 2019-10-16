@@ -1,56 +1,56 @@
 tech_cells_generic:
   branch: master
-  commit: b356526
+  commit: b35652608124b7ea813818b14a00ca76edd7599d
   server: https://github.com/pulp-platform/tech_cells_generic.git
 udma_adc_rx:
   branch: master
-  commit: 24e1c7d
+  commit: 24e1c7d3c44f24d3080c560749a759351d9269c0
   server: https://github.com/pulp-platform/udma_adc_rx.git
 udma_adc_ts:
   branch: master
-  commit: 294cbdd
+  commit: 294cbdd6095468e421b553db178e608395f33815
   server: https://github.com/pulp-platform/udma_adc_ts.git
 udma_camera:
   branch: master
-  commit: d0f71b8
+  commit: d0f71b80ac246b13ce3278678e787ddcd1cccf27
   server: https://github.com/pulp-platform/udma_camera.git
 udma_core:
   branch: master
-  commit: f5d7cc3
+  commit: f5d7cc35d5103f91069cd08adffd3594f3dcabb0
   server: https://github.com/pulp-platform/udma_core.git
 udma_external_per:
   branch: master
-  commit: 0e53cfe
+  commit: 0e53cfed00a2b9cd60e5fc0e9397d335f7145457
   server: https://github.com/pulp-platform/udma_external_per.git
 udma_filter:
   branch: master
-  commit: 9fe2568
+  commit: 9fe2568e3b3b39f5ea41235792c4ea9c0035b289
   server: https://github.com/pulp-platform/udma_filter.git
 udma_hyperbus:
   branch: master
-  commit: 78613ab
+  commit: 78613abaaba74abf83ebe72cc1e04cc3db846064
   server: https://github.com/pulp-platform/udma_hyperbus.git
 udma_i2c:
   branch: master
-  commit: '0402233'
+  commit: 0402233f1f1b82491fad0729e3a353a2ab87c681
   server: https://github.com/pulp-platform/udma_i2c.git
 udma_i2s:
   branch: master
-  commit: ea9b73f
+  commit: ea9b73ffdfadba779449631fd3135c6c2c3c2952
   server: https://github.com/pulp-platform/udma_i2s.git
 udma_jtag_fifo:
   branch: master
-  commit: 1459a82
+  commit: 1459a8252808bb624e34071a85d64338579581c9
   server: https://github.com/pulp-platform/udma_jtag_fifo.git
 udma_qspi:
   branch: master
-  commit: ec08ef3
+  commit: ec08ef33e23e7bf10621b6a744bc1e37b7ae3946
   server: https://github.com/pulp-platform/udma_qspi.git
 udma_sdio:
   branch: master
-  commit: 00061b1
+  commit: 00061b1fb9475d6b46e6c084278265c863f2a6cd
   server: https://github.com/pulp-platform/udma_sdio.git
 udma_uart:
   branch: master
-  commit: '7741356'
+  commit: 7741356380ed7338c557ce0b67d742f49b2a1b4b
   server: https://github.com/pulp-platform/udma_uart.git

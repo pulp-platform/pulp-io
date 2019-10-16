@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 # @Author: Alfio Di Mauro
-# @Date:   2019-10-09 12:32:50
-# @Last Modified by:   Alfio Di Mauro
-# @Last Modified time: 2019-10-15 18:19:55
-# -*- coding: utf-8 -*-
-# @Author: Alfio Di Mauro
 # @Date:   2019-06-18 10:36:05
 # @Last Modified by:   Alfio Di Mauro
-# @Last Modified time: 2019-09-14 16:20:52
+# @Last Modified time: 2019-10-16 16:08:16
 import yaml
 import io
 import pprint
@@ -20,7 +15,7 @@ import warnings
 
 base_folder = 'udma_subsystem'
 synth_folder = 'synth'         ## cockpit directory
-directory_to_check = "ips_local_dep" ## external dependencies
+directory_to_check = "ips" ## external dependencies
 
 def custom_formatwarning(msg, *args, **kwargs):
     # ignore everything except the message
@@ -82,7 +77,7 @@ def prepare_for_synth(dictionary,synth_folder,mode='w',):
 def extract_ip_info(directory):
       #print("Checking version: " + directory)
       cmd = "git log -n 1 | grep commit"
-      cmd_short_hash = "git log --pretty=format:'%h' -n 1"
+      cmd_short_hash = "git log --pretty=format:'%H' -n 1"
       commit = subprocess.check_output(cmd_short_hash, shell=True)
       cmd = "git remote show origin | grep Fetch"
       server = subprocess.check_output(cmd, shell=True)
@@ -95,11 +90,18 @@ def extract_ip_info(directory):
       															  'server': server.split()[-1].decode('utf8'),
       															  'branch': branch.split()[2].decode('utf8'),
       															  }
+      ips_list[os.path.basename(os.path.normpath(directory))] = {
+                                      'commit': commit.decode('utf8'),
+                                      'server': server.split()[-1].decode('utf8'),
+                                      }
       with open("src_files.yml", 'r') as stream:
           data_loaded = yaml.safe_load(stream)
           ######---------------------------------------------------------------------|this must be selected from a yml file       |
-          ips_rtl_files[os.path.basename(os.path.normpath(directory))] = data_loaded[os.path.basename(os.path.normpath(directory))]
-          ips_rtl_files[os.path.basename(os.path.normpath(directory))]['abs_path'] = os.path.normpath(directory)
+          for x in data_loaded.keys():
+            if 'fpga' not in x:
+              ips_rtl_files[x] = data_loaded[x]
+              ips_rtl_files[x]['abs_path'] = os.path.normpath(directory)
+          
             
 
           
@@ -118,9 +120,11 @@ cwd = os.getcwd()
 
 ############################################################# extracts information on the ips dependencies and put it in ips_infos
 ips_infos = {}
+ips_list = {}
 ips_rtl_files = {}
 
-print("Check ip versions and take a screenshot: \n")
+
+print("Generating src file list: \n")
 # Get all the subdirectories of directory_to_check recursively and store them in a list:
 directories = [os.path.abspath(x[0]) for x in walklevel(directory_to_check,level=1)]
 directories.remove(os.path.abspath(directory_to_check)) # If you don't want your main directory included
@@ -130,9 +134,12 @@ for i in directories:
       extract_ip_info(i)  # Run your function
       pbar.update(1)
 
-with io.open('../../ips.yml', 'w', encoding='utf8') as outfile:
-    yaml.dump(ips_infos, outfile, default_flow_style=False, allow_unicode=True)
-print("IPs versions saved to ips.yml file")
+## enable this part to take a screenshot
+#with io.open('../../ips_version_freeze.yml', 'w', encoding='utf8') as outfile:
+#    yaml.dump(ips_infos, outfile, default_flow_style=False, allow_unicode=True)
+#with io.open('../../ips_list.yml', 'w', encoding='utf8') as outfile:
+#    yaml.dump(ips_list, outfile, default_flow_style=False, allow_unicode=True)    
+#print("IPs versions saved to ips_version_freeze.yml file")
 
 #print(ips_rtl_files)
 

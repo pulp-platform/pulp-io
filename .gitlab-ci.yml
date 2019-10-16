@@ -3,11 +3,10 @@
 
 before_script:
   - echo "Before script section"
-  - source CI_fetch_ips.sh
-  - cd ..
   - bash
   - export PATH="/home/adimauro/miniconda37/bin:$PATH"
   - source activate general
+  - python fetch_deps.py
   - python extract_info.py 
   
 

@@ -1,0 +1,64 @@
+axi_slice_dc:
+  commit: e5db7e25dd9afefb764e39cd730806a4289d1846
+  group: pulp-platform
+  server: https://github.com
+common_cells:
+  commit: b86af02f630977efe570961444583cac03d8e2c2
+  group: pulp-platform
+  server: https://github.com
+tech_cells_generic:
+  commit: b35652608124b7ea813818b14a00ca76edd7599d
+  group: pulp-platform
+  server: https://github.com
+udma_adc_rx:
+  commit: 24e1c7d3c44f24d3080c560749a759351d9269c0
+  group: pulp-platform
+  server: https://github.com
+udma_adc_ts:
+  commit: 294cbdd6095468e421b553db178e608395f33815
+  group: pulp-platform
+  server: https://github.com
+udma_camera:
+  commit: d0f71b80ac246b13ce3278678e787ddcd1cccf27
+  group: pulp-platform
+  server: https://github.com
+udma_core:
+  commit: f5d7cc35d5103f91069cd08adffd3594f3dcabb0
+  group: pulp-platform
+  server: https://github.com
+udma_external_per:
+  commit: 0e53cfed00a2b9cd60e5fc0e9397d335f7145457
+  group: pulp-platform
+  server: https://github.com
+udma_filter:
+  commit: 9fe2568e3b3b39f5ea41235792c4ea9c0035b289
+  group: pulp-platform
+  server: https://github.com
+udma_hyperbus:
+  commit: 78613abaaba74abf83ebe72cc1e04cc3db846064
+  group: pulp-platform
+  server: https://github.com
+udma_i2c:
+  commit: 0402233f1f1b82491fad0729e3a353a2ab87c681
+  group: pulp-platform
+  server: https://github.com
+udma_i2s:
+  commit: ea9b73ffdfadba779449631fd3135c6c2c3c2952
+  group: pulp-platform
+  server: https://github.com
+udma_jtag_fifo:
+  commit: 1459a8252808bb624e34071a85d64338579581c9
+  group: pulp-platform
+  server: https://github.com
+udma_qspi:
+  commit: ec08ef33e23e7bf10621b6a744bc1e37b7ae3946
+  group: pulp-platform
+  server: https://github.com
+udma_sdio:
+  commit: 00061b1fb9475d6b46e6c084278265c863f2a6cd
+  group: pulp-platform
+  server: https://github.com
+udma_uart:
+  commit: 7741356380ed7338c557ce0b67d742f49b2a1b4b
+  group: pulp-platform
+  server: https://github.com
