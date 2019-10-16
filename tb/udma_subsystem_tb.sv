@@ -142,6 +142,8 @@ udma_subsystem #(
 
 initial begin
 
+	$fatal
+
 end
 	
 endmodule
