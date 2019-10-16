@@ -32,7 +32,7 @@ ips:
 rtl:
   stage: build
   script:
-    - echo "Just build"
+    - echo "Build"
     - cd sim
     - vsim -c -do CI_build.do
     artifacts:
