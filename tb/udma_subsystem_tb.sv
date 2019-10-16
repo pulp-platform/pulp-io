@@ -142,7 +142,7 @@ udma_subsystem #(
 
 initial begin
 
-	$fatal
+	//$fatal
 
 end
 	
