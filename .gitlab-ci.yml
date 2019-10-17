@@ -46,3 +46,7 @@ sim:
     - echo "Simulate"
     - cd sim
     - vsim -c -do CI_sim_1.do
+  artifacts:
+    paths:
+      - ips/*
+      - sim/*
