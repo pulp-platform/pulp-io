@@ -2,7 +2,6 @@
 BENDER ?= bender
 VLOG_ARGS += -suppress vlog-2583 -suppress vlog-13314 -suppress vlog-13233 -timescale \"1 ns / 1 ps\"
 
-
 .PHONY: install
 #download bender executable
 install: 
@@ -10,16 +9,15 @@ install:
 
 .PHONY: clean
 clean:
-	rm -f sim/compile.tcl
-	rm -f sim/compile-tb.tcl
+	rm -f sim/compile_rtl.tcl
 
 #fetch dependencies
 .PHONY: update
 update:
 	$(BENDER) update
 
-all: update sim/compile_rtl.tcl
+all: update script
 
-sim/compile_rtl.tcl: Bender.yml
+script: Bender.yml
 	$(BENDER) script vsim --vlog-arg="$(VLOG_ARGS)" -t rtl -t test > sim/compile_rtl.tcl
 
