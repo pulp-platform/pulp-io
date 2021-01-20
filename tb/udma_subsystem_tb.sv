@@ -1,3 +1,20 @@
+/* 
+ * Copyright (C) 2018-2020 ETH Zurich, University of Bologna
+ * Copyright and related rights are licensed under the Solderpad Hardware
+ * License, Version 0.51 (the "License"); you may not use this file except in
+ * compliance with the License.  You may obtain a copy of the License at
+ *
+ *                http://solderpad.org/licenses/SHL-0.51. 
+ *
+ * Unless required by applicable law
+ * or agreed to in writing, software, hardware and materials distributed under
+ * this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * Alfio Di Mauro <adimauro@iis.ee.ethz.ch>
+ *
+ */
 module udma_subsystem_tb;
 
 	logic dft_test_mode_i;
@@ -63,10 +80,16 @@ module udma_subsystem_tb;
 
 	apb_test_pkg::APB_BUS_t APB_BUS;
 
-tcdm_model #(.MP(2), .PROB_STALL(0.5)) i_tcdm_model (
+tcdm_model #(
+	.MP(2), 
+	.PROB_STALL(0.5),
+	.BASE_ADDR(32'h00000000)
+
+	) i_tcdm_model (
+
 	.clk_i         (sys_clk_i      ),
 	.clk_delayed_i (clk_delayed_i  ),
-	.randomize_i   (1'b1           ),
+	.randomize_i   (1'b0           ),
 	.enable_i      (dft_cg_enable_i),
 	.stallable_i   (1'b1           ),
 	.tcdm_wen_i    (tcdm_wen_i     ),
@@ -80,7 +103,6 @@ tcdm_model #(.MP(2), .PROB_STALL(0.5)) i_tcdm_model (
 );
 
 udma_subsystem #(
-	.L2_ADDR_WIDTH (13),
 	.APB_ADDR_WIDTH(32)
 ) i_dut (
 
@@ -163,19 +185,25 @@ always #20ns periph_clk_i = ~periph_clk_i;
 uart_tb_rx i_uart_tb_rx (.rx(uart_tx_o), .rx_en(1'b1), .word_done(word_done));
 
 initial begin
+
+	$readmemh("tcdm_stim.txt", udma_subsystem_tb.i_tcdm_model.memory);
+
 	sys_clk_i = 0;
 	periph_clk_i = 0;
 	#30ns;
 	sys_resetn_i	= 0;
 	#30ns;
 	sys_resetn_i	= 1;
-
 	uart_rx_i = 1'b0;
 
 	apb_test_pkg::udma_core_cg_en(0,sys_clk_i,APB_BUS); // enabling clock for periph id 0
-	apb_test_pkg::udma_uart_write(sys_clk_i,APB_BUS);
 
-	#1us;
+	apb_test_pkg::udma_uart0_tx_en(sys_clk_i,APB_BUS); // enable the transmission
+	apb_test_pkg::udma_uart0_write_saddr(sys_clk_i,APB_BUS); // write L2 start address
+	apb_test_pkg::udma_uart0_write_size(8,sys_clk_i,APB_BUS); // configure the transfer size
+	apb_test_pkg::udma_uart0_write(sys_clk_i,APB_BUS); // start transmission
+
+	#10us;
 
 	$finish;
 

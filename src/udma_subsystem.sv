@@ -1,31 +1,36 @@
-// Copyright 2018 ETH Zurich and University of Bologna.
-// Copyright and related rights are licensed under the Solderpad Hardware
-// License, Version 0.51 (the "License"); you may not use this file except in
-// compliance with the License.  You may obtain a copy of the License at
-// http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
-// or agreed to in writing, software, hardware and materials distributed under
-// this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-// CONDITIONS OF ANY KIND, either express or implied. See the License for the
-// specific language governing permissions and limitations under the License.
-
-//--- at the moment inferred from the padframe
-`define N_QSPIM  4
-`define N_UART   1
-`define N_I2C    3
-`define N_I2S    1
-`define N_CPI    1
-`define N_DVS    1
-`define N_HYPER  1
-
+/* 
+ * Copyright (C) 2018-2020 ETH Zurich, University of Bologna
+ * Copyright and related rights are licensed under the Solderpad Hardware
+ * License, Version 0.51 (the "License"); you may not use this file except in
+ * compliance with the License.  You may obtain a copy of the License at
+ *
+ *                http://solderpad.org/licenses/SHL-0.51. 
+ *
+ * Unless required by applicable law
+ * or agreed to in writing, software, hardware and materials distributed under
+ * this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * Alfio Di Mauro <adimauro@iis.ee.ethz.ch>
+ *
+ */
 module udma_subsystem
-#(
-    parameter L2_DATA_WIDTH  = 32,
-    parameter L2_ADDR_WIDTH  = 19,   //L2 addr space of 2MB
-    parameter CAM_DATA_WIDTH = 8,
-    parameter APB_ADDR_WIDTH = 12,  //APB slaves are 4KB by default
-    parameter TRANS_SIZE     = 20,  //max uDMA transaction size of 1MB
-    parameter L2_AWIDTH_NOAL = L2_ADDR_WIDTH + 2
 
+    // signal bitwidths
+    import udma_pkg::L2_DATA_WIDTH;  
+    import udma_pkg::L2_ADDR_WIDTH;  
+    import udma_pkg::CAM_DATA_WIDTH; 
+    import udma_pkg::TRANS_SIZE;     
+    import udma_pkg::L2_AWIDTH_NOAL; 
+    import udma_pkg::STREAM_ID_WIDTH;
+    import udma_pkg::DEST_SIZE;  
+
+    // peripherals and channels configuration
+    import udma_cfg_pkg::*;   
+
+#(
+    parameter APB_ADDR_WIDTH = 12  //APB slaves are 4KB by default
 )
 (
     output logic                       L2_ro_wen_o    ,
@@ -76,8 +81,8 @@ module udma_subsystem
     // ╚██████╔╝██║  ██║██║  ██║   ██║   
     //  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    
 
-    input  logic [`N_UART-1:0] uart_rx_i,
-    output logic [`N_UART-1:0] uart_tx_o
+    input  logic [N_UART-1:0] uart_rx_i,
+    output logic [N_UART-1:0] uart_tx_o
 
    /*
 
@@ -235,57 +240,6 @@ module udma_subsystem
                                     
 );
 
-    localparam DEST_SIZE               = 2;
-
-    localparam N_FILTER                = 1;
-    localparam N_STREAMS               = N_FILTER + 1;     //--- the additional stream goes outside uDMA (to SNE)
-    localparam STREAM_ID_WIDTH         = $clog2(N_STREAMS);
-    
-    localparam N_RX_LIN_CHANNELS       = `N_UART + `N_QSPIM   + `N_I2C + `N_CPI + `N_HYPER + `N_I2S;
-    localparam N_TX_LIN_CHANNELS       = `N_UART + `N_QSPIM*2 + `N_I2C +          `N_HYPER + `N_I2S;
-
-    localparam N_RX_EXT_CHANNELS       =  N_FILTER + `N_DVS;
-    localparam N_TX_EXT_CHANNELS       =  N_FILTER*2;
-
-    localparam N_PERIPHS               = `N_UART + N_FILTER + `N_QSPIM + `N_I2C + `N_CPI + `N_HYPER + `N_I2S + `N_DVS;
-
-    //--- TX Lin. Channels
-    localparam CH_ID_LIN_TX_UART       = 0                                 ; // 0 1
-    localparam CH_ID_LIN_TX_QSPIM      = CH_ID_LIN_TX_UART      + `N_UART  ; // 2 3 4 5
-    localparam CH_ID_LIN_TX_CMD_QSPIM  = CH_ID_LIN_TX_QSPIM     + `N_QSPIM ; // 6 7 8 9
-    localparam CH_ID_LIN_TX_I2C        = CH_ID_LIN_TX_CMD_QSPIM + `N_QSPIM ; // 10 11 12
-    localparam CH_ID_LIN_TX_I2S        = CH_ID_LIN_TX_I2C       + `N_I2C   ; // 13
-    localparam CH_ID_LIN_TX_HYPER      = CH_ID_LIN_TX_I2S       + `N_I2S   ; // 14
-
-    //--- RX Lin. Channels
-    localparam CH_ID_LIN_RX_UART       = 0                                 ; // 0 1
-    localparam CH_ID_LIN_RX_QSPIM      = CH_ID_LIN_RX_UART      + `N_UART  ; // 2 3 4 5
-    localparam CH_ID_LIN_RX_I2C        = CH_ID_LIN_RX_QSPIM     + `N_QSPIM ; // 6 7 8
-    localparam CH_ID_LIN_RX_I2S        = CH_ID_LIN_RX_I2C       + `N_I2C   ; // 9
-    localparam CH_ID_LIN_RX_HYPER      = CH_ID_LIN_RX_I2S       + `N_I2S   ; // 10
-    localparam CH_ID_LIN_RX_CAM        = CH_ID_LIN_RX_HYPER     + `N_HYPER ; // 11 
-
-    //--- Tx Ext. channels
-    localparam CH_ID_EXT_TX_FILTER     = 0                                 ;
-
-    //--- Rx Ext. channels
-    localparam CH_ID_EXT_RX_FILTER     = 0                                   ;
-    localparam CH_ID_EXT_RX_DVS        = CH_ID_EXT_RX_FILTER       + N_FILTER;
-    
-    //--- Stream (Ext.) channels
-    localparam STREAM_ID_FILTER =                    0;
-    localparam STREAM_ID_SNE    = STREAM_ID_FILTER + 1;
-
-    //--- peripheral IDs
-    localparam PER_ID_UART             =  0                                   ; // 0 1                  
-    localparam PER_ID_QSPIM            = PER_ID_UART        + `N_UART         ; // 2 3 4 5    
-    localparam PER_ID_I2C              = PER_ID_QSPIM       + `N_QSPIM        ; // 6 7 8
-    localparam PER_ID_I2S              = PER_ID_I2C         + `N_I2C          ; // 9    
-    localparam PER_ID_HYPER            = PER_ID_I2S         + `N_I2S          ; // 10
-    localparam PER_ID_CAM              = PER_ID_HYPER       + `N_HYPER        ; // 11 
-    localparam PER_ID_DVS              = PER_ID_CAM         + `N_CPI          ; // 12   
-    localparam PER_ID_FILTER           = PER_ID_DVS         + `N_DVS          ; // 13 
-
     //--- Tx lin channels signals declaration
     logic [N_TX_LIN_CHANNELS-1:0] [L2_AWIDTH_NOAL-1 : 0] s_tx_cfg_startaddr   ;
     logic [N_TX_LIN_CHANNELS-1:0]     [TRANS_SIZE-1 : 0] s_tx_cfg_size        ;
@@ -369,8 +323,8 @@ module udma_subsystem
     logic [N_PERIPHS-1:0]        s_periph_valid;
     logic [N_PERIPHS-1:0]        s_periph_ready;
 
-    logic            [`N_QSPIM-1:0] s_spi_eot;
-    logic            [  `N_I2C-1:0] s_i2c_evt;
+    logic            [N_QSPIM-1:0] s_spi_eot;
+    logic            [  N_I2C-1:0] s_i2c_evt;
     //logic            [ `N_UART-1:0] s_uart_evt;
 
     logic         [3:0] s_trigger_events;
@@ -384,7 +338,6 @@ module udma_subsystem
 
 
     //integer i;
-
     //assign s_cam_evt     = 1'b0;
     //assign s_i2s_evt     = 1'b0;
     //assign s_uart_evt    = 1'b0;
@@ -397,6 +350,12 @@ module udma_subsystem
     assign L2_ro_be_o    =  'h0;
     assign L2_ro_wdata_o =  'h0;
 
+    UDMA_LIN_CH lin_ch_rx[N_RX_LIN_CHANNELS-1:0](.clk_i(clk_i));
+    UDMA_LIN_CH lin_ch_tx[N_TX_LIN_CHANNELS-1:0](.clk_i(clk_i));
+    UDMA_EXT_CH ext_ch_rx[N_RX_EXT_CHANNELS-1:0](.clk_i(clk_i));
+    UDMA_EXT_CH ext_ch_tx[N_TX_EXT_CHANNELS-1:0](.clk_i(clk_i));
+    UDMA_EXT_CH str_ch_tx[N_STREAMS-1:0](.clk_i(clk_i));
+
     // ██╗   ██╗██████╗ ███╗   ███╗ █████╗      ██████╗ ██████╗ ██████╗ ███████╗
     // ██║   ██║██╔══██╗████╗ ████║██╔══██╗    ██╔════╝██╔═══██╗██╔══██╗██╔════╝
     // ██║   ██║██║  ██║██╔████╔██║███████║    ██║     ██║   ██║██████╔╝█████╗  
@@ -406,16 +365,11 @@ module udma_subsystem
 
     udma_core #(
 
-        .L2_AWIDTH_NOAL          ( L2_AWIDTH_NOAL       ),
-        .L2_DATA_WIDTH           ( L2_DATA_WIDTH        ),
-        .DATA_WIDTH              ( 32                   ),
         .N_RX_LIN_CHANNELS       ( N_RX_LIN_CHANNELS    ),
         .N_TX_LIN_CHANNELS       ( N_TX_LIN_CHANNELS    ),
         .N_RX_EXT_CHANNELS       ( N_RX_EXT_CHANNELS    ),
         .N_TX_EXT_CHANNELS       ( N_TX_EXT_CHANNELS    ),
         .N_STREAMS               ( N_STREAMS            ),
-        .STREAM_ID_WIDTH         ( STREAM_ID_WIDTH      ),
-        .TRANS_SIZE              ( TRANS_SIZE           ),
         .N_PERIPHS               ( N_PERIPHS            ),
         .APB_ADDR_WIDTH          ( APB_ADDR_WIDTH       )
 
@@ -465,72 +419,16 @@ module udma_subsystem
         .rx_l2_be_o              ( L2_wo_be_o           ),
         .rx_l2_wdata_o           ( L2_wo_wdata_o        ),
     
-        .stream_data_o           ( s_stream_data        ),
-        .stream_datasize_o       ( s_stream_datasize    ),
-        .stream_valid_o          ( s_stream_valid       ),
-        .stream_sot_o            ( s_stream_sot         ),
-        .stream_eot_o            ( s_stream_eot         ),
-        .stream_ready_i          ( s_stream_ready       ),
-
+        //--- stream channels connections
+        .str_ch_tx               ( str_ch_tx            ),
         //--- Tx lin channels connections
-        .tx_lin_req_i            ( s_tx_ch_req          ),
-        .tx_lin_gnt_o            ( s_tx_ch_gnt          ),
-        .tx_lin_valid_o          ( s_tx_ch_valid        ),
-        .tx_lin_data_o           ( s_tx_ch_data         ),
-        .tx_lin_ready_i          ( s_tx_ch_ready        ),
-        .tx_lin_datasize_i       ( s_tx_ch_datasize     ),
-        .tx_lin_destination_i    ( s_tx_ch_destination  ),
-        .tx_lin_events_o         ( s_tx_ch_events       ),
-        .tx_lin_en_o             ( s_tx_ch_en           ),
-        .tx_lin_pending_o        ( s_tx_ch_pending      ),
-        .tx_lin_curr_addr_o      ( s_tx_ch_curr_addr    ),
-        .tx_lin_bytes_left_o     ( s_tx_ch_bytes_left   ),
-        .tx_lin_cfg_startaddr_i  ( s_tx_cfg_startaddr   ),
-        .tx_lin_cfg_size_i       ( s_tx_cfg_size        ),
-        .tx_lin_cfg_continuous_i ( s_tx_cfg_continuous  ),
-        .tx_lin_cfg_en_i         ( s_tx_cfg_en          ),
-        .tx_lin_cfg_clr_i        ( s_tx_cfg_clr         ),
-
+        .lin_ch_tx               ( lin_ch_tx            ),
         //--- Rx lin channels connections
-        .rx_lin_valid_i          ( s_rx_ch_valid        ),
-        .rx_lin_data_i           ( s_rx_ch_data         ),
-        .rx_lin_ready_o          ( s_rx_ch_ready        ),
-        .rx_lin_datasize_i       ( s_rx_ch_datasize     ),
-        .rx_lin_destination_i    ( s_rx_ch_destination  ),
-        .rx_lin_events_o         ( s_rx_ch_events       ),
-        .rx_lin_en_o             ( s_rx_ch_en           ),
-        .rx_lin_pending_o        ( s_rx_ch_pending      ),
-        .rx_lin_curr_addr_o      ( s_rx_ch_curr_addr    ),
-        .rx_lin_bytes_left_o     ( s_rx_ch_bytes_left   ),
-        .rx_lin_cfg_startaddr_i  ( s_rx_cfg_startaddr   ),
-        .rx_lin_cfg_size_i       ( s_rx_cfg_size        ),
-        .rx_lin_cfg_continuous_i ( s_rx_cfg_continuous  ),
-        .rx_lin_cfg_stream_i     ( s_rx_cfg_stream      ),
-        .rx_lin_cfg_stream_id_i  ( s_rx_cfg_stream_id   ),
-        .rx_lin_cfg_en_i         ( s_rx_cfg_en          ),
-        .rx_lin_cfg_clr_i        ( s_rx_cfg_clr         ),
-
+        .lin_ch_rx               ( lin_ch_rx            ),
         //--- Rx ext channels connections
-        .rx_ext_addr_i           ( s_rx_ext_addr        ),
-        .rx_ext_datasize_i       ( s_rx_ext_datasize    ),
-        .rx_ext_destination_i    ( s_rx_ext_destination ),
-        .rx_ext_stream_i         ( s_rx_ext_stream      ),
-        .rx_ext_stream_id_i      ( s_rx_ext_stream_id   ),
-        .rx_ext_sot_i            ( s_rx_ext_sot         ),
-        .rx_ext_eot_i            ( s_rx_ext_eot         ),
-        .rx_ext_valid_i          ( s_rx_ext_valid       ),
-        .rx_ext_data_i           ( s_rx_ext_data        ),
-        .rx_ext_ready_o          ( s_rx_ext_ready       ),
-
+        .ext_ch_rx               ( ext_ch_rx            ),
         //--- Tx ext channels connections
-        .tx_ext_req_i            ( s_tx_ext_req         ),
-        .tx_ext_datasize_i       ( s_tx_ext_datasize    ),
-        .tx_ext_destination_i    ( s_tx_ext_destination ),
-        .tx_ext_addr_i           ( s_tx_ext_addr        ),
-        .tx_ext_gnt_o            ( s_tx_ext_gnt         ),
-        .tx_ext_valid_o          ( s_tx_ext_valid       ),
-        .tx_ext_data_o           ( s_tx_ext_data        ),
-        .tx_ext_ready_i          ( s_tx_ext_ready       )
+        .ext_ch_tx               ( ext_ch_tx            )
 
     );
 
@@ -545,7 +443,7 @@ module udma_subsystem
     // PER_ID:
     // UART0 = 0
     // UART1 = 1
-    for (genvar g_uart=0;g_uart<`N_UART;g_uart++) begin: uart
+    for (genvar g_uart=0;g_uart<N_UART;g_uart++) begin: uart
 
         assign s_events[4*(PER_ID_UART+g_uart)+0]        = s_rx_ch_events[CH_ID_LIN_RX_UART+g_uart];
         assign s_events[4*(PER_ID_UART+g_uart)+1]        = s_tx_ch_events[CH_ID_LIN_TX_UART+g_uart];

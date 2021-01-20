@@ -1,6 +1,4 @@
 /* 
- * Alfio Di Mauro <adimauro@iis.ee.ethz.ch>
- *
  * Copyright (C) 2018-2020 ETH Zurich, University of Bologna
  * Copyright and related rights are licensed under the Solderpad Hardware
  * License, Version 0.51 (the "License"); you may not use this file except in
@@ -13,6 +11,9 @@
  * this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
  * CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
+ *
+ * Alfio Di Mauro <adimauro@iis.ee.ethz.ch>
+ *
  */
 package apb_test_pkg;
 
@@ -20,7 +21,6 @@ package apb_test_pkg;
 
 	localparam CORE_OFFSET = 32'h0000000;
 	localparam PERIPH_ID_OFFSET = 32'h0000080;
-	localparam UART0_OFFSET = PERIPH_ID_OFFSET + 0;
 
 	typedef struct {
 		logic [31:0] paddr;
@@ -154,16 +154,49 @@ package apb_test_pkg;
 //  ¦¦    ¦¦ ¦¦¦¦¦¦¦ ¦¦¦¦¦¦     ¦¦    
 //  ¦¦    ¦¦ ¦¦   ¦¦ ¦¦   ¦¦    ¦¦    
 //   ¦¦¦¦¦¦  ¦¦   ¦¦ ¦¦   ¦¦    ¦¦    
-                                                            
-	//uart test
-	task automatic udma_uart_write(
+                                        
+	localparam UART0_OFFSET = PERIPH_ID_OFFSET + 0;
+
+	//uart write start address
+	task automatic udma_uart0_write_saddr(
 		ref   logic        clk_i   , 
 		ref   APB_BUS_t    APB_BUS);
 		logic [31:0] reg_val;
 		APB_READ(UART0_OFFSET,reg_val,clk_i,APB_BUS);
-		reg_val = reg_val | (1'b1 << 4);
+		reg_val = reg_val;
 		APB_WRITE(UART0_OFFSET,reg_val,clk_i,APB_BUS);    
-		$display("[UART: TEST]");
-	endtask : udma_uart_write
+		$display("[UART0: WRITE SADDR]");
+	endtask : udma_uart0_write_saddr
+
+	//uart write transfer size address
+	task automatic udma_uart0_write_size(
+		input logic [31:0] size,
+		ref   logic        clk_i   , 
+		ref   APB_BUS_t    APB_BUS);
+		APB_WRITE(UART0_OFFSET + 8'h14,size,clk_i,APB_BUS);    
+		$display("[UART0: WRITE SIZE]");
+	endtask : udma_uart0_write_size
+
+	//uart test
+	task automatic udma_uart0_tx_en(
+		ref   logic        clk_i   , 
+		ref   APB_BUS_t    APB_BUS);
+		logic [31:0] reg_val;
+		APB_READ(UART0_OFFSET + 8'h24,reg_val,clk_i,APB_BUS);
+		reg_val = reg_val | (1'b1 << 8) | | (1'b1 << 0); 
+		APB_WRITE(UART0_OFFSET + 8'h24,reg_val,clk_i,APB_BUS);    
+		$display("[UART0: TXEN]");
+	endtask : udma_uart0_tx_en
+
+	//uart test
+	task automatic udma_uart0_write(
+		ref   logic        clk_i   , 
+		ref   APB_BUS_t    APB_BUS);
+		logic [31:0] reg_val;
+		APB_READ(UART0_OFFSET + 8'h18,reg_val,clk_i,APB_BUS);
+		reg_val = reg_val | (1'b1 << 4); 
+		APB_WRITE(UART0_OFFSET + 8'h18,reg_val,clk_i,APB_BUS);    
+		$display("[UART0: TX DATA]");
+	endtask : udma_uart0_write
 
 endpackage : apb_test_pkg

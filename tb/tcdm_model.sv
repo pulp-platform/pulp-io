@@ -28,7 +28,7 @@ module tcdm_model
 #(
   parameter MP          = 1,
   parameter MEMORY_SIZE = 1024,
-  parameter BASE_ADDR   = 0,
+  parameter BASE_ADDR   = 32'h1C000000,
   parameter PROB_STALL  = 0.0,
 `ifndef VERILATOR
   parameter time TCP = 10.0ns, // clock period, 1GHz clock
