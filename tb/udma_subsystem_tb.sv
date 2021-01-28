@@ -83,7 +83,7 @@ module udma_subsystem_tb;
 tcdm_model #(
 	.MP(2), 
 	.PROB_STALL(0.5),
-	.BASE_ADDR(32'h00000000)
+	.BASE_ADDR(32'h1C000000)
 
 	) i_tcdm_model (
 
@@ -101,6 +101,9 @@ tcdm_model #(
 	.tcdm_r_valid_o(tcdm_r_valid_o ),
 	.tcdm_r_data_o (tcdm_r_data_o  )
 );
+
+BIPAD_IF pad_uart_rx[1:0]();
+BIPAD_IF pad_uart_tx[1:0]();
 
 udma_subsystem #(
 	.APB_ADDR_WIDTH(32)
@@ -140,12 +143,13 @@ udma_subsystem #(
 	.udma_apb_pready ( APB_BUS.pready    ),
 	.udma_apb_pslverr( APB_BUS.pslverr   ),
 
-	.events_o        (events_o        ),
-	.event_valid_i   (event_valid_i   ),
-	.event_data_i    (event_data_i    ),
-	.event_ready_o   (event_ready_o   ),
-	.uart_rx_i       (uart_rx_i       ),
-	.uart_tx_o       (uart_tx_o       )
+	.events_o        (events_o           ),
+	.event_valid_i   (event_valid_i      ),
+	.event_data_i    (event_data_i       ),
+	.event_ready_o   (event_ready_o      ),
+
+	.pad_uart_rx     (pad_uart_rx        ),
+	.pad_uart_tx     (pad_uart_tx        )
 	
 	//.spi_clk         (spi_clk         ),
 	//.spi_csn         (spi_csn         ),
@@ -182,7 +186,13 @@ udma_subsystem #(
 always #10ns sys_clk_i = ~sys_clk_i;
 always #20ns periph_clk_i = ~periph_clk_i;
 
-uart_tb_rx i_uart_tb_rx (.rx(uart_tx_o), .rx_en(1'b1), .word_done(word_done));
+uart_tb_rx i_uart_tb_rx (
+	.rx(pad_uart_tx[0].OUT), 
+	.tx(pad_uart_rx[1].IN), 
+	.rx_en(1'b1), 
+	.tx_en(1'b1),
+	.word_done(word_done)
+);
 
 initial begin
 
@@ -194,18 +204,26 @@ initial begin
 	sys_resetn_i	= 0;
 	#30ns;
 	sys_resetn_i	= 1;
-	uart_rx_i = 1'b0;
+	pad_uart_tx[0].IN = 1'b0;
+	pad_uart_tx[1].IN = 1'b0;
 
 	apb_test_pkg::udma_core_cg_en(0,sys_clk_i,APB_BUS); // enabling clock for periph id 0
-
 	apb_test_pkg::udma_uart0_tx_en(sys_clk_i,APB_BUS); // enable the transmission
-	apb_test_pkg::udma_uart0_write_saddr(sys_clk_i,APB_BUS); // write L2 start address
-	apb_test_pkg::udma_uart0_write_size(8,sys_clk_i,APB_BUS); // configure the transfer size
+	apb_test_pkg::udma_uart0_write_tx_saddr(32'h1C000000,sys_clk_i,APB_BUS); // write L2 start address
+	apb_test_pkg::udma_uart0_write_tx_size(7,sys_clk_i,APB_BUS); // configure the transfer size
+
+	#1us;
+
+	apb_test_pkg::udma_uart1_rx_en(sys_clk_i,APB_BUS); // enable the transmission
+	apb_test_pkg::udma_uart1_read_rx_saddr(32'h1C000800,sys_clk_i,APB_BUS); // write L2 start address
+	apb_test_pkg::udma_uart1_read_rx_size(7,sys_clk_i,APB_BUS); // configure the transfer size
+	
 	apb_test_pkg::udma_uart0_write(sys_clk_i,APB_BUS); // start transmission
+	apb_test_pkg::udma_uart1_read(sys_clk_i,APB_BUS); // start transmission
 
 	#10us;
 
-	$finish;
+	$stop;
 
 end
 	

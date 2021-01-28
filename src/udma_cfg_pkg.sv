@@ -18,15 +18,15 @@
  // this package holds all udma configuration
 package udma_cfg_pkg;
 
-	localparam N_FILTER  = 1;
-	localparam N_STREAMS = N_FILTER + 1;     //--- the additional stream goes outside uDMA (to SNE)
-	localparam N_QSPIM   = 4;
-	localparam N_UART    = 1;
+	localparam N_FILTER  = 0;
+	localparam N_STREAMS = N_FILTER + 0;
+	localparam N_QSPIM   = 0;
+	localparam N_UART    = 2;
 	localparam N_I2C     = 0;
 	localparam N_I2S     = 0;
 	localparam N_CPI     = 0;
-	localparam N_DVS     = 1;
-	localparam N_HYPER   = 1;
+	localparam N_DVS     = 0;
+	localparam N_HYPER   = 0;
 
 	localparam N_RX_LIN_CHANNELS       = N_UART + N_QSPIM   + N_I2C + N_CPI + N_HYPER + N_I2S;
 	localparam N_TX_LIN_CHANNELS       = N_UART + N_QSPIM*2 + N_I2C +         N_HYPER + N_I2S;
@@ -35,7 +35,7 @@ package udma_cfg_pkg;
 	localparam N_PERIPHS               = N_UART + N_FILTER + N_QSPIM + N_I2C + N_CPI + N_HYPER + N_I2S + N_DVS;
 
 	//--- TX Lin. Channels
-	localparam CH_ID_LIN_TX_UART       = 0                                 ; // 0 1
+	localparam CH_ID_LIN_TX_UART       = 0                                ; // 0 1
 	localparam CH_ID_LIN_TX_QSPIM      = CH_ID_LIN_TX_UART      + N_UART  ; // 2 3 4 5
 	localparam CH_ID_LIN_TX_CMD_QSPIM  = CH_ID_LIN_TX_QSPIM     + N_QSPIM ; // 6 7 8 9
 	localparam CH_ID_LIN_TX_I2C        = CH_ID_LIN_TX_CMD_QSPIM + N_QSPIM ; // 10 11 12

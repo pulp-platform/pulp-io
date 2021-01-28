@@ -81,226 +81,11 @@ module udma_subsystem
     // ╚██████╔╝██║  ██║██║  ██║   ██║   
     //  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    
 
-    input  logic [N_UART-1:0] uart_rx_i,
-    output logic [N_UART-1:0] uart_tx_o
+    BIPAD_IF.PERIPH_SIDE pad_uart_rx[N_UART-1:0],
+    BIPAD_IF.PERIPH_SIDE pad_uart_tx[N_UART-1:0]
 
-   /*
-
-    //  ██████╗ ███████╗██████╗ ██╗      ███╗   ███╗
-    // ██╔═══██╗██╔════╝██╔══██╗██║      ████╗ ████║
-    // ██║   ██║███████╗██████╔╝██║█████╗██╔████╔██║
-    // ██║▄▄ ██║╚════██║██╔═══╝ ██║╚════╝██║╚██╔╝██║
-    // ╚██████╔╝███████║██║     ██║      ██║ ╚═╝ ██║
-    //  ╚══▀▀═╝ ╚══════╝╚═╝     ╚═╝      ╚═╝     ╚═╝
-
-    output logic [`N_QSPIM-1:0]       spi_clk_o,
-    output logic [`N_QSPIM-1:0] [3:0] spi_csn_o,
-    output logic [`N_QSPIM-1:0] [3:0] spi_oen_o,
-    output logic [`N_QSPIM-1:0] [3:0] spi_sdo_o,
-    input  logic [`N_QSPIM-1:0] [3:0] spi_sdi_i,
-
-    // ██╗██████╗  ██████╗
-    // ██║╚════██╗██╔════╝
-    // ██║ █████╔╝██║     
-    // ██║██╔═══╝ ██║     
-    // ██║███████╗╚██████╗
-    // ╚═╝╚══════╝ ╚═════╝    
-
-    input  logic [`N_I2C-1:0] i2c_scl_i,
-    output logic [`N_I2C-1:0] i2c_scl_o,
-    output logic [`N_I2C-1:0] i2c_scl_oe,
-    input  logic [`N_I2C-1:0] i2c_sda_i,
-    output logic [`N_I2C-1:0] i2c_sda_o,
-    output logic [`N_I2C-1:0] i2c_sda_oe,
-
-    // ██╗██████╗ ███████╗
-    // ██║╚════██╗██╔════╝
-    // ██║ █████╔╝███████╗
-    // ██║██╔═══╝ ╚════██║
-    // ██║███████╗███████║
-    // ╚═╝╚══════╝╚══════╝
-                   
-    input  logic i2s_slave_sd0_i  ,
-    input  logic i2s_slave_sd1_i  ,
-    input  logic i2s_slave_ws_i   ,
-    output logic i2s_slave_ws_o   ,
-    output logic i2s_slave_ws_oe  ,
-    input  logic i2s_slave_sck_i  ,
-    output logic i2s_slave_sck_o  ,
-    output logic i2s_slave_sck_oe ,
-    output logic i2s_master_sd0_o ,
-    output logic i2s_master_sd1_o ,
-    input  logic i2s_master_ws_i  ,
-    output logic i2s_master_ws_o  ,
-    output logic i2s_master_ws_oe ,
-    input  logic i2s_master_sck_i ,
-    output logic i2s_master_sck_o ,
-    output logic i2s_master_sck_oe,
-
-    // ██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗       ██████╗ 
-    // ██║  ██║╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗      ██╔══██╗
-    // ███████║ ╚████╔╝ ██████╔╝█████╗  ██████╔╝█████╗██████╔╝
-    // ██╔══██║  ╚██╔╝  ██╔═══╝ ██╔══╝  ██╔══██╗╚════╝██╔══██╗
-    // ██║  ██║   ██║   ██║     ███████╗██║  ██║      ██████╔╝
-    // ╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚══════╝╚═╝  ╚═╝      ╚═════╝ 
-    output logic                            hyperbus_clk_periphs_core_o  ,    
-    output logic                            hyperbus_clk_periphs_per_o   ,   
-    output logic                            hyperbus_sys_resetn_o        ,          
-
-    output  logic                    [31:0] hyperbus_periph_data_to_o    ,
-    output  logic                     [4:0] hyperbus_periph_addr_o       ,
-    output  logic                           hyperbus_periph_valid_o      ,
-    output  logic                           hyperbus_periph_rwn_o        ,
-    input   logic                           hyperbus_periph_ready_i      ,
-    input   logic                    [31:0] hyperbus_periph_data_from_i  ,
-
-    input  logic                     [31:0] hyperbus_rx_cfg_startaddr_i  ,
-    input  logic                     [31:0] hyperbus_rx_cfg_size_i       ,
-    input  logic                            hyperbus_rx_cfg_continuous_i ,
-    input  logic                            hyperbus_rx_cfg_en_i         ,
-    input  logic                            hyperbus_rx_cfg_clr_i        ,
-    output logic                            hyperbus_rx_ch_en_o          ,
-    output logic                            hyperbus_rx_ch_pending_o     ,
-    output logic                     [31:0] hyperbus_rx_ch_curr_addr_o   ,
-    output logic                     [31:0] hyperbus_rx_ch_bytes_left_o  ,
-
-    input  logic                     [31:0] hyperbus_tx_cfg_startaddr_i  ,
-    input  logic                     [31:0] hyperbus_tx_cfg_size_i       ,
-    input  logic                            hyperbus_tx_cfg_continuous_i ,
-    input  logic                            hyperbus_tx_cfg_en_i         ,
-    input  logic                            hyperbus_tx_cfg_clr_i        ,
-    output logic                            hyperbus_tx_ch_en_o          ,
-    output logic                            hyperbus_tx_ch_pending_o     ,
-    output logic                     [31:0] hyperbus_tx_ch_curr_addr_o   ,
-    output logic                     [31:0] hyperbus_tx_ch_bytes_left_o  ,
-
-    input  logic                            hyperbus_tx_req_i            ,
-    output logic                            hyperbus_tx_gnt_o            ,
-    input  logic                      [1:0] hyperbus_tx_datasize_i       ,
-    output logic                     [31:0] hyperbus_tx_o                ,
-    output logic                            hyperbus_tx_valid_o          ,
-    input  logic                            hyperbus_tx_ready_i          ,
-
-    input  logic                      [1:0] hyperbus_rx_datasize_i       ,
-    input  logic                     [31:0] hyperbus_rx_i                ,
-    input  logic                            hyperbus_rx_valid_i          ,
-    output logic                            hyperbus_rx_ready_o          ,
-    input  logic                            evt_eot_hyper_i,
-
-    //  ██████╗██████╗       ██╗███████╗
-    // ██╔════╝██╔══██╗      ██║██╔════╝
-    // ██║     ██████╔╝█████╗██║█████╗  
-    // ██║     ██╔═══╝ ╚════╝██║██╔══╝  
-    // ╚██████╗██║           ██║██║     
-    //  ╚═════╝╚═╝           ╚═╝╚═╝     
-
-    input  logic       cam_clk_i,
-    input  logic [7:0] cam_data_i,
-    input  logic       cam_hsync_i,
-    input  logic       cam_vsync_i,
-
-    // ██████╗ ██╗   ██╗███████╗      ██╗███████╗
-    // ██╔══██╗██║   ██║██╔════╝      ██║██╔════╝
-    // ██║  ██║██║   ██║███████╗█████╗██║█████╗  
-    // ██║  ██║╚██╗ ██╔╝╚════██║╚════╝██║██╔══╝  
-    // ██████╔╝ ╚████╔╝ ███████║      ██║██║     
-    // ╚═════╝   ╚═══╝  ╚══════╝      ╚═╝╚═╝     
-                                     
-    output logic        dvs_asa_o     ,
-    output logic        dvs_are_o     ,
-    output logic        dvs_asy_o     ,
-    output logic        dvs_ynrst_o   ,
-    output logic        dvs_yclk_o    ,
-    output logic        dvs_sxy_o     ,
-    output logic        dvs_xclk_o    ,
-    output logic        dvs_xnrst_o   ,
-    input  logic [3:0]  dvs_on_i      ,
-    input  logic [3:0]  dvs_off_i     ,
-    input  logic [7:0]  dvs_xy_data_i ,
-
-    output logic [7:0]  dvs_cfg_if_o  , 
-    input  logic [7:0]  dvs_cfg_if_i  , 
-    output logic [7:0]  dvs_cfg_if_oe ,
-
-    // ███████╗███╗   ██╗███████╗    ███████╗████████╗██████╗ ███████╗ █████╗ ███╗   ███╗
-    // ██╔════╝████╗  ██║██╔════╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔══██╗████╗ ████║
-    // ███████╗██╔██╗ ██║█████╗      ███████╗   ██║   ██████╔╝█████╗  ███████║██╔████╔██║
-    // ╚════██║██║╚██╗██║██╔══╝      ╚════██║   ██║   ██╔══██╗██╔══╝  ██╔══██║██║╚██╔╝██║
-    // ███████║██║ ╚████║███████╗    ███████║   ██║   ██║  ██║███████╗██║  ██║██║ ╚═╝ ██║
-    // ╚══════╝╚═╝  ╚═══╝╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝
-                                                                                                                                                    
-    output logic [31:0] sne_stream_data_o    ,
-    output logic        sne_stream_valid_o   ,
-    input  logic        sne_stream_ready_i   ,
-    output logic  [1:0] sne_stream_datasize_o,
-    output logic        sne_stream_sot_o     ,
-    output logic        sne_stream_eot_o
-
-    */
                                     
 );
-
-    //--- Tx lin channels signals declaration
-    logic [N_TX_LIN_CHANNELS-1:0] [L2_AWIDTH_NOAL-1 : 0] s_tx_cfg_startaddr   ;
-    logic [N_TX_LIN_CHANNELS-1:0]     [TRANS_SIZE-1 : 0] s_tx_cfg_size        ;
-    logic [N_TX_LIN_CHANNELS-1:0]                        s_tx_cfg_continuous  ;
-    logic [N_TX_LIN_CHANNELS-1:0]                        s_tx_cfg_en          ;
-    logic [N_TX_LIN_CHANNELS-1:0]                        s_tx_cfg_clr         ;
-    logic [N_TX_LIN_CHANNELS-1:0]               [31 : 0] s_tx_ch_data         ;
-    logic [N_TX_LIN_CHANNELS-1:0]                        s_tx_ch_valid        ;
-    logic [N_TX_LIN_CHANNELS-1:0]                        s_tx_ch_ready        ;
-    logic [N_TX_LIN_CHANNELS-1:0]                [1 : 0] s_tx_ch_datasize     ;
-    logic [N_TX_LIN_CHANNELS-1:0]      [DEST_SIZE-1 : 0] s_tx_ch_destination  ;
-    logic [N_TX_LIN_CHANNELS-1:0]                        s_tx_ch_events       ;
-    logic [N_TX_LIN_CHANNELS-1:0]                        s_tx_ch_en           ;
-    logic [N_TX_LIN_CHANNELS-1:0]                        s_tx_ch_pending      ;
-    logic [N_TX_LIN_CHANNELS-1:0] [L2_AWIDTH_NOAL-1 : 0] s_tx_ch_curr_addr    ;
-    logic [N_TX_LIN_CHANNELS-1:0]     [TRANS_SIZE-1 : 0] s_tx_ch_bytes_left   ;
-
-    logic [N_TX_LIN_CHANNELS-1:0]                        s_tx_ch_req          ;
-    logic [N_TX_LIN_CHANNELS-1:0]                        s_tx_ch_gnt          ;
-
-    //--- Rx lin channels signal declaration
-    logic [N_RX_LIN_CHANNELS-1:0] [L2_AWIDTH_NOAL-1 : 0] s_rx_cfg_startaddr   ;
-    logic [N_RX_LIN_CHANNELS-1:0]     [TRANS_SIZE-1 : 0] s_rx_cfg_size        ;
-    logic [N_RX_LIN_CHANNELS-1:0]                        s_rx_cfg_continuous  ;
-    logic [N_RX_LIN_CHANNELS-1:0]                        s_rx_cfg_en          ;
-    logic [N_RX_LIN_CHANNELS-1:0]                        s_rx_cfg_clr         ;
-    logic [N_RX_LIN_CHANNELS-1:0]               [31 : 0] s_rx_ch_data         ;
-    logic [N_RX_LIN_CHANNELS-1:0]                        s_rx_ch_valid        ;
-    logic [N_RX_LIN_CHANNELS-1:0]                        s_rx_ch_ready        ;
-    logic [N_RX_LIN_CHANNELS-1:0]                [1 : 0] s_rx_ch_datasize     ;
-    logic [N_RX_LIN_CHANNELS-1:0]      [DEST_SIZE-1 : 0] s_rx_ch_destination  ;
-    logic [N_RX_LIN_CHANNELS-1:0]                        s_rx_ch_events       ;
-    logic [N_RX_LIN_CHANNELS-1:0]                        s_rx_ch_en           ;
-    logic [N_RX_LIN_CHANNELS-1:0]                        s_rx_ch_pending      ;
-    logic [N_RX_LIN_CHANNELS-1:0] [L2_AWIDTH_NOAL-1 : 0] s_rx_ch_curr_addr    ;
-    logic [N_RX_LIN_CHANNELS-1:0]     [TRANS_SIZE-1 : 0] s_rx_ch_bytes_left   ;
-
-    logic [N_RX_LIN_CHANNELS-1:0]                [1 : 0] s_rx_cfg_stream      ;
-    logic [N_RX_LIN_CHANNELS-1:0] [STREAM_ID_WIDTH-1: 0] s_rx_cfg_stream_id   ;
-
-    //--- Rx ext channel signal declaration 
-    logic [N_RX_EXT_CHANNELS-1:0]  [L2_AWIDTH_NOAL-1 : 0] s_rx_ext_addr       ;
-    logic [N_RX_EXT_CHANNELS-1:0]                 [1 : 0] s_rx_ext_datasize   ;
-    logic [N_RX_EXT_CHANNELS-1:0]       [DEST_SIZE-1 : 0] s_rx_ext_destination;
-    logic [N_RX_EXT_CHANNELS-1:0]                 [1 : 0] s_rx_ext_stream     ;
-    logic [N_RX_EXT_CHANNELS-1:0] [STREAM_ID_WIDTH-1 : 0] s_rx_ext_stream_id  ;
-    logic [N_RX_EXT_CHANNELS-1:0]                         s_rx_ext_sot        ;
-    logic [N_RX_EXT_CHANNELS-1:0]                         s_rx_ext_eot        ;
-    logic [N_RX_EXT_CHANNELS-1:0]                         s_rx_ext_valid      ;
-    logic [N_RX_EXT_CHANNELS-1:0]                [31 : 0] s_rx_ext_data       ;
-    logic [N_RX_EXT_CHANNELS-1:0]                         s_rx_ext_ready      ;
-
-    //--- Tx ext channel signal declaration 
-    logic [N_TX_EXT_CHANNELS-1:0]                        s_tx_ext_req         ;
-    logic [N_TX_EXT_CHANNELS-1:0]                [1 : 0] s_tx_ext_datasize    ;
-    logic [N_TX_EXT_CHANNELS-1:0]      [DEST_SIZE-1 : 0] s_tx_ext_destination ;
-    logic [N_TX_EXT_CHANNELS-1:0] [L2_AWIDTH_NOAL-1 : 0] s_tx_ext_addr        ;
-    logic [N_TX_EXT_CHANNELS-1:0]                        s_tx_ext_gnt         ;
-    logic [N_TX_EXT_CHANNELS-1:0]                        s_tx_ext_valid       ;
-    logic [N_TX_EXT_CHANNELS-1:0]               [31 : 0] s_tx_ext_data        ;
-    logic [N_TX_EXT_CHANNELS-1:0]                        s_tx_ext_ready       ;
 
     logic [        N_STREAMS-1:0]               [31 : 0] s_stream_data        ;
     logic [        N_STREAMS-1:0]                [1 : 0] s_stream_datasize    ;
@@ -325,22 +110,11 @@ module udma_subsystem
 
     logic            [N_QSPIM-1:0] s_spi_eot;
     logic            [  N_I2C-1:0] s_i2c_evt;
-    //logic            [ `N_UART-1:0] s_uart_evt;
 
     logic         [3:0] s_trigger_events;
 
-    //logic s_cam_evt;
-    //logic s_i2s_evt;
-    //logic s_i2c1_evt;
-
     logic s_filter_eot_evt;
     logic s_filter_act_evt;
-
-
-    //integer i;
-    //assign s_cam_evt     = 1'b0;
-    //assign s_i2s_evt     = 1'b0;
-    //assign s_uart_evt    = 1'b0;
 
     assign events_o      = s_events;
 
@@ -350,11 +124,11 @@ module udma_subsystem
     assign L2_ro_be_o    =  'h0;
     assign L2_ro_wdata_o =  'h0;
 
-    UDMA_LIN_CH lin_ch_rx[N_RX_LIN_CHANNELS-1:0](.clk_i(clk_i));
-    UDMA_LIN_CH lin_ch_tx[N_TX_LIN_CHANNELS-1:0](.clk_i(clk_i));
-    UDMA_EXT_CH ext_ch_rx[N_RX_EXT_CHANNELS-1:0](.clk_i(clk_i));
-    UDMA_EXT_CH ext_ch_tx[N_TX_EXT_CHANNELS-1:0](.clk_i(clk_i));
-    UDMA_EXT_CH str_ch_tx[N_STREAMS-1:0](.clk_i(clk_i));
+    UDMA_LIN_CH lin_ch_rx[N_RX_LIN_CHANNELS-1:0](.clk_i(s_clk_periphs_core[0]));
+    UDMA_LIN_CH lin_ch_tx[N_TX_LIN_CHANNELS-1:0](.clk_i(s_clk_periphs_core[0]));
+    UDMA_EXT_CH ext_ch_rx[N_RX_EXT_CHANNELS-1:0](.clk_i(s_clk_periphs_core[0]));
+    UDMA_EXT_CH ext_ch_tx[N_TX_EXT_CHANNELS-1:0](.clk_i(s_clk_periphs_core[0]));
+    UDMA_EXT_CH str_ch_tx[N_STREAMS-1:0](.clk_i(s_clk_periphs_core[0]));
 
     // ██╗   ██╗██████╗ ███╗   ███╗ █████╗      ██████╗ ██████╗ ██████╗ ███████╗
     // ██║   ██║██╔══██╗████╗ ████║██╔══██╗    ██╔════╝██╔═══██╗██╔══██╗██╔════╝
@@ -440,77 +214,31 @@ module udma_subsystem
     // ╚██████╔╝██║  ██║██║  ██║   ██║   
     //  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   
 
-    // PER_ID:
-    // UART0 = 0
-    // UART1 = 1
     for (genvar g_uart=0;g_uart<N_UART;g_uart++) begin: uart
 
-        assign s_events[4*(PER_ID_UART+g_uart)+0]        = s_rx_ch_events[CH_ID_LIN_RX_UART+g_uart];
-        assign s_events[4*(PER_ID_UART+g_uart)+1]        = s_tx_ch_events[CH_ID_LIN_TX_UART+g_uart];
-        assign s_events[4*(PER_ID_UART+g_uart)+2]        = 1'b0                                    ;
-        assign s_events[4*(PER_ID_UART+g_uart)+3]        = 1'b0                                    ;
+    logic [3:0] s_evt_uart;
 
-        assign s_rx_cfg_stream[CH_ID_LIN_RX_UART+g_uart]     = 'h0;
-        assign s_rx_cfg_stream_id[CH_ID_LIN_RX_UART+g_uart]  = 'h0;
-        assign s_rx_ch_destination[CH_ID_LIN_RX_UART+g_uart] = 'h0;
-        assign s_tx_ch_destination[CH_ID_LIN_TX_UART+g_uart] = 'h0;
+    udma_uart_wrap i_udma_uart_wrap (
 
-        udma_uart_top #(
-            .L2_AWIDTH_NOAL(L2_AWIDTH_NOAL),
-            .TRANS_SIZE(TRANS_SIZE)
+        .sys_clk_i   ( s_clk_periphs_core[ 0 + g_uart] ),
+        .periph_clk_i( s_clk_periphs_per[  0 + g_uart] ),
+        .rstn_i      ( sys_resetn_i                    ),
+        .cfg_data_i  ( s_periph_data_to                ),
+        .cfg_addr_i  ( s_periph_addr                   ),
+        .cfg_valid_i ( s_periph_valid[0 + g_uart]      ),
+        .cfg_rwn_i   ( s_periph_rwn                    ),
+        .cfg_ready_o ( s_periph_ready[0 + g_uart]      ),
+        .cfg_data_o  ( s_periph_data_from[0 + g_uart]  ),
+        .events_o    ( s_evt_uart                      ), 
+        .rx_ch       ( lin_ch_rx[g_uart:g_uart]        ),
+        .tx_ch       ( lin_ch_tx[g_uart:g_uart]        ),
+        .pad_uart_rx ( pad_uart_rx[g_uart]             ),
+        .pad_uart_tx ( pad_uart_tx[g_uart]             )
 
-        ) i_uart(
+    );
 
-            .sys_clk_i           ( s_clk_periphs_core[         PER_ID_UART+g_uart] ),
-            .periph_clk_i        ( s_clk_periphs_per[          PER_ID_UART+g_uart] ),
-            .rstn_i              ( sys_resetn_i                                    ),
 
-            .uart_tx_o           ( uart_tx_o[                              g_uart] ),
-            .uart_rx_i           ( uart_rx_i[                              g_uart] ),
 
-            .cfg_data_i          ( s_periph_data_to                                ),
-            .cfg_addr_i          ( s_periph_addr                                   ),
-            .cfg_valid_i         ( s_periph_valid[             PER_ID_UART+g_uart] ),
-            .cfg_rwn_i           ( s_periph_rwn                                    ),
-            .cfg_data_o          ( s_periph_data_from[         PER_ID_UART+g_uart] ),
-            .cfg_ready_o         ( s_periph_ready[             PER_ID_UART+g_uart] ),
-
-            .cfg_rx_startaddr_o  ( s_rx_cfg_startaddr[   CH_ID_LIN_RX_UART+g_uart] ),
-            .cfg_rx_size_o       ( s_rx_cfg_size[        CH_ID_LIN_RX_UART+g_uart] ),
-            .cfg_rx_continuous_o ( s_rx_cfg_continuous[  CH_ID_LIN_RX_UART+g_uart] ),
-            .cfg_rx_en_o         ( s_rx_cfg_en[          CH_ID_LIN_RX_UART+g_uart] ),
-            .cfg_rx_clr_o        ( s_rx_cfg_clr[         CH_ID_LIN_RX_UART+g_uart] ),
-            .cfg_rx_en_i         ( s_rx_ch_en[           CH_ID_LIN_RX_UART+g_uart] ),
-            .cfg_rx_pending_i    ( s_rx_ch_pending[      CH_ID_LIN_RX_UART+g_uart] ),
-            .cfg_rx_curr_addr_i  ( s_rx_ch_curr_addr[    CH_ID_LIN_RX_UART+g_uart] ),
-            .cfg_rx_bytes_left_i ( s_rx_ch_bytes_left[   CH_ID_LIN_RX_UART+g_uart] ),
-            .cfg_rx_datasize_o   (                                                 ),  // FIXME ANTONIO
-
-            .cfg_tx_startaddr_o  ( s_tx_cfg_startaddr[   CH_ID_LIN_TX_UART+g_uart] ),
-            .cfg_tx_size_o       ( s_tx_cfg_size[        CH_ID_LIN_TX_UART+g_uart] ),
-            .cfg_tx_continuous_o ( s_tx_cfg_continuous[  CH_ID_LIN_TX_UART+g_uart] ),
-            .cfg_tx_en_o         ( s_tx_cfg_en[          CH_ID_LIN_TX_UART+g_uart] ),
-            .cfg_tx_clr_o        ( s_tx_cfg_clr[         CH_ID_LIN_TX_UART+g_uart] ),
-            .cfg_tx_en_i         ( s_tx_ch_en[           CH_ID_LIN_TX_UART+g_uart] ),
-            .cfg_tx_pending_i    ( s_tx_ch_pending[      CH_ID_LIN_TX_UART+g_uart] ),
-            .cfg_tx_curr_addr_i  ( s_tx_ch_curr_addr[    CH_ID_LIN_TX_UART+g_uart] ),
-            .cfg_tx_bytes_left_i ( s_tx_ch_bytes_left[   CH_ID_LIN_TX_UART+g_uart] ),
-            .cfg_tx_datasize_o   (                                                 ),  // FIXME ANTONIO
-
-            .data_tx_req_o       ( s_tx_ch_req[          CH_ID_LIN_TX_UART+g_uart] ),
-            .data_tx_gnt_i       ( s_tx_ch_gnt[          CH_ID_LIN_TX_UART+g_uart] ),
-            .data_tx_datasize_o  ( s_tx_ch_datasize[     CH_ID_LIN_TX_UART+g_uart] ),
-            .data_tx_i           ( s_tx_ch_data[         CH_ID_LIN_TX_UART+g_uart] ),
-            .data_tx_valid_i     ( s_tx_ch_valid[        CH_ID_LIN_TX_UART+g_uart] ),
-            .data_tx_ready_o     ( s_tx_ch_ready[        CH_ID_LIN_TX_UART+g_uart] ),
-
-            .data_rx_datasize_o  ( s_rx_ch_datasize[     CH_ID_LIN_RX_UART+g_uart] ),
-            .data_rx_o           ( s_rx_ch_data[         CH_ID_LIN_RX_UART+g_uart] ),
-            .data_rx_valid_o     ( s_rx_ch_valid[        CH_ID_LIN_RX_UART+g_uart] ),
-            .rx_char_event_o     (                                                 ), //---> FIXME (why not connected?)
-            .err_event_o         (                                                 ), //---> FIXME (why not connected?)
-            .data_rx_ready_i     ( s_rx_ch_ready[        CH_ID_LIN_RX_UART+g_uart] )
-        );
     end: uart
 
 /*    //  ██████╗ ███████╗██████╗ ██╗      ███╗   ███╗
