@@ -33,6 +33,15 @@ module udma_subsystem
     parameter APB_ADDR_WIDTH = 12  //APB slaves are 4KB by default
 )
 (
+
+    input  logic                       sys_resetn_i   ,
+    // udma core clock
+    input  logic                       sys_clk_i      ,
+    // peripheral clock
+    input  logic                       periph_clk_i   ,
+    
+    // memory ports
+    // read only port
     output logic                       L2_ro_wen_o    ,
     output logic                       L2_ro_req_o    ,
     input  logic                       L2_ro_gnt_i    ,
@@ -42,6 +51,7 @@ module udma_subsystem
     input  logic                       L2_ro_rvalid_i ,
     input  logic   [L2_DATA_WIDTH-1:0] L2_ro_rdata_i  ,
 
+    // write only port
     output logic                       L2_wo_wen_o    ,
     output logic                       L2_wo_req_o    ,
     input  logic                       L2_wo_gnt_i    ,
@@ -54,9 +64,6 @@ module udma_subsystem
     input  logic                       dft_test_mode_i,
     input  logic                       dft_cg_enable_i,
 
-    input  logic                       sys_clk_i,
-    input  logic                       sys_resetn_i,
-    input  logic                       periph_clk_i,
 
     input  logic  [APB_ADDR_WIDTH-1:0] udma_apb_paddr,
     input  logic                [31:0] udma_apb_pwdata,
@@ -72,7 +79,7 @@ module udma_subsystem
     input  logic                [7:0]  event_data_i,
     output logic                       event_ready_o,
 
-    //--- IO peripherals
+    //--- IO peripheral pads
 
     // ██╗   ██╗ █████╗ ██████╗ ████████╗
     // ██║   ██║██╔══██╗██╔══██╗╚══██╔══╝
@@ -81,8 +88,15 @@ module udma_subsystem
     // ╚██████╔╝██║  ██║██║  ██║   ██║   
     //  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    
 
-    BIPAD_IF.PERIPH_SIDE pad_uart_rx[N_UART-1:0],
-    BIPAD_IF.PERIPH_SIDE pad_uart_tx[N_UART-1:0]
+    BIPAD_IF.PERIPH_SIDE pad_uart_rx,
+    BIPAD_IF.PERIPH_SIDE pad_uart_tx,
+
+    BIPAD_IF.PERIPH_SIDE PAD_DATA0,
+    BIPAD_IF.PERIPH_SIDE PAD_DATA1,
+    BIPAD_IF.PERIPH_SIDE PAD_DATA2,
+    BIPAD_IF.PERIPH_SIDE PAD_DATA3,
+    BIPAD_IF.PERIPH_SIDE PAD_CLK,
+    BIPAD_IF.PERIPH_SIDE PAD_WRD
 
                                     
 );
@@ -214,32 +228,72 @@ module udma_subsystem
     // ╚██████╔╝██║  ██║██║  ██║   ██║   
     //  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   
 
-    for (genvar g_uart=0;g_uart<N_UART;g_uart++) begin: uart
+    //for (genvar g_uart=0;g_uart<N_UART;g_uart++) begin: uart
 
-    logic [3:0] s_evt_uart;
+    //    logic [3:0] s_evt_uart;
+
+        //udma_uart_wrap i_udma_uart_wrap (
+
+        //    .sys_clk_i   ( s_clk_periphs_core[ 0 + g_uart] ),
+        //    .periph_clk_i( s_clk_periphs_per[  0 + g_uart] ),
+        //    .rstn_i      ( sys_resetn_i                    ),
+        //    .cfg_data_i  ( s_periph_data_to                ),
+        //    .cfg_addr_i  ( s_periph_addr                   ),
+        //    .cfg_valid_i ( s_periph_valid[0 + g_uart]      ),
+        //    .cfg_rwn_i   ( s_periph_rwn                    ),
+        //    .cfg_ready_o ( s_periph_ready[0 + g_uart]      ),
+        //    .cfg_data_o  ( s_periph_data_from[0 + g_uart]  ),
+        //    .events_o    ( s_evt_uart                      ), 
+        //    .rx_ch       ( lin_ch_rx[g_uart:g_uart]        ),
+        //    .tx_ch       ( lin_ch_tx[g_uart:g_uart]        ),
+        //    .pad_uart_rx ( pad_uart_rx[g_uart]             ),
+        //    .pad_uart_tx ( pad_uart_tx[g_uart]             )
+
+        //);
+
+    //end: uart
 
     udma_uart_wrap i_udma_uart_wrap (
 
-        .sys_clk_i   ( s_clk_periphs_core[ 0 + g_uart] ),
-        .periph_clk_i( s_clk_periphs_per[  0 + g_uart] ),
-        .rstn_i      ( sys_resetn_i                    ),
-        .cfg_data_i  ( s_periph_data_to                ),
-        .cfg_addr_i  ( s_periph_addr                   ),
-        .cfg_valid_i ( s_periph_valid[0 + g_uart]      ),
-        .cfg_rwn_i   ( s_periph_rwn                    ),
-        .cfg_ready_o ( s_periph_ready[0 + g_uart]      ),
-        .cfg_data_o  ( s_periph_data_from[0 + g_uart]  ),
-        .events_o    ( s_evt_uart                      ), 
-        .rx_ch       ( lin_ch_rx[g_uart:g_uart]        ),
-        .tx_ch       ( lin_ch_tx[g_uart:g_uart]        ),
-        .pad_uart_rx ( pad_uart_rx[g_uart]             ),
-        .pad_uart_tx ( pad_uart_tx[g_uart]             )
+        .sys_clk_i   ( s_clk_periphs_core[ 1 ] ),
+        .periph_clk_i( s_clk_periphs_per[  1 ] ),
+        .rstn_i      ( sys_resetn_i            ),
+        .cfg_data_i  ( s_periph_data_to        ),
+        .cfg_addr_i  ( s_periph_addr           ),
+        .cfg_valid_i ( s_periph_valid[1 ]      ),
+        .cfg_rwn_i   ( s_periph_rwn            ),
+        .cfg_ready_o ( s_periph_ready[1 ]      ),
+        .cfg_data_o  ( s_periph_data_from[1 ]  ),
+        .events_o    ( s_evt_uart              ), 
+        .rx_ch       ( lin_ch_rx[0:0]          ),
+        .tx_ch       ( lin_ch_tx[1:1]          ),
+        .pad_uart_rx ( pad_uart_rx             ),
+        .pad_uart_tx ( pad_uart_tx             )
 
     );
 
+    tgen_tx_lin i_tgen_tx_lin (
+        .sys_clk_i   (s_clk_periphs_core[ 0]),
+        .periph_clk_i(s_clk_periphs_per[  0]),
+        .rstn_i      (sys_resetn_i          ),
+        .cfg_data_i  (s_periph_data_to      ),
+        .cfg_addr_i  (s_periph_addr         ),
+        .cfg_valid_i (s_periph_valid[0]     ),
+        .cfg_rwn_i   (s_periph_rwn          ),
+        .cfg_ready_o (s_periph_ready[0]     ),
+        .cfg_data_o  (s_periph_data_from[0] ),
+        .events_o    (                      ), // TODO: Check connection ! Signal/port not matching : Expecting logic [3:0]  -- Found logic [32*4-1:0] 
+        .tx_ch       (lin_ch_tx[0 ]         ),
+
+        .PAD_DATA0   (PAD_DATA0          ),
+        .PAD_DATA1   (PAD_DATA1          ),
+        .PAD_DATA2   (PAD_DATA2          ),
+        .PAD_DATA3   (PAD_DATA3          ),
+        .PAD_CLK     (PAD_CLK            ),
+        .PAD_WRD     (PAD_WRD            )
+    );
 
 
-    end: uart
 
 /*    //  ██████╗ ███████╗██████╗ ██╗      ███╗   ███╗
     // ██╔═══██╗██╔════╝██╔══██╗██║      ████╗ ████║

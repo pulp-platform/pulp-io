@@ -34,40 +34,6 @@ module udma_subsystem_tb;
 	logic event_valid_i;
 	logic [7:0] event_data_i;
 	logic event_ready_o;
-	logic uart_rx_i;
-	logic uart_tx_o;
-
-	//logic  spi_clk;
-	//logic [3:0] spi_csn;
-	//logic [3:0] spi_oen;
-	//logic [3:0] spi_sdo;
-	//logic [3:0] spi_sdi;
-	//logic [1:0] i2c_scl_i;
-	//logic [1:0] i2c_scl_o;
-	//logic [1:0] i2c_scl_oe;
-	//logic [1:0] i2c_sda_i;
-	//logic [1:0] i2c_sda_o;
-	//logic [1:0] i2c_sda_oe;
-	//logic cam_clk_i;
-	//logic [7:0] cam_data_i;
-	//logic cam_hsync_i;
-	//logic cam_vsync_i;
-	//logic sdio_clk_o;
-	//logic sdio_cmd_o;
-	//logic sdio_cmd_i;
-	//logic sdio_cmd_oen_o;
-	//logic [3:0] sdio_data_o;
-	//logic [3:0] sdio_data_i;
-	//logic [3:0] sdio_data_oen_o;
-	//logic i2s_slave_sd0_i;
-	//logic i2s_slave_sd1_i;
-	//logic i2s_slave_ws_i;
-	//logic i2s_slave_ws_o;
-	//logic i2s_slave_ws_oe;
-	//logic i2s_slave_sck_i;
-	//logic i2s_slave_sck_o;
-	//logic i2s_slave_sck_oe;
-
 	logic clk_delayed_i;
 	logic [1:0] tcdm_req_i;
 	logic [1:0] tcdm_gnt_o;
@@ -102,8 +68,15 @@ tcdm_model #(
 	.tcdm_r_data_o (tcdm_r_data_o  )
 );
 
-BIPAD_IF pad_uart_rx[1:0]();
-BIPAD_IF pad_uart_tx[1:0]();
+BIPAD_IF pad_uart_rx();
+BIPAD_IF pad_uart_tx();
+
+BIPAD_IF PAD_DATA0();
+BIPAD_IF PAD_DATA1();
+BIPAD_IF PAD_DATA2();
+BIPAD_IF PAD_DATA3();
+BIPAD_IF PAD_CLK();
+BIPAD_IF PAD_WRD();
 
 udma_subsystem #(
 	.APB_ADDR_WIDTH(32)
@@ -148,47 +121,24 @@ udma_subsystem #(
 	.event_data_i    (event_data_i       ),
 	.event_ready_o   (event_ready_o      ),
 
+	.PAD_DATA0 (PAD_DATA0),
+	.PAD_DATA1 (PAD_DATA1),
+	.PAD_DATA2 (PAD_DATA2),
+	.PAD_DATA3 (PAD_DATA3),
+	.PAD_CLK   (PAD_CLK  ),
+	.PAD_WRD   (PAD_WRD  ),
+
 	.pad_uart_rx     (pad_uart_rx        ),
 	.pad_uart_tx     (pad_uart_tx        )
 	
-	//.spi_clk         (spi_clk         ),
-	//.spi_csn         (spi_csn         ),
-	//.spi_oen         (spi_oen         ),
-	//.spi_sdo         (spi_sdo         ),
-	//.spi_sdi         (spi_sdi         ),
-	//.i2c_scl_i       (i2c_scl_i       ),
-	//.i2c_scl_o       (i2c_scl_o       ),
-	//.i2c_scl_oe      (i2c_scl_oe      ),
-	//.i2c_sda_i       (i2c_sda_i       ),
-	//.i2c_sda_o       (i2c_sda_o       ),
-	//.i2c_sda_oe      (i2c_sda_oe      ),
-	//.cam_clk_i       (cam_clk_i       ),
-	//.cam_data_i      (cam_data_i      ),
-	//.cam_hsync_i     (cam_hsync_i     ),
-	//.cam_vsync_i     (cam_vsync_i     ),
-	//.sdio_clk_o      (sdio_clk_o      ),
-	//.sdio_cmd_o      (sdio_cmd_o      ),
-	//.sdio_cmd_i      (sdio_cmd_i      ),
-	//.sdio_cmd_oen_o  (sdio_cmd_oen_o  ),
-	//.sdio_data_o     (sdio_data_o     ),
-	//.sdio_data_i     (sdio_data_i     ),
-	//.sdio_data_oen_o (sdio_data_oen_o ),
-	//.i2s_slave_sd0_i (i2s_slave_sd0_i ),
-	//.i2s_slave_sd1_i (i2s_slave_sd1_i ),
-	//.i2s_slave_ws_i  (i2s_slave_ws_i  ),
-	//.i2s_slave_ws_o  (i2s_slave_ws_o  ),
-	//.i2s_slave_ws_oe (i2s_slave_ws_oe ),
-	//.i2s_slave_sck_i (i2s_slave_sck_i ),
-	//.i2s_slave_sck_o (i2s_slave_sck_o ),
-	//.i2s_slave_sck_oe(i2s_slave_sck_oe)
 );
 
 always #10ns sys_clk_i = ~sys_clk_i;
 always #20ns periph_clk_i = ~periph_clk_i;
 
 uart_tb_rx i_uart_tb_rx (
-	.rx(pad_uart_tx[0].OUT), 
-	.tx(pad_uart_rx[1].IN), 
+	.rx(pad_uart_tx.OUT), 
+	.tx(pad_uart_rx.IN), 
 	.rx_en(1'b1), 
 	.tx_en(1'b1),
 	.word_done(word_done)
@@ -204,8 +154,8 @@ initial begin
 	sys_resetn_i	= 0;
 	#30ns;
 	sys_resetn_i	= 1;
-	pad_uart_tx[0].IN = 1'b0;
-	pad_uart_tx[1].IN = 1'b0;
+	//pad_uart_tx[0].IN = 1'b0;
+	//pad_uart_tx[1].IN = 1'b0;
 
 	apb_test_pkg::udma_core_cg_en(0,sys_clk_i,APB_BUS); // enabling clock for periph id 0
 	apb_test_pkg::udma_uart0_tx_en(sys_clk_i,APB_BUS); // enable the transmission
@@ -217,7 +167,6 @@ initial begin
 	apb_test_pkg::udma_uart1_rx_en(sys_clk_i,APB_BUS); // enable the transmission
 	apb_test_pkg::udma_uart1_read_rx_saddr(32'h1C000800,sys_clk_i,APB_BUS); // write L2 start address
 	apb_test_pkg::udma_uart1_read_rx_size(7,sys_clk_i,APB_BUS); // configure the transfer size
-	
 	apb_test_pkg::udma_uart0_write(sys_clk_i,APB_BUS); // start transmission
 	apb_test_pkg::udma_uart1_read(sys_clk_i,APB_BUS); // start transmission
 

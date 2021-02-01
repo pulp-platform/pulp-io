@@ -19,5 +19,6 @@ update:
 all: update script
 
 script: Bender.yml
+	mkdir -p sim
 	$(BENDER) script vsim --vlog-arg="$(VLOG_ARGS)" -t rtl -t test > sim/compile_rtl.tcl
 
