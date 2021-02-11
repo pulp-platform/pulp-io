@@ -26,6 +26,9 @@ module udma_subsystem
     import udma_pkg::STREAM_ID_WIDTH;
     import udma_pkg::DEST_SIZE;  
 
+    import udma_pkg::N_UART;
+    import udma_pkg::udma_evt_t;
+
     // peripherals and channels configuration
     import udma_cfg_pkg::*;   
 
@@ -34,6 +37,7 @@ module udma_subsystem
 )
 (
 
+    // udma reset
     input  logic                       sys_resetn_i   ,
     // udma core clock
     input  logic                       sys_clk_i      ,
@@ -74,13 +78,12 @@ module udma_subsystem
     output logic                       udma_apb_pready,
     output logic                       udma_apb_pslverr,
 
-    output logic            [32*4-1:0] events_o,
+    output logic  [N_PERIPHS-1:0][3:0] events_o,
     input  logic                       event_valid_i,
     input  logic                [7:0]  event_data_i,
     output logic                       event_ready_o,
 
     //--- IO peripheral pads
-
     // ██╗   ██╗ █████╗ ██████╗ ████████╗
     // ██║   ██║██╔══██╗██╔══██╗╚══██╔══╝
     // ██║   ██║███████║██████╔╝   ██║   
@@ -88,16 +91,8 @@ module udma_subsystem
     // ╚██████╔╝██║  ██║██║  ██║   ██║   
     //  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    
 
-    BIPAD_IF.PERIPH_SIDE pad_uart_rx,
-    BIPAD_IF.PERIPH_SIDE pad_uart_tx,
-
-    BIPAD_IF.PERIPH_SIDE PAD_DATA0,
-    BIPAD_IF.PERIPH_SIDE PAD_DATA1,
-    BIPAD_IF.PERIPH_SIDE PAD_DATA2,
-    BIPAD_IF.PERIPH_SIDE PAD_DATA3,
-    BIPAD_IF.PERIPH_SIDE PAD_CLK,
-    BIPAD_IF.PERIPH_SIDE PAD_WRD
-
+    BIPAD_IF.PERIPH_SIDE PAD_UART_RX,
+    BIPAD_IF.PERIPH_SIDE PAD_UART_TX
                                     
 );
 
@@ -108,7 +103,7 @@ module udma_subsystem
     logic [        N_STREAMS-1:0]                        s_stream_eot         ;
     logic [        N_STREAMS-1:0]                        s_stream_ready       ;
 
-    logic [16*8-1:0] s_events;
+    udma_evt_t [N_PERIPHS-1:0] s_events;
 
     logic         [1:0] s_rf_event;
 
@@ -138,6 +133,7 @@ module udma_subsystem
     assign L2_ro_be_o    =  'h0;
     assign L2_ro_wdata_o =  'h0;
 
+    // udma channel declaration
     UDMA_LIN_CH lin_ch_rx[N_RX_LIN_CHANNELS-1:0](.clk_i(s_clk_periphs_core[0]));
     UDMA_LIN_CH lin_ch_tx[N_TX_LIN_CHANNELS-1:0](.clk_i(s_clk_periphs_core[0]));
     UDMA_EXT_CH ext_ch_rx[N_RX_EXT_CHANNELS-1:0](.clk_i(s_clk_periphs_core[0]));
@@ -220,7 +216,6 @@ module udma_subsystem
 
     );
 
-
     // ██╗   ██╗ █████╗ ██████╗ ████████╗
     // ██║   ██║██╔══██╗██╔══██╗╚══██╔══╝
     // ██║   ██║███████║██████╔╝   ██║   
@@ -228,680 +223,29 @@ module udma_subsystem
     // ╚██████╔╝██║  ██║██║  ██║   ██║   
     //  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   
 
-    //for (genvar g_uart=0;g_uart<N_UART;g_uart++) begin: uart
-
-    //    logic [3:0] s_evt_uart;
-
-        //udma_uart_wrap i_udma_uart_wrap (
-
-        //    .sys_clk_i   ( s_clk_periphs_core[ 0 + g_uart] ),
-        //    .periph_clk_i( s_clk_periphs_per[  0 + g_uart] ),
-        //    .rstn_i      ( sys_resetn_i                    ),
-        //    .cfg_data_i  ( s_periph_data_to                ),
-        //    .cfg_addr_i  ( s_periph_addr                   ),
-        //    .cfg_valid_i ( s_periph_valid[0 + g_uart]      ),
-        //    .cfg_rwn_i   ( s_periph_rwn                    ),
-        //    .cfg_ready_o ( s_periph_ready[0 + g_uart]      ),
-        //    .cfg_data_o  ( s_periph_data_from[0 + g_uart]  ),
-        //    .events_o    ( s_evt_uart                      ), 
-        //    .rx_ch       ( lin_ch_rx[g_uart:g_uart]        ),
-        //    .tx_ch       ( lin_ch_tx[g_uart:g_uart]        ),
-        //    .pad_uart_rx ( pad_uart_rx[g_uart]             ),
-        //    .pad_uart_tx ( pad_uart_tx[g_uart]             )
-
-        //);
-
-    //end: uart
-
-    udma_uart_wrap i_udma_uart_wrap (
-
-        .sys_clk_i   ( s_clk_periphs_core[ 1 ] ),
-        .periph_clk_i( s_clk_periphs_per[  1 ] ),
-        .rstn_i      ( sys_resetn_i            ),
-        .cfg_data_i  ( s_periph_data_to        ),
-        .cfg_addr_i  ( s_periph_addr           ),
-        .cfg_valid_i ( s_periph_valid[1 ]      ),
-        .cfg_rwn_i   ( s_periph_rwn            ),
-        .cfg_ready_o ( s_periph_ready[1 ]      ),
-        .cfg_data_o  ( s_periph_data_from[1 ]  ),
-        .events_o    ( s_evt_uart              ), 
-        .rx_ch       ( lin_ch_rx[0:0]          ),
-        .tx_ch       ( lin_ch_tx[1:1]          ),
-        .pad_uart_rx ( pad_uart_rx             ),
-        .pad_uart_tx ( pad_uart_tx             )
-
-    );
-
-    tgen_tx_lin i_tgen_tx_lin (
-        .sys_clk_i   (s_clk_periphs_core[ 0]),
-        .periph_clk_i(s_clk_periphs_per[  0]),
-        .rstn_i      (sys_resetn_i          ),
-        .cfg_data_i  (s_periph_data_to      ),
-        .cfg_addr_i  (s_periph_addr         ),
-        .cfg_valid_i (s_periph_valid[0]     ),
-        .cfg_rwn_i   (s_periph_rwn          ),
-        .cfg_ready_o (s_periph_ready[0]     ),
-        .cfg_data_o  (s_periph_data_from[0] ),
-        .events_o    (                      ), // TODO: Check connection ! Signal/port not matching : Expecting logic [3:0]  -- Found logic [32*4-1:0] 
-        .tx_ch       (lin_ch_tx[0 ]         ),
-
-        .PAD_DATA0   (PAD_DATA0          ),
-        .PAD_DATA1   (PAD_DATA1          ),
-        .PAD_DATA2   (PAD_DATA2          ),
-        .PAD_DATA3   (PAD_DATA3          ),
-        .PAD_CLK     (PAD_CLK            ),
-        .PAD_WRD     (PAD_WRD            )
-    );
-
-
-
-/*    //  ██████╗ ███████╗██████╗ ██╗      ███╗   ███╗
-    // ██╔═══██╗██╔════╝██╔══██╗██║      ████╗ ████║
-    // ██║   ██║███████╗██████╔╝██║█████╗██╔████╔██║
-    // ██║▄▄ ██║╚════██║██╔═══╝ ██║╚════╝██║╚██╔╝██║
-    // ╚██████╔╝███████║██║     ██║      ██║ ╚═╝ ██║
-    //  ╚══▀▀═╝ ╚══════╝╚═╝     ╚═╝      ╚═╝     ╚═╝
-
-    // PER_ID:
-    // QSPIM0 = 2   
-    // QSPIM1 = 3   
-    // QSPIM2 = 4   
-    // QSPIM3 = 5   
-    generate
-        for (genvar g_spi=0;g_spi<`N_QSPIM;g_spi++)
-        begin : i_spim_gen
-            assign s_events[4*(PER_ID_QSPIM+g_spi)+0] = s_rx_ch_events[    CH_ID_LIN_RX_QSPIM+g_spi];
-            assign s_events[4*(PER_ID_QSPIM+g_spi)+1] = s_tx_ch_events[    CH_ID_LIN_TX_QSPIM+g_spi];
-            assign s_events[4*(PER_ID_QSPIM+g_spi)+2] = s_tx_ch_events[CH_ID_LIN_TX_CMD_QSPIM+g_spi];
-            assign s_events[4*(PER_ID_QSPIM+g_spi)+3] = s_spi_eot[                            g_spi];
-
-            assign s_rx_cfg_stream[CH_ID_LIN_RX_QSPIM+g_spi]         = 'h0;
-            assign s_rx_cfg_stream_id[CH_ID_LIN_RX_QSPIM+g_spi]      = 'h0;
-            assign s_rx_ch_destination[CH_ID_LIN_RX_QSPIM+g_spi]     = 'h0;
-            assign s_tx_ch_destination[CH_ID_LIN_TX_QSPIM+g_spi]     = 'h0;
-            assign s_tx_ch_destination[CH_ID_LIN_TX_CMD_QSPIM+g_spi] = 'h0;
-            udma_spim_top
-            #(
-                .L2_AWIDTH_NOAL      ( L2_AWIDTH_NOAL                                     ),
-                .TRANS_SIZE          ( TRANS_SIZE                                         )
-
-            ) i_spim (
-
-                .sys_clk_i           ( s_clk_periphs_core[PER_ID_QSPIM+g_spi]             ),
-                .periph_clk_i        ( s_clk_periphs_per[ PER_ID_QSPIM+g_spi]             ),
-                .rstn_i              ( sys_resetn_i                                       ),
-                .dft_test_mode_i     ( dft_test_mode_i                                    ),
-                .dft_cg_enable_i     ( dft_cg_enable_i                                    ),
-                .spi_eot_o           ( s_spi_eot[g_spi]                                   ),
-                .spi_event_i         ( s_trigger_events                                   ),
-                .spi_clk_o           ( spi_clk_o[g_spi]                                   ),
-                .spi_csn0_o          ( spi_csn_o[g_spi][0]                                ),
-                .spi_csn1_o          ( spi_csn_o[g_spi][1]                                ),
-                .spi_csn2_o          ( spi_csn_o[g_spi][2]                                ),
-                .spi_csn3_o          ( spi_csn_o[g_spi][3]                                ),
-                .spi_oen0_o          ( spi_oen_o[g_spi][0]                                ),
-                .spi_oen1_o          ( spi_oen_o[g_spi][1]                                ),
-                .spi_oen2_o          ( spi_oen_o[g_spi][2]                                ),
-                .spi_oen3_o          ( spi_oen_o[g_spi][3]                                ),
-                .spi_sdi0_i          ( spi_sdi_i[g_spi][0]                                ),
-                .spi_sdi1_i          ( spi_sdi_i[g_spi][1]                                ),
-                .spi_sdi2_i          ( spi_sdi_i[g_spi][2]                                ),
-                .spi_sdi3_i          ( spi_sdi_i[g_spi][3]                                ),
-                .spi_sdo0_o          ( spi_sdo_o[g_spi][0]                                ),
-                .spi_sdo1_o          ( spi_sdo_o[g_spi][1]                                ),
-                .spi_sdo2_o          ( spi_sdo_o[g_spi][2]                                ),
-                .spi_sdo3_o          ( spi_sdo_o[g_spi][3]                                ),
-
-                .cfg_data_i          ( s_periph_data_to                                   ),
-                .cfg_addr_i          ( s_periph_addr                                      ),
-                .cfg_valid_i         ( s_periph_valid[PER_ID_QSPIM+g_spi]                 ),
-                .cfg_rwn_i           ( s_periph_rwn                                       ),
-                .cfg_data_o          ( s_periph_data_from[PER_ID_QSPIM+g_spi]             ),
-                .cfg_ready_o         ( s_periph_ready[PER_ID_QSPIM+g_spi]                 ),
-
-                .cmd_req_o           ( s_tx_ch_req[CH_ID_LIN_TX_CMD_QSPIM+g_spi]          ),
-                .cmd_gnt_i           ( s_tx_ch_gnt[CH_ID_LIN_TX_CMD_QSPIM+g_spi]          ),
-                .cmd_datasize_o      ( s_tx_ch_datasize[CH_ID_LIN_TX_CMD_QSPIM+g_spi]     ),
-                .cmd_i               ( s_tx_ch_data[CH_ID_LIN_TX_CMD_QSPIM+g_spi]         ),
-                .cmd_valid_i         ( s_tx_ch_valid[CH_ID_LIN_TX_CMD_QSPIM+g_spi]        ),
-                .cmd_ready_o         ( s_tx_ch_ready[CH_ID_LIN_TX_CMD_QSPIM+g_spi]        ),
-
-                .data_tx_req_o       ( s_tx_ch_req[CH_ID_LIN_TX_QSPIM+g_spi]              ),
-                .data_tx_gnt_i       ( s_tx_ch_gnt[CH_ID_LIN_TX_QSPIM+g_spi]              ),
-                .data_tx_datasize_o  ( s_tx_ch_datasize[CH_ID_LIN_TX_QSPIM+g_spi]         ),
-                .data_tx_i           ( s_tx_ch_data[CH_ID_LIN_TX_QSPIM+g_spi]             ),
-                .data_tx_valid_i     ( s_tx_ch_valid[CH_ID_LIN_TX_QSPIM+g_spi]            ),
-                .data_tx_ready_o     ( s_tx_ch_ready[CH_ID_LIN_TX_QSPIM+g_spi]            ),
-
-                .data_rx_datasize_o  ( s_rx_ch_datasize[CH_ID_LIN_RX_QSPIM+g_spi]         ),
-                .data_rx_o           ( s_rx_ch_data[CH_ID_LIN_RX_QSPIM+g_spi]             ),
-                .data_rx_valid_o     ( s_rx_ch_valid[CH_ID_LIN_RX_QSPIM+g_spi]            ),
-                .data_rx_ready_i     ( s_rx_ch_ready[CH_ID_LIN_RX_QSPIM+g_spi]            ),
-
-                .cfg_cmd_startaddr_o  ( s_tx_cfg_startaddr[CH_ID_LIN_TX_CMD_QSPIM+g_spi]  ),
-                .cfg_cmd_size_o       ( s_tx_cfg_size[CH_ID_LIN_TX_CMD_QSPIM+g_spi]       ),
-                .cfg_cmd_continuous_o ( s_tx_cfg_continuous[CH_ID_LIN_TX_CMD_QSPIM+g_spi] ),
-                .cfg_cmd_en_o         ( s_tx_cfg_en[CH_ID_LIN_TX_CMD_QSPIM+g_spi]         ),
-                .cfg_cmd_clr_o        ( s_tx_cfg_clr[CH_ID_LIN_TX_CMD_QSPIM+g_spi]        ),
-                .cfg_cmd_en_i         ( s_tx_ch_en[CH_ID_LIN_TX_CMD_QSPIM+g_spi]          ),
-                .cfg_cmd_pending_i    ( s_tx_ch_pending[CH_ID_LIN_TX_CMD_QSPIM+g_spi]     ),
-                .cfg_cmd_curr_addr_i  ( s_tx_ch_curr_addr[CH_ID_LIN_TX_CMD_QSPIM+g_spi]   ),
-                .cfg_cmd_bytes_left_i ( s_tx_ch_bytes_left[CH_ID_LIN_TX_CMD_QSPIM+g_spi]  ),
-
-                .cfg_tx_startaddr_o  ( s_tx_cfg_startaddr[CH_ID_LIN_TX_QSPIM+g_spi]       ),
-                .cfg_tx_size_o       ( s_tx_cfg_size[CH_ID_LIN_TX_QSPIM+g_spi]            ),
-                .cfg_tx_continuous_o ( s_tx_cfg_continuous[CH_ID_LIN_TX_QSPIM+g_spi]      ),
-                .cfg_tx_en_o         ( s_tx_cfg_en[CH_ID_LIN_TX_QSPIM+g_spi]              ),
-                .cfg_tx_clr_o        ( s_tx_cfg_clr[CH_ID_LIN_TX_QSPIM+g_spi]             ),
-                .cfg_tx_en_i         ( s_tx_ch_en[CH_ID_LIN_TX_QSPIM+g_spi]               ),
-                .cfg_tx_pending_i    ( s_tx_ch_pending[CH_ID_LIN_TX_QSPIM+g_spi]          ),
-                .cfg_tx_curr_addr_i  ( s_tx_ch_curr_addr[CH_ID_LIN_TX_QSPIM+g_spi]        ),
-                .cfg_tx_bytes_left_i ( s_tx_ch_bytes_left[CH_ID_LIN_TX_QSPIM+g_spi]       ),
-
-                .cfg_rx_startaddr_o  ( s_rx_cfg_startaddr[CH_ID_LIN_RX_QSPIM+g_spi]       ),
-                .cfg_rx_size_o       ( s_rx_cfg_size[CH_ID_LIN_RX_QSPIM+g_spi]            ),
-                .cfg_rx_continuous_o ( s_rx_cfg_continuous[CH_ID_LIN_RX_QSPIM+g_spi]      ),
-                .cfg_rx_en_o         ( s_rx_cfg_en[CH_ID_LIN_RX_QSPIM+g_spi]              ),
-                .cfg_rx_clr_o        ( s_rx_cfg_clr[CH_ID_LIN_RX_QSPIM+g_spi]             ),
-                .cfg_rx_en_i         ( s_rx_ch_en[CH_ID_LIN_RX_QSPIM+g_spi]               ),
-                .cfg_rx_pending_i    ( s_rx_ch_pending[CH_ID_LIN_RX_QSPIM+g_spi]          ),
-                .cfg_rx_curr_addr_i  ( s_rx_ch_curr_addr[CH_ID_LIN_RX_QSPIM+g_spi]        ),
-                .cfg_rx_bytes_left_i ( s_rx_ch_bytes_left[CH_ID_LIN_RX_QSPIM+g_spi]       )
-            );
-        end
-    endgenerate
-
-    // ██╗██████╗  ██████╗
-    // ██║╚════██╗██╔════╝
-    // ██║ █████╔╝██║     
-    // ██║██╔═══╝ ██║     
-    // ██║███████╗╚██████╗
-    // ╚═╝╚══════╝ ╚═════╝
-
-    //PER_ID:
-    //I2C0 = 6
-    //I2C1 = 7
-    //I2C2 = 8
-    generate
-        for (genvar g_i2c=0;g_i2c<`N_I2C;g_i2c++)
-        begin: i_i2c_gen
-            assign s_events[4*(PER_ID_I2C+g_i2c)+0] = s_rx_ch_events[CH_ID_LIN_RX_I2C+g_i2c];
-            assign s_events[4*(PER_ID_I2C+g_i2c)+1] = s_tx_ch_events[CH_ID_LIN_TX_I2C+g_i2c];
-            assign s_events[4*(PER_ID_I2C+g_i2c)+2] = 1'b0;
-            assign s_events[4*(PER_ID_I2C+g_i2c)+3] = 1'b0;
-
-            assign s_rx_cfg_stream[     CH_ID_LIN_RX_I2C+g_i2c]       = 'h0;
-            assign s_rx_cfg_stream_id[  CH_ID_LIN_RX_I2C+g_i2c]       = 'h0;
-            assign s_rx_ch_destination[ CH_ID_LIN_RX_I2C+g_i2c]       = 'h0;
-            assign s_tx_ch_destination[ CH_ID_LIN_TX_I2C+g_i2c]       = 'h0;
-            assign s_rx_ch_data[        CH_ID_LIN_RX_I2C+g_i2c][31:8] = 'h0;
-
-            udma_i2c_top #(
-                .L2_AWIDTH_NOAL(L2_AWIDTH_NOAL),
-                .TRANS_SIZE(TRANS_SIZE)
-            ) i_i2c (
-
-                .sys_clk_i           ( s_clk_periphs_core[       PER_ID_I2C+g_i2c]      ),
-                .periph_clk_i        ( s_clk_periphs_per[        PER_ID_I2C+g_i2c]      ),
-                .rstn_i              ( sys_resetn_i                                     ),
-
-                .cfg_data_i          ( s_periph_data_to                                 ),
-                .cfg_addr_i          ( s_periph_addr                                    ),
-                .cfg_valid_i         ( s_periph_valid[           PER_ID_I2C+g_i2c]      ),
-                .cfg_rwn_i           ( s_periph_rwn                                     ),
-                .cfg_data_o          ( s_periph_data_from[       PER_ID_I2C+g_i2c]      ),
-                .cfg_ready_o         ( s_periph_ready[           PER_ID_I2C+g_i2c]      ),
-      
-
-                .cfg_tx_startaddr_o  ( s_tx_cfg_startaddr[ CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .cfg_tx_size_o       ( s_tx_cfg_size[      CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .cfg_tx_continuous_o ( s_tx_cfg_continuous[CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .cfg_tx_en_o         ( s_tx_cfg_en[        CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .cfg_tx_clr_o        ( s_tx_cfg_clr[       CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .cfg_tx_en_i         ( s_tx_ch_en[         CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .cfg_tx_pending_i    ( s_tx_ch_pending[    CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .cfg_tx_curr_addr_i  ( s_tx_ch_curr_addr[  CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .cfg_tx_bytes_left_i ( s_tx_ch_bytes_left[ CH_ID_LIN_TX_I2C+g_i2c]      ),
-
-                .cfg_rx_startaddr_o  ( s_rx_cfg_startaddr[ CH_ID_LIN_RX_I2C+g_i2c]      ),
-                .cfg_rx_size_o       ( s_rx_cfg_size[      CH_ID_LIN_RX_I2C+g_i2c]      ),
-                .cfg_rx_continuous_o ( s_rx_cfg_continuous[CH_ID_LIN_RX_I2C+g_i2c]      ),
-                .cfg_rx_en_o         ( s_rx_cfg_en[        CH_ID_LIN_RX_I2C+g_i2c]      ),
-                .cfg_rx_clr_o        ( s_rx_cfg_clr[       CH_ID_LIN_RX_I2C+g_i2c]      ),
-                .cfg_rx_en_i         ( s_rx_ch_en[         CH_ID_LIN_RX_I2C+g_i2c]      ),
-                .cfg_rx_pending_i    ( s_rx_ch_pending[    CH_ID_LIN_RX_I2C+g_i2c]      ),
-                .cfg_rx_curr_addr_i  ( s_rx_ch_curr_addr[  CH_ID_LIN_RX_I2C+g_i2c]      ),
-                .cfg_rx_bytes_left_i ( s_rx_ch_bytes_left[ CH_ID_LIN_RX_I2C+g_i2c]      ),
-
-                .data_tx_req_o       ( s_tx_ch_req[        CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .data_tx_gnt_i       ( s_tx_ch_gnt[        CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .data_tx_datasize_o  ( s_tx_ch_datasize[   CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .data_tx_i           ( s_tx_ch_data[       CH_ID_LIN_TX_I2C+g_i2c][7:0] ),
-                .data_tx_valid_i     ( s_tx_ch_valid[      CH_ID_LIN_TX_I2C+g_i2c]      ),
-                .data_tx_ready_o     ( s_tx_ch_ready[      CH_ID_LIN_TX_I2C+g_i2c]      ),
-
-                .data_rx_datasize_o  ( s_rx_ch_datasize[   CH_ID_LIN_RX_I2C+g_i2c]      ),
-                .data_rx_o           ( s_rx_ch_data[       CH_ID_LIN_RX_I2C+g_i2c][7:0] ),
-                .data_rx_valid_o     ( s_rx_ch_valid[      CH_ID_LIN_RX_I2C+g_i2c]      ),
-                .data_rx_ready_i     ( s_rx_ch_ready[      CH_ID_LIN_RX_I2C+g_i2c]      ),
-
-                .err_o               ( s_i2c_evt[g_i2c]                                 ),
-
-                .scl_i               ( i2c_scl_i[g_i2c]                                 ),
-                .scl_o               ( i2c_scl_o[g_i2c]                                 ),
-                .scl_oe              ( i2c_scl_oe[g_i2c]                                ),
-                .sda_i               ( i2c_sda_i[g_i2c]                                 ),
-                .sda_o               ( i2c_sda_o[g_i2c]                                 ),
-                .sda_oe              ( i2c_sda_oe[g_i2c]                                ),
-                .ext_events_i        ( s_trigger_events                                 )
-            );
-        end
-    endgenerate
-
-    // ██╗██████╗ ███████╗
-    // ██║╚════██╗██╔════╝
-    // ██║ █████╔╝███████╗
-    // ██║██╔═══╝ ╚════██║
-    // ██║███████╗███████║
-    // ╚═╝╚══════╝╚══════╝
-
-    //PER_ID:
-    //I2S0 = 9
-    assign s_events[4*PER_ID_I2S]    = s_rx_ch_events[CH_ID_LIN_RX_I2S];
-    assign s_events[4*PER_ID_I2S+1]  = s_tx_ch_events[CH_ID_LIN_TX_I2S];
-    assign s_events[4*PER_ID_I2S+2]  = 1'b0;
-    assign s_events[4*PER_ID_I2S+3]  = 1'b0;
-    assign s_rx_cfg_stream[CH_ID_LIN_RX_I2S] = 'h0;
-    assign s_rx_cfg_stream_id[CH_ID_LIN_RX_I2S] = 'h0;
-    assign s_rx_ch_destination[CH_ID_LIN_RX_I2S] = 'h0;
-    assign s_tx_ch_destination[CH_ID_LIN_TX_I2S] = 'h0;
-    udma_i2s_top #(
-        .L2_AWIDTH_NOAL(L2_AWIDTH_NOAL),
-        .TRANS_SIZE(TRANS_SIZE)
-    ) i_i2s_udma (
-        .sys_clk_i           ( s_clk_periphs_core[       PER_ID_I2S] ),
-        .periph_clk_i        ( s_clk_periphs_per[        PER_ID_I2S] ),
-        .rstn_i              ( sys_resetn_i                          ),
-
-        .dft_test_mode_i     ( dft_test_mode_i                       ),
-        .dft_cg_enable_i     ( dft_cg_enable_i                       ),
-
-        .pad_slave_sd0_i     ( i2s_slave_sd0_i                       ),
-        .pad_slave_sd1_i     ( i2s_slave_sd1_i                       ),
-        .pad_slave_sck_i     ( i2s_slave_sck_i                       ),
-        .pad_slave_sck_o     ( i2s_slave_sck_o                       ),
-        .pad_slave_sck_oe    ( i2s_slave_sck_oe                      ),
-        .pad_slave_ws_i      ( i2s_slave_ws_i                        ),
-        .pad_slave_ws_o      ( i2s_slave_ws_o                        ),
-        .pad_slave_ws_oe     ( i2s_slave_ws_oe                       ),
-
-        .pad_master_sd0_o    ( i2s_master_sd0_o                      ),
-        .pad_master_sd1_o    ( i2s_master_sd1_o                      ),
-        .pad_master_sck_i    ( i2s_master_sck_i                      ),
-        .pad_master_sck_o    ( i2s_master_sck_o                      ),
-        .pad_master_sck_oe   ( i2s_master_sck_oe                     ),
-        .pad_master_ws_i     ( i2s_master_ws_i                       ),
-        .pad_master_ws_o     ( i2s_master_ws_o                       ),
-        .pad_master_ws_oe    ( i2s_master_ws_oe                      ),
-
-        .cfg_data_i          ( s_periph_data_to                      ),
-        .cfg_addr_i          ( s_periph_addr                         ),
-        .cfg_rwn_i           ( s_periph_rwn                          ),
-        .cfg_valid_i         ( s_periph_valid[           PER_ID_I2S] ),
-        .cfg_data_o          ( s_periph_data_from[       PER_ID_I2S] ),
-        .cfg_ready_o         ( s_periph_ready[           PER_ID_I2S] ),
-
-        .cfg_rx_startaddr_o  ( s_rx_cfg_startaddr[ CH_ID_LIN_RX_I2S] ),
-        .cfg_rx_size_o       ( s_rx_cfg_size[      CH_ID_LIN_RX_I2S] ),
-        .cfg_rx_continuous_o ( s_rx_cfg_continuous[CH_ID_LIN_RX_I2S] ),
-        .cfg_rx_en_o         ( s_rx_cfg_en[        CH_ID_LIN_RX_I2S] ),
-        .cfg_rx_clr_o        ( s_rx_cfg_clr[       CH_ID_LIN_RX_I2S] ),
-        .cfg_rx_en_i         ( s_rx_ch_en[         CH_ID_LIN_RX_I2S] ),
-        .cfg_rx_pending_i    ( s_rx_ch_pending[    CH_ID_LIN_RX_I2S] ),
-        .cfg_rx_curr_addr_i  ( s_rx_ch_curr_addr[  CH_ID_LIN_RX_I2S] ),
-        .cfg_rx_bytes_left_i ( s_rx_ch_bytes_left[ CH_ID_LIN_RX_I2S] ),
-
-        .cfg_tx_startaddr_o  ( s_tx_cfg_startaddr[ CH_ID_LIN_TX_I2S] ),
-        .cfg_tx_size_o       ( s_tx_cfg_size[      CH_ID_LIN_TX_I2S] ),
-        .cfg_tx_continuous_o ( s_tx_cfg_continuous[CH_ID_LIN_TX_I2S] ),
-        .cfg_tx_en_o         ( s_tx_cfg_en[        CH_ID_LIN_TX_I2S] ),
-        .cfg_tx_clr_o        ( s_tx_cfg_clr[       CH_ID_LIN_TX_I2S] ),
-        .cfg_tx_en_i         ( s_tx_ch_en[         CH_ID_LIN_TX_I2S] ),
-        .cfg_tx_pending_i    ( s_tx_ch_pending[    CH_ID_LIN_TX_I2S] ),
-        .cfg_tx_curr_addr_i  ( s_tx_ch_curr_addr[  CH_ID_LIN_TX_I2S] ),
-        .cfg_tx_bytes_left_i ( s_tx_ch_bytes_left[ CH_ID_LIN_TX_I2S] ),
-
-        .data_rx_datasize_o  ( s_rx_ch_datasize[   CH_ID_LIN_RX_I2S] ),
-        .data_rx_o           ( s_rx_ch_data[       CH_ID_LIN_RX_I2S] ),
-        .data_rx_valid_o     ( s_rx_ch_valid[      CH_ID_LIN_RX_I2S] ),
-        .data_rx_ready_i     ( s_rx_ch_ready[      CH_ID_LIN_RX_I2S] ),
-
-        .data_tx_req_o       ( s_tx_ch_req[        CH_ID_LIN_TX_I2S] ),
-        .data_tx_gnt_i       ( s_tx_ch_gnt[        CH_ID_LIN_TX_I2S] ),
-        .data_tx_datasize_o  ( s_tx_ch_datasize[   CH_ID_LIN_TX_I2S] ),
-        .data_tx_i           ( s_tx_ch_data[       CH_ID_LIN_TX_I2S] ),
-        .data_tx_valid_i     ( s_tx_ch_valid[      CH_ID_LIN_TX_I2S] ),
-        .data_tx_ready_o     ( s_tx_ch_ready[      CH_ID_LIN_TX_I2S] ) 
-    );
-
-    // ██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗       ██████╗ 
-    // ██║  ██║╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗      ██╔══██╗
-    // ███████║ ╚████╔╝ ██████╔╝█████╗  ██████╔╝█████╗██████╔╝
-    // ██╔══██║  ╚██╔╝  ██╔═══╝ ██╔══╝  ██╔══██╗╚════╝██╔══██╗
-    // ██║  ██║   ██║   ██║     ███████╗██║  ██║      ██████╔╝
-    // ╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚══════╝╚═╝  ╚═╝      ╚═════╝ 
-
-    //PER_ID:
-    //HYPER_BUS = 10
-    //--- dummy hyperbus (the real instance has been moved to top)
-        assign hyperbus_clk_periphs_core_o             = s_clk_periphs_core[       PER_ID_HYPER];
-        assign hyperbus_clk_periphs_per_o              = s_clk_periphs_per[        PER_ID_HYPER];
-        assign hyperbus_sys_resetn_o                   = sys_resetn_i                           ;
-
-        assign hyperbus_periph_data_to_o               = s_periph_data_to                       ;
-        assign hyperbus_periph_addr_o                  = s_periph_addr                          ;
-        assign hyperbus_periph_valid_o                 = s_periph_valid[           PER_ID_HYPER];
-        assign hyperbus_periph_rwn_o                   = s_periph_rwn                           ;
-        assign s_periph_ready[           PER_ID_HYPER] = hyperbus_periph_ready_i                ;
-        assign s_periph_data_from[       PER_ID_HYPER] = hyperbus_periph_data_from_i            ;
-
-        //--- cfg rx channel
-        assign s_rx_cfg_startaddr[ CH_ID_LIN_RX_HYPER] = hyperbus_rx_cfg_startaddr_i[L2_AWIDTH_NOAL-1 : 0];
-        assign s_rx_cfg_size[      CH_ID_LIN_RX_HYPER] = hyperbus_rx_cfg_size_i[         TRANS_SIZE-1 : 0];
-        assign s_rx_cfg_continuous[CH_ID_LIN_RX_HYPER] = hyperbus_rx_cfg_continuous_i           ;
-        assign s_rx_cfg_en[        CH_ID_LIN_RX_HYPER] = hyperbus_rx_cfg_en_i                   ;
-        assign s_rx_cfg_clr[       CH_ID_LIN_RX_HYPER] = hyperbus_rx_cfg_clr_i                  ;
-        assign hyperbus_rx_ch_en_o                     = s_rx_ch_en[         CH_ID_LIN_RX_HYPER];
-        assign hyperbus_rx_ch_pending_o                = s_rx_ch_pending[    CH_ID_LIN_RX_HYPER];
-        assign hyperbus_rx_ch_curr_addr_o              = {{31-L2_AWIDTH_NOAL{1'b0}},s_rx_ch_curr_addr[  CH_ID_LIN_RX_HYPER]}; //---> FIXME (check)
-        assign hyperbus_rx_ch_bytes_left_o             = {{    31-TRANS_SIZE{1'b0}},s_rx_ch_bytes_left[ CH_ID_LIN_RX_HYPER]}; //---> FIXME (check)
-
-        //cfg tx channel
-        assign s_tx_cfg_startaddr[ CH_ID_LIN_TX_HYPER] = hyperbus_tx_cfg_startaddr_i[  L2_AWIDTH_NOAL-1 : 0];
-        assign s_tx_cfg_size[      CH_ID_LIN_TX_HYPER] = hyperbus_tx_cfg_size_i[           TRANS_SIZE-1 : 0];
-        assign s_tx_cfg_continuous[CH_ID_LIN_TX_HYPER] = hyperbus_tx_cfg_continuous_i           ;
-        assign s_tx_cfg_en[        CH_ID_LIN_TX_HYPER] = hyperbus_tx_cfg_en_i                   ;
-        assign s_tx_cfg_clr[       CH_ID_LIN_TX_HYPER] = hyperbus_tx_cfg_clr_i                  ;
-        assign hyperbus_tx_ch_en_o                     = s_tx_ch_en[         CH_ID_LIN_TX_HYPER];
-        assign hyperbus_tx_ch_pending_o                = s_tx_ch_pending[    CH_ID_LIN_TX_HYPER];
-        assign hyperbus_tx_ch_curr_addr_o              = {{31-L2_AWIDTH_NOAL{1'b0}},s_tx_ch_curr_addr[  CH_ID_LIN_TX_HYPER]}; //---> FIXME (check) 
-        assign hyperbus_tx_ch_bytes_left_o             = {{    31-TRANS_SIZE{1'b0}},s_tx_ch_bytes_left[ CH_ID_LIN_TX_HYPER]}; //---> FIXME (check) 
-
-        //--- tx channel 
-        assign s_tx_ch_req[        CH_ID_LIN_TX_HYPER] = hyperbus_tx_req_i                      ;
-        assign hyperbus_tx_gnt_o                       = s_tx_ch_gnt[        CH_ID_LIN_TX_HYPER];
-        assign s_tx_ch_datasize[   CH_ID_LIN_TX_HYPER] = hyperbus_tx_datasize_i                 ;
-        assign hyperbus_tx_o                           = s_tx_ch_data[       CH_ID_LIN_TX_HYPER];
-        assign hyperbus_tx_valid_o                     = s_tx_ch_valid[      CH_ID_LIN_TX_HYPER];
-        assign s_tx_ch_ready[      CH_ID_LIN_TX_HYPER] = hyperbus_tx_ready_i                    ;
-
-        //--- rx channel
-        assign s_rx_ch_datasize[   CH_ID_LIN_RX_HYPER] = hyperbus_rx_datasize_i                 ;
-        assign s_rx_ch_data[       CH_ID_LIN_RX_HYPER] = hyperbus_rx_i                          ;
-        assign s_rx_ch_valid[      CH_ID_LIN_RX_HYPER] = hyperbus_rx_valid_i                    ;
-        assign hyperbus_rx_ready_o                     = s_rx_ch_ready[      CH_ID_LIN_RX_HYPER];
-
-        assign s_rx_cfg_stream[    CH_ID_LIN_RX_HYPER] = 'h0;
-        assign s_rx_cfg_stream_id[ CH_ID_LIN_RX_HYPER] = 'h0;
-        assign s_rx_ch_destination[CH_ID_LIN_RX_HYPER] = 'h0;
-        assign s_tx_ch_destination[CH_ID_LIN_TX_HYPER] = 'h0;
-
-        assign s_events[             4*PER_ID_HYPER  ] = s_rx_ch_events[CH_ID_LIN_RX_HYPER];
-        assign s_events[             4*PER_ID_HYPER+1] = s_tx_ch_events[CH_ID_LIN_TX_HYPER];
-        assign s_events[             4*PER_ID_HYPER+2] = 1'b0;
-        assign s_events[             4*PER_ID_HYPER+3] = evt_eot_hyper_i;
-
-
-    //  ██████╗██████╗       ██╗███████╗
-    // ██╔════╝██╔══██╗      ██║██╔════╝
-    // ██║     ██████╔╝█████╗██║█████╗  
-    // ██║     ██╔═══╝ ╚════╝██║██╔══╝  
-    // ╚██████╗██║           ██║██║     
-    //  ╚═════╝╚═╝           ╚═╝╚═╝     
-
-    //PER_ID
-    //CPI = 11
-    assign s_events[             4*PER_ID_CAM  ] = s_rx_ch_events[CH_ID_LIN_RX_CAM];
-    assign s_events[             4*PER_ID_CAM+1] = 1'b0;
-    assign s_events[             4*PER_ID_CAM+2] = 1'b0;
-    assign s_events[             4*PER_ID_CAM+3] = 1'b0;
-    assign s_rx_cfg_stream[    CH_ID_LIN_RX_CAM] = 'h0;
-    assign s_rx_cfg_stream_id[ CH_ID_LIN_RX_CAM] = 'h0;
-    assign s_rx_ch_destination[CH_ID_LIN_RX_CAM] = 'h0;
-    camera_if #(
-        .L2_AWIDTH_NOAL(L2_AWIDTH_NOAL),
-        .TRANS_SIZE(TRANS_SIZE),
-        .DATA_WIDTH(8)
-    ) i_camera_if (
-        .clk_i               ( s_clk_periphs_core[       PER_ID_CAM]      ),
-        .rstn_i              ( sys_resetn_i                               ),
-
-        .dft_test_mode_i     ( dft_test_mode_i                            ),
-        .dft_cg_enable_i     ( dft_cg_enable_i                            ),
-
-        .cfg_data_i          ( s_periph_data_to                           ),
-        .cfg_addr_i          ( s_periph_addr                              ),
-        .cfg_rwn_i           ( s_periph_rwn                               ),
-        .cfg_valid_i         ( s_periph_valid[           PER_ID_CAM]      ),
-        .cfg_data_o          ( s_periph_data_from[       PER_ID_CAM]      ),
-        .cfg_ready_o         ( s_periph_ready[           PER_ID_CAM]      ),
-
-        .cfg_rx_startaddr_o  ( s_rx_cfg_startaddr[ CH_ID_LIN_RX_CAM]      ),
-        .cfg_rx_size_o       ( s_rx_cfg_size[      CH_ID_LIN_RX_CAM]      ),
-        .cfg_rx_continuous_o ( s_rx_cfg_continuous[CH_ID_LIN_RX_CAM]      ),
-        .cfg_rx_en_o         ( s_rx_cfg_en[        CH_ID_LIN_RX_CAM]      ),
-        .cfg_rx_clr_o        ( s_rx_cfg_clr[       CH_ID_LIN_RX_CAM]      ),
-        .cfg_rx_en_i         ( s_rx_ch_en[         CH_ID_LIN_RX_CAM]      ),
-        .cfg_rx_pending_i    ( s_rx_ch_pending[    CH_ID_LIN_RX_CAM]      ),
-        .cfg_rx_curr_addr_i  ( s_rx_ch_curr_addr[  CH_ID_LIN_RX_CAM]      ),
-        .cfg_rx_bytes_left_i ( s_rx_ch_bytes_left[ CH_ID_LIN_RX_CAM]      ),
-
-        .data_rx_datasize_o  ( s_rx_ch_datasize[   CH_ID_LIN_RX_CAM]      ),
-        .data_rx_data_o      ( s_rx_ch_data[       CH_ID_LIN_RX_CAM][15:0]),
-        .data_rx_valid_o     ( s_rx_ch_valid[      CH_ID_LIN_RX_CAM]      ),
-        .data_rx_ready_i     ( s_rx_ch_ready[      CH_ID_LIN_RX_CAM]      ),
-
-        .cam_clk_i           ( cam_clk_i                                  ),
-        .cam_data_i          ( cam_data_i                                 ),
-        .cam_hsync_i         ( cam_hsync_i                                ),
-        .cam_vsync_i         ( cam_vsync_i                                )
-    );
-    assign s_rx_ch_data[CH_ID_LIN_RX_CAM][31:16]='h0;
-
-    // ███████╗███╗   ██╗███████╗
-    // ██╔════╝████╗  ██║██╔════╝
-    // ███████╗██╔██╗ ██║█████╗  
-    // ╚════██║██║╚██╗██║██╔══╝  
-    // ███████║██║ ╚████║███████╗
-    // ╚══════╝╚═╝  ╚═══╝╚══════╝
-
-    //--- this is not a peripheral, we simply redirect data from dvsi either to udma channel or to sne streaming port
-    //--- alternatively, we can redirect a udma stream to the sne port
-
-    logic  [31:0] cfg_dvsi_control_s;
-    logic         shortcut_s  ;
-
-    logic [ 1:0] sne_dvsi_rx_datasize_o;
-    logic [31:0] sne_dvsi_rx_addr_o    ;
-    logic [31:0] sne_dvsi_rx_o         ;
-    logic        sne_dvsi_rx_valid_o   ;
-    logic        sne_dvsi_rx_ready_i   ;   
-
-    //--- if direct shortcut --> send dvs data to sne and silence the udma channel
-    assign s_rx_ext_addr[      CH_ID_EXT_RX_DVS] = shortcut_s ? '0 : sne_dvsi_rx_addr_o              ;
-    assign s_rx_ext_datasize[  CH_ID_EXT_RX_DVS] = shortcut_s ? '0 : sne_dvsi_rx_datasize_o          ;
-    assign s_rx_ext_valid[     CH_ID_EXT_RX_DVS] = shortcut_s ? '0 : sne_dvsi_rx_valid_o             ;
-    assign s_rx_ext_data[      CH_ID_EXT_RX_DVS] = shortcut_s ? '0 : sne_dvsi_rx_o                   ;
-
-    //--- if direct shortcut --> take the ready from sne stream, otherwise from the udma channel ready
-    assign sne_dvsi_rx_ready_i                   = shortcut_s ? sne_stream_ready_i : s_rx_ext_ready[CH_ID_EXT_RX_DVS];
-
-    //--- if direct shortcut --> take data from the dvs, otherwise, from the udma stream (not tested)
-    assign sne_stream_data_o                     = shortcut_s ?  sne_dvsi_rx_o          : s_stream_data[     STREAM_ID_SNE];
-    assign sne_stream_datasize_o                 = shortcut_s ?  sne_dvsi_rx_datasize_o : s_stream_datasize[ STREAM_ID_SNE];
-    assign sne_stream_valid_o                    = shortcut_s ?  sne_dvsi_rx_valid_o    : s_stream_valid[    STREAM_ID_SNE];
-    assign sne_stream_sot_o                      = shortcut_s ?  1'b0                   : s_stream_sot[      STREAM_ID_SNE];
-    assign sne_stream_eot_o                      = shortcut_s ?  1'b0                   : s_stream_eot[      STREAM_ID_SNE];
-
-
-    // ██████╗ ██╗   ██╗███████╗      ██╗███████╗
-    // ██╔══██╗██║   ██║██╔════╝      ██║██╔════╝
-    // ██║  ██║██║   ██║███████╗█████╗██║█████╗  
-    // ██║  ██║╚██╗ ██╔╝╚════██║╚════╝██║██╔══╝  
-    // ██████╔╝ ╚████╔╝ ███████║      ██║██║     
-    // ╚═════╝   ╚═══╝  ╚══════╝      ╚═╝╚═╝     
-
-    assign s_rx_ext_destination[CH_ID_EXT_RX_DVS] = cfg_dvsi_control_s[  7:0];
-    assign s_rx_ext_stream[CH_ID_EXT_RX_DVS     ] = cfg_dvsi_control_s[ 15:8];
-    assign s_rx_ext_stream_id[CH_ID_EXT_RX_DVS  ] = cfg_dvsi_control_s[23:16];
-    assign s_rx_ext_sot[CH_ID_EXT_RX_DVS        ] = cfg_dvsi_control_s[   24];
-    assign s_rx_ext_eot[CH_ID_EXT_RX_DVS        ] = cfg_dvsi_control_s[   25];
-    assign shortcut_s                             = cfg_dvsi_control_s[   26];
-
-    logic dvsi_interrupt;
-
-     //PER_ID:
-     //DVSI = 12
-     assign s_events[4*PER_ID_DVS  ]  = dvsi_interrupt;
-     assign s_events[4*PER_ID_DVS+1]  = 1'b0;
-     assign s_events[4*PER_ID_DVS+2]  = 1'b0;
-     assign s_events[4*PER_ID_DVS+3]  = 1'b0;
-
-     dvsi #(
-         .L2_AWIDTH_NOAL(L2_AWIDTH_NOAL), 
-         .TRANS_SIZE(TRANS_SIZE),
-         .DATA_WIDTH(32), //---> FIXME (check size) 
-         .ADDR_WIDTH(32), //---> FIXME (check size)  
-         .BUFFER_DEPTH(32)
-
-          ) i_dvsi (
-      
-         .sys_clk_i          ( s_clk_periphs_core[     PER_ID_DVS] ),
-         .periph_clk_i       ( s_clk_periphs_core[      PER_ID_DVS] ),
-         .rst_ni             ( sys_resetn_i                        ),
-         .clk_en_i           ( 1'b1                                ), //---> FIXME
-
-         .ASA                ( dvs_asa_o                           ), 
-         .ARE                ( dvs_are_o                           ), 
-         .ASY                ( dvs_asy_o                           ), 
-         .YNRST              ( dvs_ynrst_o                         ), 
-         .YCLK               ( dvs_yclk_o                          ), 
-         .SXY                ( dvs_sxy_o                           ), 
-         .XCLK               ( dvs_xclk_o                          ), 
-         .XNRST              ( dvs_xnrst_o                         ), 
-         .ON                 ( dvs_on_i                            ), 
-         .OFF                ( dvs_off_i                           ), 
-         .XY_DATA            ( dvs_xy_data_i                       ),
-
-         .CFG_IF_o           ( dvs_cfg_if_o                        ),
-         .CFG_IF_i           ( dvs_cfg_if_i                        ),
-         .CFG_IF_oe          ( dvs_cfg_if_oe                       ),
-
-         .interrupt_o        ( dvsi_interrupt                      ), //---> FIXME
-
-         //--- cfg interface
-         .cfg_data_i         ( s_periph_data_to                    ), 
-         .cfg_addr_i         ( s_periph_addr                       ), 
-         .cfg_valid_i        ( s_periph_valid[         PER_ID_DVS] ), 
-         .cfg_rwn_i          ( s_periph_rwn                        ), 
-         .cfg_data_o         ( s_periph_data_from[     PER_ID_DVS] ),
-         .cfg_ready_o        ( s_periph_ready[         PER_ID_DVS] ),
-
-         //--- control/status registers
-         .cfg_dvsi_control_o( cfg_dvsi_control_s                   ),
-
-         //--- udma channel
-         .data_rx_datasize_o ( sne_dvsi_rx_datasize_o              ),
-         .data_rx_addr_o     ( sne_dvsi_rx_addr_o                  ),
-         .data_rx_o          ( sne_dvsi_rx_o                       ),
-         .data_rx_valid_o    ( sne_dvsi_rx_valid_o                 ),
-         .data_rx_ready_i    ( sne_dvsi_rx_ready_i                 )  
-
-     );
-
-    //PER_ID 7
-    assign s_events[4*PER_ID_FILTER]    = s_filter_eot_evt;
-    assign s_events[4*PER_ID_FILTER+1]  = s_filter_act_evt;
-    assign s_events[4*PER_ID_FILTER+2]  = 1'b0;
-    assign s_events[4*PER_ID_FILTER+3]  = 1'b0;
-
-    assign s_rx_ext_destination[CH_ID_EXT_RX_FILTER] = 'h0;
-    assign s_rx_ext_stream[CH_ID_EXT_RX_FILTER]      = 'h0;
-    assign s_rx_ext_stream_id[CH_ID_EXT_RX_FILTER]   = 'h0;
-    assign s_rx_ext_sot[CH_ID_EXT_RX_FILTER]         = 'h0;
-    assign s_rx_ext_eot[CH_ID_EXT_RX_FILTER]         = 'h0;
-
-    assign s_tx_ext_destination[CH_ID_EXT_TX_FILTER]   = 'h0;
-    assign s_tx_ext_destination[CH_ID_EXT_TX_FILTER+1] = 'h0;
-
-    // ███████╗██╗██╗  ████████╗███████╗██████╗ 
-    // ██╔════╝██║██║  ╚══██╔══╝██╔════╝██╔══██╗
-    // █████╗  ██║██║     ██║   █████╗  ██████╔╝
-    // ██╔══╝  ██║██║     ██║   ██╔══╝  ██╔══██╗
-    // ██║     ██║███████╗██║   ███████╗██║  ██║
-    // ╚═╝     ╚═╝╚══════╝╚═╝   ╚══════╝╚═╝  ╚═╝
-
-    //PER_ID:
-    //FILTER = 13
-    udma_filter #(
-        .L2_AWIDTH_NOAL(L2_AWIDTH_NOAL),
-        .TRANS_SIZE(TRANS_SIZE)
-    ) i_filter (
-        .clk_i(s_clk_periphs_core[PER_ID_FILTER]),
-        .resetn_i(sys_resetn_i),
-
-        .cfg_data_i               ( s_periph_data_to                         ),
-        .cfg_addr_i               ( s_periph_addr                            ),
-        .cfg_valid_i              ( s_periph_valid[           PER_ID_FILTER] ),
-        .cfg_rwn_i                ( s_periph_rwn                             ),
-        .cfg_data_o               ( s_periph_data_from[       PER_ID_FILTER] ),
-        .cfg_ready_o              ( s_periph_ready[           PER_ID_FILTER] ),
-
-        .eot_event_o              ( s_filter_eot_evt                         ),
-        .act_event_o              ( s_filter_act_evt                         ),
-
-        .filter_tx_ch0_req_o      ( s_tx_ext_req[       CH_ID_EXT_TX_FILTER] ),
-        .filter_tx_ch0_addr_o     ( s_tx_ext_addr[      CH_ID_EXT_TX_FILTER] ),
-        .filter_tx_ch0_datasize_o ( s_tx_ext_datasize[  CH_ID_EXT_TX_FILTER] ),
-        .filter_tx_ch0_gnt_i      ( s_tx_ext_gnt[       CH_ID_EXT_TX_FILTER] ),
-
-        .filter_tx_ch0_valid_i    ( s_tx_ext_valid[     CH_ID_EXT_TX_FILTER] ),
-        .filter_tx_ch0_data_i     ( s_tx_ext_data[      CH_ID_EXT_TX_FILTER] ),
-        .filter_tx_ch0_ready_o    ( s_tx_ext_ready[     CH_ID_EXT_TX_FILTER] ),
-
-        .filter_tx_ch1_req_o      ( s_tx_ext_req[     CH_ID_EXT_TX_FILTER+1] ),
-        .filter_tx_ch1_addr_o     ( s_tx_ext_addr[    CH_ID_EXT_TX_FILTER+1] ),
-        .filter_tx_ch1_datasize_o ( s_tx_ext_datasize[CH_ID_EXT_TX_FILTER+1] ),
-        .filter_tx_ch1_gnt_i      ( s_tx_ext_gnt[     CH_ID_EXT_TX_FILTER+1] ),
-
-        .filter_tx_ch1_valid_i    ( s_tx_ext_valid[   CH_ID_EXT_TX_FILTER+1] ),
-        .filter_tx_ch1_data_i     ( s_tx_ext_data[    CH_ID_EXT_TX_FILTER+1] ),
-        .filter_tx_ch1_ready_o    ( s_tx_ext_ready[   CH_ID_EXT_TX_FILTER+1] ),
-
-        .filter_rx_ch_addr_o      ( s_rx_ext_addr[      CH_ID_EXT_RX_FILTER] ),
-        .filter_rx_ch_datasize_o  ( s_rx_ext_datasize[  CH_ID_EXT_RX_FILTER] ),
-        .filter_rx_ch_valid_o     ( s_rx_ext_valid[     CH_ID_EXT_RX_FILTER] ),
-        .filter_rx_ch_data_o      ( s_rx_ext_data[      CH_ID_EXT_RX_FILTER] ),
-        .filter_rx_ch_ready_i     ( s_rx_ext_ready[     CH_ID_EXT_RX_FILTER] ),
-
-        .filter_id_i              (  ),
-        .filter_data_i            ( s_stream_data[         STREAM_ID_FILTER] ),
-        .filter_datasize_i        ( s_stream_datasize[     STREAM_ID_FILTER] ),
-        .filter_valid_i           ( s_stream_valid[        STREAM_ID_FILTER] ),
-        .filter_sof_i             ( s_stream_sot[          STREAM_ID_FILTER] ),
-        .filter_eof_i             ( s_stream_eot[          STREAM_ID_FILTER] ),
-        .filter_ready_o           ( s_stream_ready[        STREAM_ID_FILTER] )
-    );
-
-    //--- silence unused events
-    generate
-        genvar e;
-        //--- we are starting from the first event after the last peripheral (FILTER*4 + 4)
-        for (e = PER_ID_FILTER*4 + 4; e < 128; e++) begin
-            assign s_events[e]  = 1'b0;
-        end
-    endgenerate
-
-    */
+    for (genvar g_uart=0;g_uart<1;g_uart++) begin: uart
+        udma_uart_wrap i_udma_uart_wrap (
+
+            .sys_clk_i   ( s_clk_periphs_core[ g_uart ] ),
+            .periph_clk_i( s_clk_periphs_per[  g_uart ] ),
+            .rstn_i      ( sys_resetn_i                 ),
+            .cfg_data_i  ( s_periph_data_to             ),
+            .cfg_addr_i  ( s_periph_addr                ),
+            .cfg_valid_i ( s_periph_valid[g_uart ]      ),
+            .cfg_rwn_i   ( s_periph_rwn                 ),
+            .cfg_ready_o ( s_periph_ready[g_uart ]      ),
+            .cfg_data_o  ( s_periph_data_from[g_uart ]  ),
+            .events_o    ( s_evt_uart                   ), 
+
+            .rx_ch       ( lin_ch_rx[g_uart:g_uart]     ),
+            .tx_ch       ( lin_ch_tx[g_uart:g_uart]     ),
+            .PAD_UART_RX ( PAD_UART_RX[g_uart]          ),
+            .PAD_UART_TX ( PAD_UART_TX[g_uart]          )
+
+        );
+
+        // bind uart events
+        assign s_events[g_uart] = s_evt_uart[g_uart];
+    end: uart
 
 endmodule
