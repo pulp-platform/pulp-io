@@ -8,12 +8,13 @@ module pulp_io
 	import udma_cfg_pkg::*;  
 
 	#(
-	    parameter APB_ADDR_WIDTH = 12  //APB slaves are 4KB by default
+	    parameter APB_ADDR_WIDTH = 12,  //APB slaves are 4KB by default
+	    parameter PAD_NUM        = 4
 	)
 	(
 
 	// udma reset
-	input  logic                       sys_resetn_i   ,
+	input  logic                       sys_rst_ni     ,
 	// udma core clock
 	input  logic                       sys_clk_i      ,
 	// peripheral clock
@@ -67,7 +68,13 @@ module pulp_io
 	input  logic                 [7:0] event_data_i,
 	output logic                       event_ready_o,
 
-	//--- IO peripheral pads
+	output logic                      interrupt_o,
+	output logic        [PAD_NUM-1:0] gpio_in_sync_o,
+	output logic   [PAD_NUM-1:0][3:0] gpio_padcfg_o,
+
+	//--- IO pads
+	// GPIO BI-PADS
+	BIPAD_IF.PERIPH_SIDE PAD_GPIO[PAD_NUM-1:0],
 	// UART BI-PADS
 	BIPAD_IF.PERIPH_SIDE PAD_UART_RX[N_UART-1:0],
 	BIPAD_IF.PERIPH_SIDE PAD_UART_TX[N_UART-1:0]
@@ -83,34 +90,23 @@ module pulp_io
 	// ╚═╝  ╚═╝╚═╝     ╚═════╝      ╚═════╝ ╚═╝     ╚═╝ ╚═════╝  //
 	///////////////////////////////////////////////////////////////
 
-	apb_gpio #(
-	    .APB_ADDR_WIDTH (APB_ADDR_WIDTH),
-	    .PAD_NUM        (NGPIO),
-	    .NBIT_PADCFG    (NBIT_PADCFG)
-	) i_apb_gpio (
-
-	    .HCLK            ( sys_resetn_i       ),
-	    .HRESETn         ( sys_clk_i          ),
-	    .dft_cg_enable_i ( dft_cg_enable_i    ),
-
-	    .PADDR           ( gpio_apb_paddr     ),
-	    .PWDATA          ( gpio_apb_pwdata    ),
-	    .PWRITE          ( gpio_apb_pwrite    ),
-	    .PSEL            ( gpio_apb_psel      ),
-	    .PENABLE         ( gpio_apb_penable   ),
-	    .PRDATA          ( gpio_apb_prdata    ),
-	    .PREADY          ( gpio_apb_pready    ),
-	    .PSLVERR         ( gpio_apb_pslverr   ),
-
-	    .gpio_in_sync    ( s_gpio_sync        ),
-	    
-	    .gpio_in         ( gpio_in            ),
-	    .gpio_out        ( gpio_out           ),
-	    .gpio_dir        ( gpio_dir           ),
-
-	    .gpio_padcfg     ( gpio_padcfg        ),
-
-	    .interrupt       ( s_gpio_event       )
+	apb_gpio_wrap #(.APB_ADDR_WIDTH(APB_ADDR_WIDTH), .PAD_NUM(PAD_NUM)) i_apb_gpio_wrap (
+		.clk_i          ( sys_clk_i        ),
+		.rst_ni         ( sys_rst_ni       ),
+		.dft_cg_enable_i( dft_cg_enable_i  ),
+		.PADDR          ( gpio_apb_paddr   ),
+		.PWDATA         ( gpio_apb_pwdata  ),
+		.PWRITE         ( gpio_apb_pwrite  ),
+		.PSEL           ( gpio_apb_psel    ),
+		.PENABLE        ( gpio_apb_penable ),
+		.PRDATA         ( gpio_apb_prdata  ),
+		.PREADY         ( gpio_apb_pready  ),
+		.PSLVERR        ( gpio_apb_pslverr ),
+		.interrupt_o    ( interrupt_o      ),
+		.gpio_in_sync_o ( gpio_in_sync_o   ),
+		.gpio_padcfg_o  ( gpio_padcfg_o    ),
+		// BI-PAD signals
+		.PAD_GPIO       ( PAD_GPIO         )
 	);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -123,7 +119,7 @@ module pulp_io
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
 	udma_subsystem #(.APB_ADDR_WIDTH(APB_ADDR_WIDTH)) i_udma_subsystem (
-	.sys_resetn_i        ( sys_resetn_i      ),
+	.sys_resetn_i        ( sys_rst_ni        ),
 	.sys_clk_i           ( sys_clk_i         ),
 	.periph_clk_i        ( periph_clk_i      ),
 	.L2_ro_wen_o         ( L2_ro_wen_o       ),

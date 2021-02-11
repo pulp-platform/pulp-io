@@ -15,12 +15,20 @@
  * Alfio Di Mauro <adimauro@iis.ee.ethz.ch>
  *
  */
+
+//`define VERBOSE
+
 package apb_test_pkg;
 
 	`define  PRINT
 
-	localparam CORE_OFFSET = 32'h00000000;
+	localparam CORE_OFFSET      = 32'h00000000;
 	localparam PERIPH_ID_OFFSET = 32'h00000080;
+
+	localparam UART0_BASE     = PERIPH_ID_OFFSET;
+	localparam UART1_BASE     = UART0_BASE + 32'h00000080;
+	localparam UART2_BASE     = UART1_BASE + 32'h00000080;
+	localparam UART3_BASE     = UART2_BASE + 32'h00000080;
 
 	typedef struct {
 		logic [31:0] paddr;
@@ -77,7 +85,9 @@ package apb_test_pkg;
 		APB_BUS.penable = 0;
 		//@(posedge clk_i);
 		`ifdef PRINT
-			$display("---------[t=%0t] [APB-WRITE: 0b%32b (0x%8h) @addr 0x%5h] ---------",$time,data,data,addr);
+			`ifdef VERBOSE
+				$display("---------[t=%0t] [APB-WRITE: 0b%32b (0x%8h) @addr 0x%5h] ---------",$time,data,data,addr);
+			`endif
 		`endif
 	endtask : APB_WRITE
 
@@ -115,7 +125,9 @@ package apb_test_pkg;
 		APB_BUS.penable = 0;
 		//@(posedge clk_i);
 		`ifdef PRINT
-			$display("---------[t=%0t] [APB-READ: 0b%32b (0x%8h) @addr 0x%5h] ---------",$time,data,data,addr);
+			`ifdef VERBOSE
+				$display("---------[t=%0t] [APB-READ: 0b%32b (0x%8h) @addr 0x%5h] ---------",$time,data,data,addr);
+			`endif
 		`endif
 	endtask : APB_READ
 
@@ -127,26 +139,30 @@ package apb_test_pkg;
 
 	//clock enable
 	task automatic udma_core_cg_en(
-		input peripheral_id,
+		input logic [31:0] peripheral_id,
 		ref   logic        clk_i   , 
 		ref   APB_BUS_t    APB_BUS);
 		logic [31:0] reg_val;
 		APB_READ(CORE_OFFSET,reg_val,clk_i,APB_BUS);
 		reg_val = reg_val | (1'b1 << peripheral_id);
 		APB_WRITE(CORE_OFFSET,reg_val,clk_i,APB_BUS);    
-		$display("[UDMA CORE: CG ENABLE ID %0d]",peripheral_id);
+		`ifdef VERBOSE
+			$display("[UDMA CORE: CG ENABLE ID %0d]",peripheral_id);
+		`endif
 	endtask : udma_core_cg_en
 
 	//clock disable
 	task automatic udma_core_cg_dis(
-		input peripheral_id,
+		input logic [31:0] peripheral_id,
 		ref   logic        clk_i   , 
 		ref   APB_BUS_t    APB_BUS);
 		logic [31:0] reg_val;
 		APB_READ(CORE_OFFSET,reg_val,clk_i,APB_BUS);
 		reg_val = reg_val & ~(1'b1 << peripheral_id);
 		APB_WRITE(CORE_OFFSET,reg_val,clk_i,APB_BUS);    
-		$display("[UDMA CORE: CG DISABLE ID %0d]",peripheral_id);
+		`ifdef VERBOSE
+			$display("[UDMA CORE: CG DISABLE ID %0d]",peripheral_id);
+		`endif
 	endtask : udma_core_cg_dis
 
 //  ¦¦    ¦¦  ¦¦¦¦¦  ¦¦¦¦¦¦  ¦¦¦¦¦¦¦¦ 
@@ -155,91 +171,97 @@ package apb_test_pkg;
 //  ¦¦    ¦¦ ¦¦   ¦¦ ¦¦   ¦¦    ¦¦    
 //   ¦¦¦¦¦¦  ¦¦   ¦¦ ¦¦   ¦¦    ¦¦    
                                         
-	localparam UART0_OFFSET = PERIPH_ID_OFFSET;
-	localparam UART1_OFFSET = 32'h00000100;
-
 	// write
 
 	//uart write start address
-	task automatic udma_uart0_write_tx_saddr(
+	task automatic udma_uart_write_tx_saddr(
+		input logic [31:0] PERIPH_OFFSET,
 		input logic [31:0] saddr,
 		ref   logic        clk_i   , 
 		ref   APB_BUS_t    APB_BUS);
-		APB_WRITE(UART0_OFFSET + 8'h10,saddr,clk_i,APB_BUS);    
-		$display("[UART0: WRITE SADDR]");
-	endtask : udma_uart0_write_tx_saddr
+		APB_WRITE(PERIPH_OFFSET + 8'h10,saddr,clk_i,APB_BUS);    
+		`ifdef VERBOSE
+			$display("[UART0: WRITE SADDR]");
+		`endif
+	endtask : udma_uart_write_tx_saddr
 
 	//uart write transfer size address
-	task automatic udma_uart0_write_tx_size(
+	task automatic udma_uart_write_tx_size(
+		input logic [31:0] PERIPH_OFFSET,
 		input logic [31:0] size,
 		ref   logic        clk_i   , 
 		ref   APB_BUS_t    APB_BUS);
-		APB_WRITE(UART0_OFFSET + 8'h14,size,clk_i,APB_BUS);    
-		$display("[UART0: WRITE SIZE]");
-	endtask : udma_uart0_write_tx_size
+		APB_WRITE(PERIPH_OFFSET + 8'h14,size,clk_i,APB_BUS);    
+		`ifdef VERBOSE
+			$display("[UART0: WRITE SIZE]");
+		`endif
+	endtask : udma_uart_write_tx_size
 
 	//uart test
-	task automatic udma_uart0_tx_en(
+	task automatic udma_uart_setup(
+		input logic [31:0] PERIPH_OFFSET,
 		ref   logic        clk_i   , 
 		ref   APB_BUS_t    APB_BUS);
 		logic [31:0] reg_val;
-		APB_READ(UART0_OFFSET + 8'h24,reg_val,clk_i,APB_BUS);
-		reg_val = reg_val | (1'b1 << 8) | (1'b1 << 0); 
-		APB_WRITE(UART0_OFFSET + 8'h24,reg_val,clk_i,APB_BUS);    
-		$display("[UART0: TXEN]");
-	endtask : udma_uart0_tx_en
+		APB_READ(PERIPH_OFFSET + 8'h24,reg_val,clk_i,APB_BUS);
+		reg_val = reg_val | (1'b1 << 9) | (1'b1 << 8) | (1'b1 << 0) | (2'b11 << 1) | ( 1'b1 << 20); 
+		APB_WRITE(PERIPH_OFFSET + 8'h24,reg_val,clk_i,APB_BUS);    
+		`ifdef VERBOSE
+			$display("[UART0: TXEN]");
+		`endif
+	endtask : udma_uart_setup
 
 	//uart test
-	task automatic udma_uart0_write(
+	task automatic udma_uart_write(
+		input logic [31:0] PERIPH_OFFSET,
 		ref   logic        clk_i   , 
 		ref   APB_BUS_t    APB_BUS);
 		logic [31:0] reg_val;
-		APB_READ(UART0_OFFSET + 8'h18,reg_val,clk_i,APB_BUS);
+		APB_READ(PERIPH_OFFSET + 8'h18,reg_val,clk_i,APB_BUS);
 		reg_val = reg_val | (1'b1 << 4); 
-		APB_WRITE(UART0_OFFSET + 8'h18,reg_val,clk_i,APB_BUS);    
-		$display("[UART0: TX DATA]");
-	endtask : udma_uart0_write
+		APB_WRITE(PERIPH_OFFSET + 8'h18,reg_val,clk_i,APB_BUS);    
+		`ifdef VERBOSE
+			$display("[UART0: TX DATA]");
+		`endif
+	endtask : udma_uart_write
 
 	//read
-
 	//uart write start address
-	task automatic udma_uart1_read_rx_saddr(
+	task automatic udma_uart_read_rx_saddr(
+		input logic [31:0] PERIPH_OFFSET,
 		input logic [31:0] saddr,
 		ref   logic        clk_i   , 
 		ref   APB_BUS_t    APB_BUS);
-		APB_WRITE(UART1_OFFSET + 8'h00,saddr,clk_i,APB_BUS);    
-		$display("[UART0: WRITE SADDR]");
-	endtask : udma_uart1_read_rx_saddr
+		APB_WRITE(PERIPH_OFFSET + 8'h00,saddr,clk_i,APB_BUS);    
+		`ifdef VERBOSE
+			$display("[UART0: WRITE SADDR]");
+		`endif
+	endtask : udma_uart_read_rx_saddr
 
 	//uart write transfer size address
-	task automatic udma_uart1_read_rx_size(
+	task automatic udma_uart_read_rx_size(
+		input logic [31:0] PERIPH_OFFSET,
 		input logic [31:0] size,
 		ref   logic        clk_i   , 
 		ref   APB_BUS_t    APB_BUS);
-		APB_WRITE(UART1_OFFSET + 8'h04,size,clk_i,APB_BUS);    
-		$display("[UART0: WRITE SIZE]");
-	endtask : udma_uart1_read_rx_size
+		APB_WRITE(PERIPH_OFFSET + 8'h04,size,clk_i,APB_BUS);    
+		`ifdef VERBOSE
+			$display("[UART0: WRITE SIZE]");
+		`endif
+	endtask : udma_uart_read_rx_size
 
 	//uart test
-	task automatic udma_uart1_rx_en(
+	task automatic udma_uart_read(
+		input logic [31:0] PERIPH_OFFSET,
 		ref   logic        clk_i   , 
 		ref   APB_BUS_t    APB_BUS);
 		logic [31:0] reg_val;
-		APB_READ(UART1_OFFSET + 8'h24,reg_val,clk_i,APB_BUS);
-		reg_val = reg_val | (1'b1 << 9) | (1'b1 << 0); 
-		APB_WRITE(UART1_OFFSET + 8'h24,reg_val,clk_i,APB_BUS);    
-		$display("[UART0: TXEN]");
-	endtask : udma_uart1_rx_en
-
-	//uart test
-	task automatic udma_uart1_read(
-		ref   logic        clk_i   , 
-		ref   APB_BUS_t    APB_BUS);
-		logic [31:0] reg_val;
-		APB_READ(UART1_OFFSET + 8'h08,reg_val,clk_i,APB_BUS);
+		APB_READ(PERIPH_OFFSET + 8'h08,reg_val,clk_i,APB_BUS);
 		reg_val = reg_val | (1'b1 << 4); 
-		APB_WRITE(UART1_OFFSET + 8'h08,reg_val,clk_i,APB_BUS);    
-		$display("[UART0: TX DATA]");
-	endtask : udma_uart1_read
+		APB_WRITE(PERIPH_OFFSET + 8'h08,reg_val,clk_i,APB_BUS);    
+		`ifdef VERBOSE
+			$display("[UART0: TX DATA]");
+		`endif
+	endtask : udma_uart_read
 
 endpackage : apb_test_pkg

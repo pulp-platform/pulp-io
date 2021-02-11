@@ -15,7 +15,7 @@
  * Alfio Di Mauro <adimauro@iis.ee.ethz.ch>
  *
  */
-module udma_subsystem_tb;
+module pulp_io_tb;
 
 	logic dft_test_mode_i;
 	logic dft_cg_enable_i;
@@ -46,6 +46,7 @@ module udma_subsystem_tb;
 
 	apb_test_pkg::APB_BUS_t APB_BUS;
 	import udma_cfg_pkg::*;
+	localparam PAD_NUM = 4;
 
 tcdm_model #(
 	.MP(2), 
@@ -69,11 +70,12 @@ tcdm_model #(
 	.tcdm_r_data_o (tcdm_r_data_o  )
 );
 
+BIPAD_IF PAD_GPIO[PAD_NUM-1:0]();
 BIPAD_IF PAD_UART_RX[N_UART-1:0]();
 BIPAD_IF PAD_UART_TX[N_UART-1:0]();
 
 
-udma_subsystem #(
+pulp_io #(
 	.APB_ADDR_WIDTH(32)
 ) i_dut (
 
@@ -99,7 +101,7 @@ udma_subsystem #(
 	.dft_cg_enable_i (1'b0               ),
 
 	.sys_clk_i       (sys_clk_i          ),
-	.sys_resetn_i    (sys_resetn_i       ),
+	.sys_rst_ni      (sys_resetn_i       ),
 	.periph_clk_i    (periph_clk_i       ),
 
 	.udma_apb_paddr  ( APB_BUS.paddr     ),
@@ -116,6 +118,7 @@ udma_subsystem #(
 	.event_data_i    ( event_data_i      ),
 	.event_ready_o   ( event_ready_o     ),
 
+	.PAD_GPIO        ( PAD_GPIO          ),
 	.PAD_UART_RX     ( PAD_UART_RX       ),
 	.PAD_UART_TX     ( PAD_UART_TX       )
 	
@@ -125,20 +128,32 @@ always #10ns sys_clk_i    = ~sys_clk_i;
 always #20ns periph_clk_i = ~periph_clk_i;
 
 for (genvar i = 0; i < N_UART; i++) begin
-	uart_tb_rx i_uart_tb_rx (
+	uart_tb_rx #(
+
+		.ID (i),
+		.BAUD_RATE(1470588)
+
+	)i_uart_tb_rx (
 		.rx(PAD_UART_TX[i].OUT), 
 		.tx(PAD_UART_RX[i].IN), 
 		.rx_en(1'b1), 
 		.tx_en(1'b1),
 		.word_done()
 	);
-	assign PAD_UART_TX[i].IN = 1'b0;
+	assign PAD_UART_TX[i].IN = 1'b1;
 
 end
 
+import apb_test_pkg::UART0_BASE;
+import apb_test_pkg::UART1_BASE;
+import apb_test_pkg::UART2_BASE;
+import apb_test_pkg::UART3_BASE;
+
+localparam BYTES = 16;
+
 initial begin
 
-	$readmemh("tcdm_stim.txt", udma_subsystem_tb.i_tcdm_model.memory);
+	$readmemh("tcdm_stim.txt", pulp_io_tb.i_tcdm_model.memory);
 
 	sys_clk_i = 0;
 	periph_clk_i = 0;
@@ -148,19 +163,49 @@ initial begin
 	sys_resetn_i	= 1;
 
 	apb_test_pkg::udma_core_cg_en(0,sys_clk_i,APB_BUS); // enabling clock for periph id 0
-	apb_test_pkg::udma_uart0_tx_en(sys_clk_i,APB_BUS); // enable the transmission
-	apb_test_pkg::udma_uart0_write_tx_saddr(32'h1C000000,sys_clk_i,APB_BUS); // write L2 start address
-	apb_test_pkg::udma_uart0_write_tx_size(7,sys_clk_i,APB_BUS); // configure the transfer size
+	apb_test_pkg::udma_core_cg_en(1,sys_clk_i,APB_BUS); // enabling clock for periph id 1
+	apb_test_pkg::udma_core_cg_en(2,sys_clk_i,APB_BUS); // enabling clock for periph id 2
+	apb_test_pkg::udma_core_cg_en(3,sys_clk_i,APB_BUS); // enabling clock for periph id 3
+	
+	apb_test_pkg::udma_uart_setup(UART0_BASE,sys_clk_i,APB_BUS); // enable the transmission
+	apb_test_pkg::udma_uart_write_tx_saddr(UART0_BASE,32'h1C000000,sys_clk_i,APB_BUS); // write L2 start address
+	apb_test_pkg::udma_uart_write_tx_size(UART0_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
+	apb_test_pkg::udma_uart_read_rx_saddr(UART0_BASE,32'h1C000100,sys_clk_i,APB_BUS); // write L2 start address
+	apb_test_pkg::udma_uart_read_rx_size(UART0_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
+
+	apb_test_pkg::udma_uart_setup(UART1_BASE,sys_clk_i,APB_BUS); // enable the transmission
+	apb_test_pkg::udma_uart_write_tx_saddr(UART1_BASE,32'h1C000010,sys_clk_i,APB_BUS); // write L2 start address
+	apb_test_pkg::udma_uart_write_tx_size(UART1_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
+	apb_test_pkg::udma_uart_read_rx_saddr(UART1_BASE,32'h1C000110,sys_clk_i,APB_BUS); // write L2 start address
+	apb_test_pkg::udma_uart_read_rx_size(UART1_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
+
+	apb_test_pkg::udma_uart_setup(UART2_BASE,sys_clk_i,APB_BUS); // enable the transmission
+	apb_test_pkg::udma_uart_write_tx_saddr(UART2_BASE,32'h1C000020,sys_clk_i,APB_BUS); // write L2 start address
+	apb_test_pkg::udma_uart_write_tx_size(UART2_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
+	apb_test_pkg::udma_uart_read_rx_saddr(UART2_BASE,32'h1C000120,sys_clk_i,APB_BUS); // write L2 start address
+	apb_test_pkg::udma_uart_read_rx_size(UART2_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
+
+	apb_test_pkg::udma_uart_setup(UART3_BASE,sys_clk_i,APB_BUS); // enable the transmission
+	apb_test_pkg::udma_uart_write_tx_saddr(UART3_BASE,32'h1C000030,sys_clk_i,APB_BUS); // write L2 start address
+	apb_test_pkg::udma_uart_write_tx_size(UART3_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
+	apb_test_pkg::udma_uart_read_rx_saddr(UART3_BASE,32'h1C000130,sys_clk_i,APB_BUS); // write L2 start address
+	apb_test_pkg::udma_uart_read_rx_size(UART3_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
 
 	#1us;
 
-	apb_test_pkg::udma_uart1_rx_en(sys_clk_i,APB_BUS); // enable the transmission
-	apb_test_pkg::udma_uart1_read_rx_saddr(32'h1C000800,sys_clk_i,APB_BUS); // write L2 start address
-	apb_test_pkg::udma_uart1_read_rx_size(7,sys_clk_i,APB_BUS); // configure the transfer size
-	apb_test_pkg::udma_uart0_write(sys_clk_i,APB_BUS); // start transmission
-	apb_test_pkg::udma_uart1_read(sys_clk_i,APB_BUS); // start transmission
+	apb_test_pkg::udma_uart_read(UART0_BASE,sys_clk_i,APB_BUS); // start reception
+	apb_test_pkg::udma_uart_write(UART0_BASE,sys_clk_i,APB_BUS); // start transmission
+	apb_test_pkg::udma_uart_read(UART1_BASE,sys_clk_i,APB_BUS); // start reception
+	apb_test_pkg::udma_uart_write(UART1_BASE,sys_clk_i,APB_BUS); // start transmission
+	apb_test_pkg::udma_uart_read(UART2_BASE,sys_clk_i,APB_BUS); // start reception
+	apb_test_pkg::udma_uart_write(UART2_BASE,sys_clk_i,APB_BUS); // start transmission
+	apb_test_pkg::udma_uart_read(UART3_BASE,sys_clk_i,APB_BUS); // start reception
+	apb_test_pkg::udma_uart_write(UART3_BASE,sys_clk_i,APB_BUS); // start transmission
 
-	#10us;
+
+	#2000us;
+
+	$writememh("tcdm_stim_out.txt", pulp_io_tb.i_tcdm_model.memory);
 
 	$stop;
 

@@ -20,8 +20,9 @@
 // A string is printed to the console as soon as a '\n' character is found
 module uart_tb_rx
   #(
+    parameter ID = 0,
     parameter BAUD_RATE = 115200,
-    parameter PARITY_EN = 0
+    parameter PARITY_EN = 1
     )
   (
     input  logic rx,
@@ -43,7 +44,7 @@ module uart_tb_rx
 
   initial
   begin
-    file = $fopen("uart_dump.txt", "w");
+    file = $fopen("uart_dump.txt", "a");
   end
 
   assign tx = tx_en ? rx : 1'b1;
@@ -87,7 +88,7 @@ module uart_tb_rx
         else
           stringa[(255-charnum-1)*8 +: 8] = 8'h0; // null terminate string
 
-        $write("RX string: %s\n",stringa);
+        $write("[%0d] RX string: %s",ID,stringa);
         charnum = 0;
         stringa = "";
         word_done = 1;

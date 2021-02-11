@@ -5,6 +5,7 @@ dependencies:
 
   udma_vips: {path: "udma_vips" }
   common_cells: { git: "git@github.com:pulp-platform/common_cells.git", rev: master }
+  apb_gpio:     { git: "git@iis-git.ee.ethz.ch:pulp-io/apb_gpio.git", rev: devel }
 
   pad_utils: {path: "local/pad_utils"}
 
@@ -36,11 +37,12 @@ sources:
     files:
     - src/udma_cfg_pkg.sv
     - src/udma_subsystem.sv
+    - src/pulp_io.sv
     - src/tgen_tx_lin.sv
 
   - target: test
     files:
     - tb/tcdm_model.sv
     - tb/apb_test_pkg.sv
-    - tb/udma_subsystem_tb.sv
+    - tb/pulp_io_tb.sv
   

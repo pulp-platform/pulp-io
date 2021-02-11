@@ -25,9 +25,7 @@ module udma_subsystem
     import udma_pkg::L2_AWIDTH_NOAL; 
     import udma_pkg::STREAM_ID_WIDTH;
     import udma_pkg::DEST_SIZE;  
-    import udma_pkg::udma_evt_t;
 
-    import udma_pkg::N_UART;
     import udma_pkg::udma_evt_t;
 
     // peripherals and channels configuration
@@ -225,7 +223,7 @@ module udma_subsystem
 
     udma_evt_t [N_UART-1:0] s_evt_uart;
 
-    for (genvar g_uart=0;g_uart<1;g_uart++) begin: uart
+    for (genvar g_uart=0;g_uart<N_UART;g_uart++) begin: uart
         udma_uart_wrap i_udma_uart_wrap (
 
             .sys_clk_i   ( s_clk_periphs_core[ g_uart ] ),
@@ -250,9 +248,9 @@ module udma_subsystem
     end: uart
 
     // pad unused events
-    for (genvar i = N_PERIPHS; i < 32; i++) begin
+    for (genvar i = N_PERIPHS; i < 32; i++) begin: evt_zero
         assign s_events[i] = 4'b0000;
-    end
+    end: evt_zero
 
     // assign output events
     assign events_o      = s_events;

@@ -20,7 +20,7 @@ package udma_cfg_pkg;
 
 	// entry point, select io peripherals
 	localparam N_QSPIM                 = 0                               ;
-	localparam N_UART                  = 2                               ;
+	localparam N_UART                  = 4                               ;
 	localparam N_I2C                   = 0                               ;
 	localparam N_CPI                   = 0                               ;
 	localparam N_DVS                   = 0                               ;
