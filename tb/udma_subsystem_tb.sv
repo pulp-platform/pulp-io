@@ -45,6 +45,7 @@ module udma_subsystem_tb;
 	logic [1:0] tcdm_r_valid_o;
 
 	apb_test_pkg::APB_BUS_t APB_BUS;
+	import udma_cfg_pkg::*;
 
 tcdm_model #(
 	.MP(2), 
@@ -68,15 +69,9 @@ tcdm_model #(
 	.tcdm_r_data_o (tcdm_r_data_o  )
 );
 
-BIPAD_IF pad_uart_rx();
-BIPAD_IF pad_uart_tx();
+BIPAD_IF PAD_UART_RX[N_UART-1:0]();
+BIPAD_IF PAD_UART_TX[N_UART-1:0]();
 
-BIPAD_IF PAD_DATA0();
-BIPAD_IF PAD_DATA1();
-BIPAD_IF PAD_DATA2();
-BIPAD_IF PAD_DATA3();
-BIPAD_IF PAD_CLK();
-BIPAD_IF PAD_WRD();
 
 udma_subsystem #(
 	.APB_ADDR_WIDTH(32)
@@ -103,9 +98,9 @@ udma_subsystem #(
 	.dft_test_mode_i (1'b0               ),
 	.dft_cg_enable_i (1'b0               ),
 
-	.sys_clk_i       (sys_clk_i       ),
-	.sys_resetn_i    (sys_resetn_i    ),
-	.periph_clk_i    (periph_clk_i    ),
+	.sys_clk_i       (sys_clk_i          ),
+	.sys_resetn_i    (sys_resetn_i       ),
+	.periph_clk_i    (periph_clk_i       ),
 
 	.udma_apb_paddr  ( APB_BUS.paddr     ),
 	.udma_apb_pwdata ( APB_BUS.pwdata    ),
@@ -116,33 +111,30 @@ udma_subsystem #(
 	.udma_apb_pready ( APB_BUS.pready    ),
 	.udma_apb_pslverr( APB_BUS.pslverr   ),
 
-	.events_o        (events_o           ),
-	.event_valid_i   (event_valid_i      ),
-	.event_data_i    (event_data_i       ),
-	.event_ready_o   (event_ready_o      ),
+	.events_o        ( events_o          ),
+	.event_valid_i   ( event_valid_i     ),
+	.event_data_i    ( event_data_i      ),
+	.event_ready_o   ( event_ready_o     ),
 
-	.PAD_DATA0 (PAD_DATA0),
-	.PAD_DATA1 (PAD_DATA1),
-	.PAD_DATA2 (PAD_DATA2),
-	.PAD_DATA3 (PAD_DATA3),
-	.PAD_CLK   (PAD_CLK  ),
-	.PAD_WRD   (PAD_WRD  ),
-
-	.pad_uart_rx     (pad_uart_rx        ),
-	.pad_uart_tx     (pad_uart_tx        )
+	.PAD_UART_RX     ( PAD_UART_RX       ),
+	.PAD_UART_TX     ( PAD_UART_TX       )
 	
 );
 
-always #10ns sys_clk_i = ~sys_clk_i;
+always #10ns sys_clk_i    = ~sys_clk_i;
 always #20ns periph_clk_i = ~periph_clk_i;
 
-uart_tb_rx i_uart_tb_rx (
-	.rx(pad_uart_tx.OUT), 
-	.tx(pad_uart_rx.IN), 
-	.rx_en(1'b1), 
-	.tx_en(1'b1),
-	.word_done(word_done)
-);
+for (genvar i = 0; i < N_UART; i++) begin
+	uart_tb_rx i_uart_tb_rx (
+		.rx(PAD_UART_TX[i].OUT), 
+		.tx(PAD_UART_RX[i].IN), 
+		.rx_en(1'b1), 
+		.tx_en(1'b1),
+		.word_done()
+	);
+	assign PAD_UART_TX[i].IN = 1'b0;
+
+end
 
 initial begin
 
@@ -154,8 +146,6 @@ initial begin
 	sys_resetn_i	= 0;
 	#30ns;
 	sys_resetn_i	= 1;
-	//pad_uart_tx[0].IN = 1'b0;
-	//pad_uart_tx[1].IN = 1'b0;
 
 	apb_test_pkg::udma_core_cg_en(0,sys_clk_i,APB_BUS); // enabling clock for periph id 0
 	apb_test_pkg::udma_uart0_tx_en(sys_clk_i,APB_BUS); // enable the transmission

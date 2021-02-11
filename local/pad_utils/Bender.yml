@@ -1,0 +1,7 @@
+package:
+  name: pad_utils
+  authors: 
+    - "Alfio Di Mauro <adimauro@iis.ee.ethz.ch>"
+
+sources:
+  - pad_interface.sv

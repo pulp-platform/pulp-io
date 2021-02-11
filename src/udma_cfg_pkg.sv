@@ -20,14 +20,14 @@ package udma_cfg_pkg;
 
 	// entry point, select io peripherals
 	localparam N_QSPIM                 = 0                               ;
-	localparam N_UART                  = 1                               ;
+	localparam N_UART                  = 2                               ;
 	localparam N_I2C                   = 0                               ;
 	localparam N_CPI                   = 0                               ;
 	localparam N_DVS                   = 0                               ;
 	localparam N_I2S                   = 0                               ;
 	localparam N_HYPER                 = 0                               ;
 	localparam N_FILTER                = 0                               ;
-	localparam N_TGEN_TX_LIN           = 1                               ;
+	localparam N_TGEN_TX_LIN           = 0                               ;
 
 	localparam N_PERIPHS               = N_UART + N_FILTER + N_QSPIM + N_I2C + N_CPI + N_HYPER + N_I2S + N_DVS + N_TGEN_TX_LIN;
 
@@ -45,7 +45,7 @@ package udma_cfg_pkg;
 	localparam CH_ID_LIN_TX_I2C        = CH_ID_LIN_TX_CMD_QSPIM + N_QSPIM ; 
 	localparam CH_ID_LIN_TX_I2S        = CH_ID_LIN_TX_I2C       + N_I2C   ; 
 	localparam CH_ID_LIN_TX_HYPER      = CH_ID_LIN_TX_I2S       + N_I2S   ; 
-	localparam CH_ID_LIN_TX_TGEN       = CH_ID_LIN_TX_HYPER     + 1       ;
+	localparam CH_ID_LIN_TX_TGEN       = CH_ID_LIN_TX_HYPER     + N_HYPER ;
 
 	//--- RX Lin. Channels
 	localparam CH_ID_LIN_RX_UART       = 0                                ; 

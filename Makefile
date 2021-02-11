@@ -3,9 +3,13 @@ BENDER ?= bender
 VLOG_ARGS += -suppress vlog-2583 -suppress vlog-13314 -suppress vlog-13233 -timescale \"1 ns / 1 ps\"
 
 .PHONY: install
-#download bender executable
-install: 
-	curl --proto '=https' --tlsv1.2 https://fabianschuiki.github.io/bender/init -sSf | sh
+
+bender:
+ifeq (,$(wildcard ./bender))
+	curl --proto '=https' --tlsv1.2 -sSf https://pulp-platform.github.io/bender/init \
+		| bash -s -- 0.22.0
+	touch bender
+endif
 
 .PHONY: clean
 clean:

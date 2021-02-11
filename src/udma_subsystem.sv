@@ -25,6 +25,7 @@ module udma_subsystem
     import udma_pkg::L2_AWIDTH_NOAL; 
     import udma_pkg::STREAM_ID_WIDTH;
     import udma_pkg::DEST_SIZE;  
+    import udma_pkg::udma_evt_t;
 
     import udma_pkg::N_UART;
     import udma_pkg::udma_evt_t;
@@ -78,9 +79,9 @@ module udma_subsystem
     output logic                       udma_apb_pready,
     output logic                       udma_apb_pslverr,
 
-    output logic  [N_PERIPHS-1:0][3:0] events_o,
+    output logic           [31:0][3:0] events_o,
     input  logic                       event_valid_i,
-    input  logic                [7:0]  event_data_i,
+    input  logic                 [7:0] event_data_i,
     output logic                       event_ready_o,
 
     //--- IO peripheral pads
@@ -90,9 +91,8 @@ module udma_subsystem
     // ██║   ██║██╔══██║██╔══██╗   ██║   
     // ╚██████╔╝██║  ██║██║  ██║   ██║   
     //  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    
-
-    BIPAD_IF.PERIPH_SIDE PAD_UART_RX,
-    BIPAD_IF.PERIPH_SIDE PAD_UART_TX
+    BIPAD_IF.PERIPH_SIDE PAD_UART_RX[N_UART-1:0],
+    BIPAD_IF.PERIPH_SIDE PAD_UART_TX[N_UART-1:0]
                                     
 );
 
@@ -103,8 +103,8 @@ module udma_subsystem
     logic [        N_STREAMS-1:0]                        s_stream_eot         ;
     logic [        N_STREAMS-1:0]                        s_stream_ready       ;
 
-    udma_evt_t [N_PERIPHS-1:0] s_events;
-
+    // max 32 peripherals
+    udma_evt_t   [31:0] s_events;
     logic         [1:0] s_rf_event;
 
     logic [N_PERIPHS-1:0]        s_clk_periphs_core;
@@ -125,7 +125,6 @@ module udma_subsystem
     logic s_filter_eot_evt;
     logic s_filter_act_evt;
 
-    assign events_o      = s_events;
 
     assign L2_ro_wen_o   = 1'b1;
     assign L2_wo_wen_o   = 1'b0;
@@ -138,7 +137,7 @@ module udma_subsystem
     UDMA_LIN_CH lin_ch_tx[N_TX_LIN_CHANNELS-1:0](.clk_i(s_clk_periphs_core[0]));
     UDMA_EXT_CH ext_ch_rx[N_RX_EXT_CHANNELS-1:0](.clk_i(s_clk_periphs_core[0]));
     UDMA_EXT_CH ext_ch_tx[N_TX_EXT_CHANNELS-1:0](.clk_i(s_clk_periphs_core[0]));
-    UDMA_EXT_CH str_ch_tx[N_STREAMS-1:0](.clk_i(s_clk_periphs_core[0]));
+    UDMA_EXT_CH str_ch_tx[        N_STREAMS-1:0](.clk_i(s_clk_periphs_core[0]));
 
     // ██╗   ██╗██████╗ ███╗   ███╗ █████╗      ██████╗ ██████╗ ██████╗ ███████╗
     // ██║   ██║██╔══██╗████╗ ████║██╔══██╗    ██╔════╝██╔═══██╗██╔══██╗██╔════╝
@@ -223,6 +222,9 @@ module udma_subsystem
     // ╚██████╔╝██║  ██║██║  ██║   ██║   
     //  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   
 
+
+    udma_evt_t [N_UART-1:0] s_evt_uart;
+
     for (genvar g_uart=0;g_uart<1;g_uart++) begin: uart
         udma_uart_wrap i_udma_uart_wrap (
 
@@ -235,8 +237,7 @@ module udma_subsystem
             .cfg_rwn_i   ( s_periph_rwn                 ),
             .cfg_ready_o ( s_periph_ready[g_uart ]      ),
             .cfg_data_o  ( s_periph_data_from[g_uart ]  ),
-            .events_o    ( s_evt_uart                   ), 
-
+            .events_o    ( s_evt_uart[g_uart]           ), 
             .rx_ch       ( lin_ch_rx[g_uart:g_uart]     ),
             .tx_ch       ( lin_ch_tx[g_uart:g_uart]     ),
             .PAD_UART_RX ( PAD_UART_RX[g_uart]          ),
@@ -247,5 +248,13 @@ module udma_subsystem
         // bind uart events
         assign s_events[g_uart] = s_evt_uart[g_uart];
     end: uart
+
+    // pad unused events
+    for (genvar i = N_PERIPHS; i < 32; i++) begin
+        assign s_events[i] = 4'b0000;
+    end
+
+    // assign output events
+    assign events_o      = s_events;
 
 endmodule
