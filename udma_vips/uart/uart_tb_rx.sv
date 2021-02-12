@@ -88,7 +88,7 @@ module uart_tb_rx
         else
           stringa[(255-charnum-1)*8 +: 8] = 8'h0; // null terminate string
 
-        $write("[%0d] RX string: %s",ID,stringa);
+        $write("[%0d] RX string: %s\n",ID,stringa);
         charnum = 0;
         stringa = "";
         word_done = 1;

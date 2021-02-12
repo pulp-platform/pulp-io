@@ -144,16 +144,19 @@ for (genvar i = 0; i < N_UART; i++) begin
 
 end
 
-import apb_test_pkg::UART0_BASE;
-import apb_test_pkg::UART1_BASE;
-import apb_test_pkg::UART2_BASE;
-import apb_test_pkg::UART3_BASE;
+import apb_test_pkg::PERIPH_ID_OFFSET;
 
-localparam BYTES = 16;
+//localparam BYTES = 16;
+
+int words[N_UART-1:0];
+int l2offset[N_UART-1:0];
+
+int errors;
+int transactions;
 
 initial begin
 
-	$readmemh("tcdm_stim.txt", pulp_io_tb.i_tcdm_model.memory);
+	//$readmemh("tcdm_stim.txt", pulp_io_tb.i_tcdm_model.memory);
 
 	sys_clk_i = 0;
 	periph_clk_i = 0;
@@ -162,50 +165,62 @@ initial begin
 	#30ns;
 	sys_resetn_i	= 1;
 
-	apb_test_pkg::udma_core_cg_en(0,sys_clk_i,APB_BUS); // enabling clock for periph id 0
-	apb_test_pkg::udma_core_cg_en(1,sys_clk_i,APB_BUS); // enabling clock for periph id 1
-	apb_test_pkg::udma_core_cg_en(2,sys_clk_i,APB_BUS); // enabling clock for periph id 2
-	apb_test_pkg::udma_core_cg_en(3,sys_clk_i,APB_BUS); // enabling clock for periph id 3
-	
-	apb_test_pkg::udma_uart_setup(UART0_BASE,sys_clk_i,APB_BUS); // enable the transmission
-	apb_test_pkg::udma_uart_write_tx_saddr(UART0_BASE,32'h1C000000,sys_clk_i,APB_BUS); // write L2 start address
-	apb_test_pkg::udma_uart_write_tx_size(UART0_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
-	apb_test_pkg::udma_uart_read_rx_saddr(UART0_BASE,32'h1C000100,sys_clk_i,APB_BUS); // write L2 start address
-	apb_test_pkg::udma_uart_read_rx_size(UART0_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
-
-	apb_test_pkg::udma_uart_setup(UART1_BASE,sys_clk_i,APB_BUS); // enable the transmission
-	apb_test_pkg::udma_uart_write_tx_saddr(UART1_BASE,32'h1C000010,sys_clk_i,APB_BUS); // write L2 start address
-	apb_test_pkg::udma_uart_write_tx_size(UART1_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
-	apb_test_pkg::udma_uart_read_rx_saddr(UART1_BASE,32'h1C000110,sys_clk_i,APB_BUS); // write L2 start address
-	apb_test_pkg::udma_uart_read_rx_size(UART1_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
-
-	apb_test_pkg::udma_uart_setup(UART2_BASE,sys_clk_i,APB_BUS); // enable the transmission
-	apb_test_pkg::udma_uart_write_tx_saddr(UART2_BASE,32'h1C000020,sys_clk_i,APB_BUS); // write L2 start address
-	apb_test_pkg::udma_uart_write_tx_size(UART2_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
-	apb_test_pkg::udma_uart_read_rx_saddr(UART2_BASE,32'h1C000120,sys_clk_i,APB_BUS); // write L2 start address
-	apb_test_pkg::udma_uart_read_rx_size(UART2_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
-
-	apb_test_pkg::udma_uart_setup(UART3_BASE,sys_clk_i,APB_BUS); // enable the transmission
-	apb_test_pkg::udma_uart_write_tx_saddr(UART3_BASE,32'h1C000030,sys_clk_i,APB_BUS); // write L2 start address
-	apb_test_pkg::udma_uart_write_tx_size(UART3_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
-	apb_test_pkg::udma_uart_read_rx_saddr(UART3_BASE,32'h1C000130,sys_clk_i,APB_BUS); // write L2 start address
-	apb_test_pkg::udma_uart_read_rx_size(UART3_BASE,BYTES,sys_clk_i,APB_BUS); // configure the transfer size
-
-	#1us;
-
-	apb_test_pkg::udma_uart_read(UART0_BASE,sys_clk_i,APB_BUS); // start reception
-	apb_test_pkg::udma_uart_write(UART0_BASE,sys_clk_i,APB_BUS); // start transmission
-	apb_test_pkg::udma_uart_read(UART1_BASE,sys_clk_i,APB_BUS); // start reception
-	apb_test_pkg::udma_uart_write(UART1_BASE,sys_clk_i,APB_BUS); // start transmission
-	apb_test_pkg::udma_uart_read(UART2_BASE,sys_clk_i,APB_BUS); // start reception
-	apb_test_pkg::udma_uart_write(UART2_BASE,sys_clk_i,APB_BUS); // start transmission
-	apb_test_pkg::udma_uart_read(UART3_BASE,sys_clk_i,APB_BUS); // start reception
-	apb_test_pkg::udma_uart_write(UART3_BASE,sys_clk_i,APB_BUS); // start transmission
+	errors = 0;
+	transactions = 0;
 
 
-	#2000us;
+
+	for (int i = 0; i < N_UART; i++) begin
+		words[i] = $urandom_range(1,64);         // transmit up to 128 bytes
+		l2offset[i] = $urandom_range(i*128,i*128+64); // when allocating memory, account for the worst case 
+
+		$display("[%0d] WORDS = %0d, L2OFFSET = %0d",i,words[i]+1,l2offset[i]);
+		for (int j = 0; j < words[i]; j++) begin
+			pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j] = $urandom;
+		end
+		pulp_io_tb.i_tcdm_model.memory[l2offset[i] + words[i]] = 32'h0000000a; // make sure at least the last byte trigger the print (at the receiver)
+
+
+		apb_test_pkg::udma_core_cg_en(i,sys_clk_i,APB_BUS); // enabling clock for periph id i
+		apb_test_pkg::udma_uart_setup(PERIPH_ID_OFFSET + i*128,sys_clk_i,APB_BUS); // enable the transmission
+		
+		apb_test_pkg::udma_uart_write_tx_saddr(PERIPH_ID_OFFSET + i*128,32'h1C000000 + l2offset[i]*4,sys_clk_i,APB_BUS); // write L2 start address
+		apb_test_pkg::udma_uart_write_tx_size(PERIPH_ID_OFFSET + i*128,(words[i]+1)*4,sys_clk_i,APB_BUS); // configure the transfer size
+
+		apb_test_pkg::udma_uart_read_rx_saddr(PERIPH_ID_OFFSET + i*128,32'h1C000800 + l2offset[i]*4,sys_clk_i,APB_BUS); // write L2 start address
+		apb_test_pkg::udma_uart_read_rx_size(PERIPH_ID_OFFSET + i*128,(words[i]+1)*4,sys_clk_i,APB_BUS); // configure the transfer size
+
+		
+		apb_test_pkg::udma_uart_read(PERIPH_ID_OFFSET + i*128,sys_clk_i,APB_BUS); // start reception
+		apb_test_pkg::udma_uart_write(PERIPH_ID_OFFSET + i*128,sys_clk_i,APB_BUS); // start transmission
+	end
+
+	#10000us;
+
+	// artificial error injected here
+	pulp_io_tb.i_tcdm_model.memory[446] = 0;
 
 	$writememh("tcdm_stim_out.txt", pulp_io_tb.i_tcdm_model.memory);
+
+	for (int i = 0; i < N_UART; i++) begin
+		for (int j = 0; j < words[i]; j++) begin
+			transactions = transactions + 1;
+			if (pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j] !== pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j + 512]) begin
+				errors = errors + 1;
+				$display("ERROR @ %8x --> TX = %8x, RX = %8x", 32'h1C000800 + (l2offset[i] + j)*4, pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j + 512]);
+			end else begin
+				$display("TX = %8x, RX = %8x",pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j + 512]);
+			end
+		end
+	end
+
+	if (errors == 0) begin
+		$display(":-) TEST PASS: %0d/%0d PASSED, %0d FAILED",transactions-errors,transactions, errors);
+	end else begin
+		$error(":'( TEST FAIL: %0d/%0d PASSED, %0d FAILED",transactions-errors,transactions, errors);
+	end
+
+	#1ms;
 
 	$stop;
 
