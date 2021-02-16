@@ -74,6 +74,9 @@ BIPAD_IF PAD_GPIO[PAD_NUM-1:0]();
 BIPAD_IF PAD_UART_RX[N_UART-1:0]();
 BIPAD_IF PAD_UART_TX[N_UART-1:0]();
 
+BIPAD_IF PAD_I2C_SCL[N_I2C-1:0]();
+BIPAD_IF PAD_I2C_SDA[N_I2C-1:0]();
+
 
 pulp_io #(
 	.APB_ADDR_WIDTH(32)
@@ -119,14 +122,19 @@ pulp_io #(
 	.event_ready_o   ( event_ready_o     ),
 
 	.PAD_GPIO        ( PAD_GPIO          ),
+
+	.PAD_I2C_SCL     ( PAD_I2C_SCL       ),
+	.PAD_I2C_SDA     ( PAD_I2C_SDA       ),
+
 	.PAD_UART_RX     ( PAD_UART_RX       ),
 	.PAD_UART_TX     ( PAD_UART_TX       )
 	
 );
 
-always #10ns sys_clk_i    = ~sys_clk_i;
+always #13ns sys_clk_i    = ~sys_clk_i;
 always #20ns periph_clk_i = ~periph_clk_i;
 
+// attach uarts to simple receiver, and loop back the tx signals on RX
 for (genvar i = 0; i < N_UART; i++) begin
 	uart_tb_rx #(
 
@@ -144,83 +152,230 @@ for (genvar i = 0; i < N_UART; i++) begin
 
 end
 
+logic power_cycle;
+wire [N_I2C-1:0] w_sda;
+wire [N_I2C-1:0] w_scl;
+
+for (genvar i = 0; i < N_I2C; i++) begin: FRAM
+	FRAM_I2C i_FRAM_I2C (
+		.power_cycle(power_cycle                            ),
+		.A0         (i[0]                                   ),
+		.A1         (i[1]                                   ),
+		.A2         (i[2]                                   ),
+		.WP         (1'b0                                   ),
+		.SDA        ( w_sda[i]                              ),
+		.SCL        ( w_scl[i]                              ),
+		.RESET      (sys_resetn_i                           )
+	);
+
+	// active high buffer (verilog primitive)
+	//       out        in                 control
+	assign (pull1,weak0) w_sda[i] = 1'b1; // this should play the role of a pullup
+	bufif1 (w_sda[i],PAD_I2C_SDA[i].OUT, PAD_I2C_SDA[i].OE); // this should drive with "strong0/1" > "pull0/1" strength
+	assign PAD_I2C_SDA[i].IN = w_sda[i];
+
+	assign (pull1,weak0) w_scl[i] = 1'b1;
+	bufif1 (w_scl[i],PAD_I2C_SCL[i].OUT, PAD_I2C_SCL[i].OE);
+	assign PAD_I2C_SCL[i].IN = w_scl[i];
+
+end: FRAM
+
+
 import apb_test_pkg::PERIPH_ID_OFFSET;
 
-//localparam BYTES = 16;
 
-int words[N_UART-1:0];
-int l2offset[N_UART-1:0];
 
-int errors;
-int transactions;
+logic [31:0] uart_words[N_UART-1:0];
+logic [31:0] uart_l2offset[N_UART-1:0];
+logic [31:0] uart_errors;
+logic [31:0] uart_transactions;
+
+logic [31:0] i2c_words[N_I2C-1:0];
+logic [31:0] i2c_l2offset[N_I2C-1:0];
+logic [31:0] i2c_errors;
+logic [31:0] i2c_transactions;
+
+logic [31:0] i2c_cmd_words[N_I2C-1:0];
+logic [31:0] i2c_cmd_l2offset[N_I2C-1:0];
+logic [31:0] i2c_cmd_errors;
+logic [31:0] i2c_cmd_transactions;
 
 initial begin
 
 	//$readmemh("tcdm_stim.txt", pulp_io_tb.i_tcdm_model.memory);
 
+	// bus starts clean
+	APB_BUS.penable  = '0;
+	APB_BUS.pwdata   = '0;
+	APB_BUS.paddr    = '0;
+	APB_BUS.pwrite   = '0;
+	APB_BUS.psel     = '0;
+
 	sys_clk_i = 0;
 	periph_clk_i = 0;
+	power_cycle = 1'b0;
+	sys_resetn_i	= 1;
+	#1us;
+	power_cycle = 1'b1;
 	#30ns;
 	sys_resetn_i	= 0;
 	#30ns;
 	sys_resetn_i	= 1;
 
-	errors = 0;
-	transactions = 0;
+	uart_errors = 0;
+	uart_transactions = 0;
 
+	i2c_errors = 0;
+	i2c_transactions = 0;
 
+	#1ms;
 
-	for (int i = 0; i < N_UART; i++) begin
-		words[i] = $urandom_range(1,64);         // transmit up to 128 bytes
-		l2offset[i] = $urandom_range(i*128,i*128+64); // when allocating memory, account for the worst case 
-
-		$display("[%0d] WORDS = %0d, L2OFFSET = %0d",i,words[i]+1,l2offset[i]);
-		for (int j = 0; j < words[i]; j++) begin
-			pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j] = $urandom;
-		end
-		pulp_io_tb.i_tcdm_model.memory[l2offset[i] + words[i]] = 32'h0000000a; // make sure at least the last byte trigger the print (at the receiver)
-
-
+	// uart setup
+	$display("UART TEST");
+	for (int i = PER_ID_UART; i < N_UART; i++) begin
 		apb_test_pkg::udma_core_cg_en(i,sys_clk_i,APB_BUS); // enabling clock for periph id i
-		apb_test_pkg::udma_uart_setup(PERIPH_ID_OFFSET + i*128,sys_clk_i,APB_BUS); // enable the transmission
-		
-		apb_test_pkg::udma_uart_write_tx_saddr(PERIPH_ID_OFFSET + i*128,32'h1C000000 + l2offset[i]*4,sys_clk_i,APB_BUS); // write L2 start address
-		apb_test_pkg::udma_uart_write_tx_size(PERIPH_ID_OFFSET + i*128,(words[i]+1)*4,sys_clk_i,APB_BUS); // configure the transfer size
+	end
+	for (int i = PER_ID_UART; i < N_UART; i++) begin
+		uart_words[i] = $urandom_range(1,16);            // transmit up to 128 bytes
+		uart_l2offset[i] = $urandom_range(i*32,i*32+31); // when allocating memory, account for the worst case 
+		$display("[DATA %0d] WORDS = %0d, L2OFFSET = %0d",i,uart_words[i]+1,uart_l2offset[i]);
+		for (int j = 0; j < uart_words[i]; j++) begin
+			pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j] = $urandom;
+		end
+		pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + uart_words[i]] = 32'h0000000a; // make sure at least the last byte trigger the print (at the receiver)
+		apb_test_pkg::udma_uart_setup(  PERIPH_ID_OFFSET + i*128,      sys_clk_i,APB_BUS); // enable the transmission
+		apb_test_pkg::udma_lin_tx_saddr(PERIPH_ID_OFFSET + i*128,8'h10,32'h1C000000 + uart_l2offset[i]*4,sys_clk_i,APB_BUS); // write L2 start address
+		apb_test_pkg::udma_lin_tx_size( PERIPH_ID_OFFSET + i*128,8'h14,(uart_words[i]+1)*4,sys_clk_i,APB_BUS); // configure the transfer size
+		apb_test_pkg::udma_lin_rx_saddr(PERIPH_ID_OFFSET + i*128,8'h00,32'h1C000800 + uart_l2offset[i]*4,sys_clk_i,APB_BUS); // write L2 start address
+		apb_test_pkg::udma_lin_rx_size( PERIPH_ID_OFFSET + i*128,8'h04,(uart_words[i]+1)*4,sys_clk_i,APB_BUS); // configure the transfer size
+		apb_test_pkg::udma_uart_read(   PERIPH_ID_OFFSET + i*128,      sys_clk_i,APB_BUS); // start reception
+		apb_test_pkg::udma_uart_write(  PERIPH_ID_OFFSET + i*128,      sys_clk_i,APB_BUS); // start transmission
+	end
+//
+	#1us;
 
-		apb_test_pkg::udma_uart_read_rx_saddr(PERIPH_ID_OFFSET + i*128,32'h1C000800 + l2offset[i]*4,sys_clk_i,APB_BUS); // write L2 start address
-		apb_test_pkg::udma_uart_read_rx_size(PERIPH_ID_OFFSET + i*128,(words[i]+1)*4,sys_clk_i,APB_BUS); // configure the transfer size
+	// i2c setup
+	$display("I2C TEST");
 
-		
-		apb_test_pkg::udma_uart_read(PERIPH_ID_OFFSET + i*128,sys_clk_i,APB_BUS); // start reception
-		apb_test_pkg::udma_uart_write(PERIPH_ID_OFFSET + i*128,sys_clk_i,APB_BUS); // start transmission
+	for (int i = PER_ID_I2C; i < PER_ID_I2C+N_I2C; i++) begin
+		apb_test_pkg::udma_core_cg_en(i,sys_clk_i,APB_BUS); // enabling clock for periph id i
+	end
+
+	// generating random data to transfer
+	for (int i = PER_ID_I2C; i < PER_ID_I2C + N_I2C; i++) begin
+		// generating random data
+		i2c_words[i-PER_ID_I2C] = $urandom_range(1,8);            // transmit up to 128 bytes
+		i2c_l2offset[i-PER_ID_I2C] = $urandom_range(i*32,i*32+8); // when allocating memory, account for the worst case 
+		$display("[DATA %0d] WORDS = %0d, L2OFFSET = %0d",i,i2c_words[i-PER_ID_I2C],i2c_l2offset[i-PER_ID_I2C]);
+		for (int j = 0; j < i2c_words[i-PER_ID_I2C]; j++) begin
+			pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i-PER_ID_I2C] + j] = $urandom;
+		end
+
+		// generating writing commands
+		i2c_cmd_words[i-PER_ID_I2C] = 7; // this must be fixed
+		i2c_cmd_l2offset[i-PER_ID_I2C] = $urandom_range(i*32+8,i*32+16); // when allocating memory, account for the worst case 
+		$display("[CMD %0d] WORDS = %0d, L2OFFSET = %0d",i,i2c_cmd_words[i-PER_ID_I2C],i2c_cmd_l2offset[i-PER_ID_I2C]);
+		// here the content can't be random
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 0] = 32'he0000000  + $urandom_range(12'h08f,12'h08f);
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 1] = 32'h00000000;
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 2] = 32'h70000000  + (4'b1010 << 4) + (3'b000 << 1) + 1'b0;
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 3] = 32'h70000000;
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 4] = 32'hc0000000  + i2c_words[i-PER_ID_I2C]*4;
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 5] = 32'h80000000; 
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 6] = 32'h20000000;
+
+		$writememh("tcdm_stim_out_data_cmd.txt", pulp_io_tb.i_tcdm_model.memory);
+
+		// configuring data channels
+		apb_test_pkg::udma_lin_tx_saddr(  PERIPH_ID_OFFSET + i*128,8'h10,32'h1C000000 + i2c_l2offset[i-PER_ID_I2C]*4,sys_clk_i,APB_BUS); // write L2 start address
+		apb_test_pkg::udma_lin_tx_size(   PERIPH_ID_OFFSET + i*128,8'h14,(i2c_words[i-PER_ID_I2C])*4,sys_clk_i,APB_BUS); // configure the transfer size
+
+		// configuring command channels
+		apb_test_pkg::udma_lin_tx_saddr( PERIPH_ID_OFFSET + i*128,8'h20,32'h1C000000 + i2c_cmd_l2offset[i-PER_ID_I2C]*4,sys_clk_i,APB_BUS); // write L2 start address
+		apb_test_pkg::udma_lin_tx_size(  PERIPH_ID_OFFSET + i*128,8'h24,(i2c_cmd_words[i-PER_ID_I2C])*4,sys_clk_i,APB_BUS); // configure the transfer size		
+		apb_test_pkg::udma_i2c_setup(PERIPH_ID_OFFSET + i*128,sys_clk_i,APB_BUS); // enable the transmission
 	end
 
 	#10000us;
 
+	for (int i = PER_ID_I2C; i < PER_ID_I2C + N_I2C; i++) begin
+		//i2c_l2offset[i-PER_ID_I2C] = $urandom_range(i*32,i*32+8); 
+		$display("[DATA %0d] WORDS = %0d, L2OFFSET = %0d",i,i2c_words[i-PER_ID_I2C],i2c_l2offset[i-PER_ID_I2C]);
+
+		// generating reading commands
+		i2c_cmd_words[i-PER_ID_I2C] = 10; // this must be fixed
+		i2c_cmd_l2offset[i-PER_ID_I2C] = $urandom_range(i*32+8,i*32+23); // when allocating memory, account for the worst case 
+		$display("[CMD %0d] WORDS = %0d, L2OFFSET = %0d",i,i2c_cmd_words[i-PER_ID_I2C],i2c_cmd_l2offset[i-PER_ID_I2C]);
+		// here the content can't be random
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 0] = 32'he0000000  + $urandom_range(12'h08f,12'h08f);
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 1] = 32'h00000000;
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 2] = 32'h70000000  + (4'b1010 << 4) + (3'b000 << 1) + 1'b0;
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 3] = 32'h70000000;
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 4] = 32'h00000000; //start
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 5] = 32'h70000000  + (4'b1010 << 4) + (3'b000 << 1) + 1'b1;
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 6] = 32'hc0000000  + (i2c_words[i-PER_ID_I2C])*4 -1;
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 7] = 32'h40000000; // read ack
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 8] = 32'h60000000; // last read nack
+		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 9] = 32'h20000000;
+
+		$writememh("tcdm_stim_out_data_cmd.txt", pulp_io_tb.i_tcdm_model.memory);
+
+		// configuring data channels
+		apb_test_pkg::udma_lin_rx_saddr(  PERIPH_ID_OFFSET + i*128,8'h00,32'h1C000900 + i2c_l2offset[i-PER_ID_I2C]*4,sys_clk_i,APB_BUS); // write L2 start address
+		apb_test_pkg::udma_lin_rx_size(   PERIPH_ID_OFFSET + i*128,8'h04,(i2c_words[i-PER_ID_I2C])*4,sys_clk_i,APB_BUS); // configure the transfer size
+
+		// configuring command channels (override previous ones)
+		apb_test_pkg::udma_lin_tx_saddr( PERIPH_ID_OFFSET + i*128,8'h20,32'h1C000000 + i2c_cmd_l2offset[i-PER_ID_I2C]*4,sys_clk_i,APB_BUS); // write L2 start address
+		apb_test_pkg::udma_lin_tx_size(  PERIPH_ID_OFFSET + i*128,8'h24,(i2c_cmd_words[i-PER_ID_I2C])*4,sys_clk_i,APB_BUS); // configure the transfer size		
+	end
+
+	for (int i = PER_ID_I2C; i < PER_ID_I2C + N_I2C; i++) begin
+		apb_test_pkg::udma_i2c_rw(PERIPH_ID_OFFSET + i*128,sys_clk_i,APB_BUS); // enable the transmission
+	end
 	// artificial error injected here
-	pulp_io_tb.i_tcdm_model.memory[446] = 0;
+	// pulp_io_tb.i_tcdm_model.memory[446] = 0;
+
+	#10000us;
 
 	$writememh("tcdm_stim_out.txt", pulp_io_tb.i_tcdm_model.memory);
 
 	for (int i = 0; i < N_UART; i++) begin
-		for (int j = 0; j < words[i]; j++) begin
-			transactions = transactions + 1;
-			if (pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j] !== pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j + 512]) begin
-				errors = errors + 1;
-				$display("ERROR @ %8x --> TX = %8x, RX = %8x", 32'h1C000800 + (l2offset[i] + j)*4, pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j + 512]);
+		for (int j = 0; j < uart_words[i]; j++) begin
+			uart_transactions = uart_transactions + 4;
+			if (pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j] !== pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j + 512]) begin
+				uart_errors = uart_errors + 4;
+				$display("ERROR @ %8x --> TX = %8x, RX = %8x", 32'h1C000800 + (uart_l2offset[i] + j)*4, pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j + 512]);
 			end else begin
-				$display("TX = %8x, RX = %8x",pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j + 512]);
+				//$display("TX = %8x, RX = %8x",pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j + 512]);
 			end
 		end
 	end
 
-	if (errors == 0) begin
-		$display(":-) TEST PASS: %0d/%0d PASSED, %0d FAILED",transactions-errors,transactions, errors);
+	if (uart_errors == 0) begin
+		$display("[UART TEST PASS] %0d/%0d transaction PASSED",uart_transactions-uart_errors,uart_transactions);
 	end else begin
-		$error(":'( TEST FAIL: %0d/%0d PASSED, %0d FAILED",transactions-errors,transactions, errors);
+		$error("[UART TEST FAIL] %0d/%0d transaction PASSED, %0d FAILED",uart_transactions-uart_errors,uart_transactions, uart_errors);
 	end
 
-	#1ms;
+	for (int i = 0; i < N_I2C; i++) begin
+		for (int j = 0; j < i2c_words[i]; j++) begin
+			i2c_transactions = i2c_transactions + 4;
+			if (pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j] !== pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j + 576]) begin
+				i2c_errors = i2c_errors + 4;
+				$display("ERROR @ %8x --> TX = %8x, RX = %8x", 32'h1C000900 + (i2c_l2offset[i] + j)*4, pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j + 576]);
+			end else begin
+				//$display("TX = %8x, RX = %8x",pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j + 512]);
+			end
+		end
+	end
+
+	if (i2c_errors == 0) begin
+		$display("[I2C  TEST PASS] %0d/%0d transaction PASSED",i2c_transactions-i2c_errors,i2c_transactions);
+	end else begin
+		$error("[I2C  TEST FAIL] %0d/%0d transaction PASSED, %0d FAILED",i2c_transactions-i2c_errors,i2c_transactions, i2c_errors);
+	end
+
+	#50ms;
 
 	$stop;
 

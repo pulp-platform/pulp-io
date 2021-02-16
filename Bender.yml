@@ -19,6 +19,9 @@ dependencies:
 
   #udma_i2c: {path: "local/udma_i2c"}
   #udma_i2c: {git: "git@github.com:pulp-platform/udma_i2c.git", version: 1.0.0}
+  udma_i2c: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_i2c.git", rev: "devel"}
+
+
   #udma_sdio: {path: "local/udma_sdio"}
   #udma_sdio: {git: "git@github.com:pulp-platform/udma_sdio.git", version: 1.0.0}
   #udma_i2s: {path: "local/udma_i2s"}

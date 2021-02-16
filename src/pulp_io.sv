@@ -75,6 +75,9 @@ module pulp_io
 	//--- IO pads
 	// GPIO BI-PADS
 	BIPAD_IF.PERIPH_SIDE PAD_GPIO[PAD_NUM-1:0],
+	// I2C BI-PADS
+	BIPAD_IF.PERIPH_SIDE PAD_I2C_SCL[ N_I2C-1:0],
+	BIPAD_IF.PERIPH_SIDE PAD_I2C_SDA[ N_I2C-1:0],
 	// UART BI-PADS
 	BIPAD_IF.PERIPH_SIDE PAD_UART_RX[N_UART-1:0],
 	BIPAD_IF.PERIPH_SIDE PAD_UART_TX[N_UART-1:0]
@@ -154,6 +157,8 @@ module pulp_io
 	.event_ready_o       ( event_ready_o     ),
 
 	// BI-PAD signals
+	.PAD_I2C_SCL         ( PAD_I2C_SCL       ),
+	.PAD_I2C_SDA         ( PAD_I2C_SDA       ),
 	.PAD_UART_RX         ( PAD_UART_RX       ),
 	.PAD_UART_TX         ( PAD_UART_TX       )
 );

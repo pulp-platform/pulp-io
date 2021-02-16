@@ -14,3 +14,5 @@ sources:
     # levels 1 and 0, etc. Files within a level are ordered alphabetically.
     # Level 0
     - uart/uart_tb_rx.sv
+    - i2c/fram_i2c.v
+    - i2c/config.v
