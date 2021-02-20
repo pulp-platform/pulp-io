@@ -27,7 +27,7 @@ timeprecision 1ps;
 module tcdm_model
 #(
   parameter MP          = 1,
-  parameter MEMORY_SIZE = 1024,
+  parameter MEMORY_SIZE = 2048,
   parameter BASE_ADDR   = 32'h1C000000,
   parameter PROB_STALL  = 0.0,
 `ifndef VERILATOR

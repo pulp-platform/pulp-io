@@ -21,15 +21,17 @@ dependencies:
   #udma_i2c: {git: "git@github.com:pulp-platform/udma_i2c.git", version: 1.0.0}
   udma_i2c: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_i2c.git", rev: "devel"}
 
+  udma_camera: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_camera.git", rev: "devel"}
 
+  udma_qspi: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_qspi.git", rev: "devel"}
+  
+  udma_dvsi: {git: "git@iis-git.ee.ethz.ch:pulp-io/dvsi.git", rev: "devel"}
   #udma_sdio: {path: "local/udma_sdio"}
   #udma_sdio: {git: "git@github.com:pulp-platform/udma_sdio.git", version: 1.0.0}
   #udma_i2s: {path: "local/udma_i2s"}
   #udma_i2s: {git: "git@github.com:pulp-platform/udma_i2s.git", version: 1.1.1}
   #udma_qspi: {path: "local/udma_qspi"}
-  #udma_qspi: {git: "git@github.com:pulp-platform/udma_qspi.git", version: 1.0.3}
   #udma_camera: {path: "local/udma_camera"}
-  #udma_camera: {git: "git@github.com:pulp-platform/udma_camera.git", version: 1.1.1}
   #udma_filter: {path: "local/udma_filter"}
   #udma_filter: {git: "git@github.com:pulp-platform/udma_filter.git", version: 1.0.2}
   #udma_external_per: {path: "local/udma_external_per"}

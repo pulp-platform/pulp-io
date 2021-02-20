@@ -16,3 +16,4 @@ sources:
     - uart/uart_tb_rx.sv
     - i2c/fram_i2c.v
     - i2c/config.v
+    - qspi/s25fs256s.v

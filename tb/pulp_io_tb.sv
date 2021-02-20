@@ -77,6 +77,61 @@ BIPAD_IF PAD_UART_TX[N_UART-1:0]();
 BIPAD_IF PAD_I2C_SCL[N_I2C-1:0]();
 BIPAD_IF PAD_I2C_SDA[N_I2C-1:0]();
 
+// QSPI
+BIPAD_IF PAD_QSPI_SCLK[     N_QSPIM-1:0]();
+BIPAD_IF PAD_QSPI_CSN0[     N_QSPIM-1:0]();
+BIPAD_IF PAD_QSPI_CSN1[     N_QSPIM-1:0]();
+BIPAD_IF PAD_QSPI_CSN2[     N_QSPIM-1:0]();
+BIPAD_IF PAD_QSPI_CSN3[     N_QSPIM-1:0]();
+BIPAD_IF PAD_QSPI_MOSI_IO0[ N_QSPIM-1:0]();
+BIPAD_IF PAD_QSPI_MISO_IO1[ N_QSPIM-1:0]();
+BIPAD_IF PAD_QSPI_IO2[      N_QSPIM-1:0]();
+BIPAD_IF PAD_QSPI_IO3[      N_QSPIM-1:0]();
+
+BIPAD_IF PAD_CPI_PCLK[        N_CPI-1:0]();   
+BIPAD_IF PAD_CPI_VSYNCH[      N_CPI-1:0](); 
+BIPAD_IF PAD_CPI_HSYNCH[      N_CPI-1:0](); 
+BIPAD_IF PAD_CPI_DATA0[       N_CPI-1:0]();  
+BIPAD_IF PAD_CPI_DATA1[       N_CPI-1:0]();  
+BIPAD_IF PAD_CPI_DATA2[       N_CPI-1:0]();  
+BIPAD_IF PAD_CPI_DATA3[       N_CPI-1:0]();  
+BIPAD_IF PAD_CPI_DATA4[       N_CPI-1:0]();  
+BIPAD_IF PAD_CPI_DATA5[       N_CPI-1:0]();  
+BIPAD_IF PAD_CPI_DATA6[       N_CPI-1:0]();  
+BIPAD_IF PAD_CPI_DATA7[       N_CPI-1:0]();  
+
+BIPAD_IF PAD_DVSI_ASA[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_ARE[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_ASY[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_YNRST[     N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_YCLK[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_SXY[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_XCLK[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_XNRST[     N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_ON0[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_ON1[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_ON2[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_ON3[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_OFF0[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_OFF1[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_OFF2[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_OFF3[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_XY0[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_XY1[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_XY2[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_XY3[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_XY4[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_XY5[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_XY6[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_XY7[       N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_CFG0[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_CFG1[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_CFG2[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_CFG3[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_CFG4[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_CFG5[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_CFG6[      N_DVSI-1:0]();
+BIPAD_IF PAD_DVSI_CFG7[      N_DVSI-1:0]();
 
 pulp_io #(
 	.APB_ADDR_WIDTH(32)
@@ -91,43 +146,98 @@ pulp_io #(
 	.L2_ro_rvalid_i  (tcdm_r_valid_o[0]  ),
 	.L2_ro_rdata_i   (tcdm_r_data_o[0]   ),
 
-	.L2_wo_wen_o     (tcdm_wen_i[1]      ),
-	.L2_wo_req_o     (tcdm_req_i[1]      ),
-	.L2_wo_gnt_i     (tcdm_gnt_o[1]      ),
-	.L2_wo_addr_o    (tcdm_add_i[1]      ),
-	.L2_wo_wdata_o   (tcdm_data_i[1]     ),
-	.L2_wo_be_o      (tcdm_be_i[1]       ),
-	.L2_wo_rvalid_i  (tcdm_r_valid_o[1]  ),
-	.L2_wo_rdata_i   (tcdm_r_data_o[1]   ),
+	.L2_wo_wen_o      (tcdm_wen_i[1]      ),
+	.L2_wo_req_o      (tcdm_req_i[1]      ),
+	.L2_wo_gnt_i      (tcdm_gnt_o[1]      ),
+	.L2_wo_addr_o     (tcdm_add_i[1]      ),
+	.L2_wo_wdata_o    (tcdm_data_i[1]     ),
+	.L2_wo_be_o       (tcdm_be_i[1]       ),
+	.L2_wo_rvalid_i   (tcdm_r_valid_o[1]  ),
+	.L2_wo_rdata_i    (tcdm_r_data_o[1]   ),
 
-	.dft_test_mode_i (1'b0               ),
-	.dft_cg_enable_i (1'b0               ),
+	.dft_test_mode_i  (1'b0               ),
+	.dft_cg_enable_i  (1'b0               ),
 
-	.sys_clk_i       (sys_clk_i          ),
-	.sys_rst_ni      (sys_resetn_i       ),
-	.periph_clk_i    (periph_clk_i       ),
+	.sys_clk_i        (sys_clk_i          ),
+	.sys_rst_ni       (sys_resetn_i       ),
+	.periph_clk_i     (periph_clk_i       ),
 
-	.udma_apb_paddr  ( APB_BUS.paddr     ),
-	.udma_apb_pwdata ( APB_BUS.pwdata    ),
-	.udma_apb_pwrite ( APB_BUS.pwrite    ),
-	.udma_apb_psel   ( APB_BUS.psel      ),
-	.udma_apb_penable( APB_BUS.penable   ),
-	.udma_apb_prdata ( APB_BUS.prdata    ),
-	.udma_apb_pready ( APB_BUS.pready    ),
-	.udma_apb_pslverr( APB_BUS.pslverr   ),
+	.udma_apb_paddr   ( APB_BUS.paddr     ),
+	.udma_apb_pwdata  ( APB_BUS.pwdata    ),
+	.udma_apb_pwrite  ( APB_BUS.pwrite    ),
+	.udma_apb_psel    ( APB_BUS.psel      ),
+	.udma_apb_penable ( APB_BUS.penable   ),
+	.udma_apb_prdata  ( APB_BUS.prdata    ),
+	.udma_apb_pready  ( APB_BUS.pready    ),
+	.udma_apb_pslverr ( APB_BUS.pslverr   ),
 
-	.events_o        ( events_o          ),
-	.event_valid_i   ( event_valid_i     ),
-	.event_data_i    ( event_data_i      ),
-	.event_ready_o   ( event_ready_o     ),
+	.events_o         ( events_o          ),
+	.event_valid_i    ( event_valid_i     ),
+	.event_data_i     ( event_data_i      ),
+	.event_ready_o    ( event_ready_o     ),
 
-	.PAD_GPIO        ( PAD_GPIO          ),
+	.PAD_GPIO         ( PAD_GPIO          ),
 
-	.PAD_I2C_SCL     ( PAD_I2C_SCL       ),
-	.PAD_I2C_SDA     ( PAD_I2C_SDA       ),
+	.PAD_I2C_SCL      ( PAD_I2C_SCL       ),
+	.PAD_I2C_SDA      ( PAD_I2C_SDA       ),
 
-	.PAD_UART_RX     ( PAD_UART_RX       ),
-	.PAD_UART_TX     ( PAD_UART_TX       )
+	.PAD_UART_RX      ( PAD_UART_RX       ),
+	.PAD_UART_TX      ( PAD_UART_TX       ),
+
+	.PAD_QSPI_SCLK    ( PAD_QSPI_SCLK     ),
+	.PAD_QSPI_CSN0    ( PAD_QSPI_CSN0     ),
+	.PAD_QSPI_CSN1    ( PAD_QSPI_CSN1     ),
+	.PAD_QSPI_CSN2    ( PAD_QSPI_CSN2     ),
+	.PAD_QSPI_CSN3    ( PAD_QSPI_CSN3     ),
+	.PAD_QSPI_MOSI_IO0( PAD_QSPI_MOSI_IO0 ),
+	.PAD_QSPI_MISO_IO1( PAD_QSPI_MISO_IO1 ),
+	.PAD_QSPI_IO2     ( PAD_QSPI_IO2      ),
+	.PAD_QSPI_IO3     ( PAD_QSPI_IO3      ),
+
+	.PAD_CPI_PCLK     ( PAD_CPI_PCLK      ),
+	.PAD_CPI_VSYNCH   ( PAD_CPI_VSYNCH    ),
+	.PAD_CPI_HSYNCH   ( PAD_CPI_HSYNCH    ),
+	.PAD_CPI_DATA0    ( PAD_CPI_DATA0     ),
+	.PAD_CPI_DATA1    ( PAD_CPI_DATA1     ),
+	.PAD_CPI_DATA2    ( PAD_CPI_DATA2     ),
+	.PAD_CPI_DATA3    ( PAD_CPI_DATA3     ),
+	.PAD_CPI_DATA4    ( PAD_CPI_DATA4     ),
+	.PAD_CPI_DATA5    ( PAD_CPI_DATA5     ),
+	.PAD_CPI_DATA6    ( PAD_CPI_DATA6     ),
+	.PAD_CPI_DATA7    ( PAD_CPI_DATA7     ),
+
+	.PAD_DVSI_ASA     ( PAD_DVSI_ASA      ),
+	.PAD_DVSI_ARE     ( PAD_DVSI_ARE      ),
+	.PAD_DVSI_ASY     ( PAD_DVSI_ASY      ),
+	.PAD_DVSI_YNRST   ( PAD_DVSI_YNRST    ),
+	.PAD_DVSI_YCLK    ( PAD_DVSI_YCLK     ),
+	.PAD_DVSI_SXY     ( PAD_DVSI_SXY      ),
+	.PAD_DVSI_XCLK    ( PAD_DVSI_XCLK     ),
+	.PAD_DVSI_XNRST   ( PAD_DVSI_XNRST    ),
+	.PAD_DVSI_ON0     ( PAD_DVSI_ON0      ),
+	.PAD_DVSI_ON1     ( PAD_DVSI_ON1      ),
+	.PAD_DVSI_ON2     ( PAD_DVSI_ON2      ),
+	.PAD_DVSI_ON3     ( PAD_DVSI_ON3      ),
+	.PAD_DVSI_OFF0    ( PAD_DVSI_OFF0     ),
+	.PAD_DVSI_OFF1    ( PAD_DVSI_OFF1     ),
+	.PAD_DVSI_OFF2    ( PAD_DVSI_OFF2     ),
+	.PAD_DVSI_OFF3    ( PAD_DVSI_OFF3     ),
+	.PAD_DVSI_XY0     ( PAD_DVSI_XY0      ),
+	.PAD_DVSI_XY1     ( PAD_DVSI_XY1      ),
+	.PAD_DVSI_XY2     ( PAD_DVSI_XY2      ),
+	.PAD_DVSI_XY3     ( PAD_DVSI_XY3      ),
+	.PAD_DVSI_XY4     ( PAD_DVSI_XY4      ),
+	.PAD_DVSI_XY5     ( PAD_DVSI_XY5      ),
+	.PAD_DVSI_XY6     ( PAD_DVSI_XY6      ),
+	.PAD_DVSI_XY7     ( PAD_DVSI_XY7      ),
+	.PAD_DVSI_CFG0    ( PAD_DVSI_CFG0     ),
+	.PAD_DVSI_CFG1    ( PAD_DVSI_CFG1     ),
+	.PAD_DVSI_CFG2    ( PAD_DVSI_CFG2     ),
+	.PAD_DVSI_CFG3    ( PAD_DVSI_CFG3     ),
+	.PAD_DVSI_CFG4    ( PAD_DVSI_CFG4     ),
+	.PAD_DVSI_CFG5    ( PAD_DVSI_CFG5     ),
+	.PAD_DVSI_CFG6    ( PAD_DVSI_CFG6     ),
+	.PAD_DVSI_CFG7    ( PAD_DVSI_CFG7     )
 	
 );
 
@@ -149,7 +259,6 @@ for (genvar i = 0; i < N_UART; i++) begin
 		.word_done()
 	);
 	assign PAD_UART_TX[i].IN = 1'b1;
-
 end
 
 logic power_cycle;
@@ -194,11 +303,21 @@ logic [31:0] i2c_words[N_I2C-1:0];
 logic [31:0] i2c_l2offset[N_I2C-1:0];
 logic [31:0] i2c_errors;
 logic [31:0] i2c_transactions;
-
 logic [31:0] i2c_cmd_words[N_I2C-1:0];
 logic [31:0] i2c_cmd_l2offset[N_I2C-1:0];
 logic [31:0] i2c_cmd_errors;
 logic [31:0] i2c_cmd_transactions;
+
+logic [31:0] qspi_words[N_QSPIM-1:0];
+logic [31:0] qspi_l2offset[N_QSPIM-1:0];
+logic [31:0] qspi_errors;
+logic [31:0] qspi_transactions;
+logic [31:0] qspi_cmd_words[N_QSPIM-1:0];
+logic [31:0] qspi_cmd_l2offset[N_QSPIM-1:0];
+logic [31:0] qspi_cmd_errors;
+logic [31:0] qspi_cmd_transactions;
+
+localparam MEM_DISP_OFFSET = 5;
 
 initial begin
 
@@ -236,8 +355,8 @@ initial begin
 		apb_test_pkg::udma_core_cg_en(i,sys_clk_i,APB_BUS); // enabling clock for periph id i
 	end
 	for (int i = PER_ID_UART; i < N_UART; i++) begin
-		uart_words[i] = $urandom_range(1,16);            // transmit up to 128 bytes
-		uart_l2offset[i] = $urandom_range(i*32,i*32+31); // when allocating memory, account for the worst case 
+		uart_words[i] = $urandom_range(1,8);            // transmit up to 128 bytes
+		uart_l2offset[i] = $urandom_range(i*32,i*32+MEM_DISP_OFFSET); // when allocating memory, account for the worst case 
 		$display("[DATA %0d] WORDS = %0d, L2OFFSET = %0d",i,uart_words[i]+1,uart_l2offset[i]);
 		for (int j = 0; j < uart_words[i]; j++) begin
 			pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j] = $urandom;
@@ -246,17 +365,16 @@ initial begin
 		apb_test_pkg::udma_uart_setup(  PERIPH_ID_OFFSET + i*128,      sys_clk_i,APB_BUS); // enable the transmission
 		apb_test_pkg::udma_lin_tx_saddr(PERIPH_ID_OFFSET + i*128,8'h10,32'h1C000000 + uart_l2offset[i]*4,sys_clk_i,APB_BUS); // write L2 start address
 		apb_test_pkg::udma_lin_tx_size( PERIPH_ID_OFFSET + i*128,8'h14,(uart_words[i]+1)*4,sys_clk_i,APB_BUS); // configure the transfer size
-		apb_test_pkg::udma_lin_rx_saddr(PERIPH_ID_OFFSET + i*128,8'h00,32'h1C000800 + uart_l2offset[i]*4,sys_clk_i,APB_BUS); // write L2 start address
+		apb_test_pkg::udma_lin_rx_saddr(PERIPH_ID_OFFSET + i*128,8'h00,32'h1C001000 + uart_l2offset[i]*4,sys_clk_i,APB_BUS); // write L2 start address
 		apb_test_pkg::udma_lin_rx_size( PERIPH_ID_OFFSET + i*128,8'h04,(uart_words[i]+1)*4,sys_clk_i,APB_BUS); // configure the transfer size
 		apb_test_pkg::udma_uart_read(   PERIPH_ID_OFFSET + i*128,      sys_clk_i,APB_BUS); // start reception
 		apb_test_pkg::udma_uart_write(  PERIPH_ID_OFFSET + i*128,      sys_clk_i,APB_BUS); // start transmission
 	end
-//
+
 	#1us;
 
 	// i2c setup
 	$display("I2C TEST");
-
 	for (int i = PER_ID_I2C; i < PER_ID_I2C+N_I2C; i++) begin
 		apb_test_pkg::udma_core_cg_en(i,sys_clk_i,APB_BUS); // enabling clock for periph id i
 	end
@@ -265,7 +383,7 @@ initial begin
 	for (int i = PER_ID_I2C; i < PER_ID_I2C + N_I2C; i++) begin
 		// generating random data
 		i2c_words[i-PER_ID_I2C] = $urandom_range(1,8);            // transmit up to 128 bytes
-		i2c_l2offset[i-PER_ID_I2C] = $urandom_range(i*32,i*32+8); // when allocating memory, account for the worst case 
+		i2c_l2offset[i-PER_ID_I2C] = $urandom_range(i*32,i*32+MEM_DISP_OFFSET); // when allocating memory, account for the worst case 
 		$display("[DATA %0d] WORDS = %0d, L2OFFSET = %0d",i,i2c_words[i-PER_ID_I2C],i2c_l2offset[i-PER_ID_I2C]);
 		for (int j = 0; j < i2c_words[i-PER_ID_I2C]; j++) begin
 			pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i-PER_ID_I2C] + j] = $urandom;
@@ -273,7 +391,7 @@ initial begin
 
 		// generating writing commands
 		i2c_cmd_words[i-PER_ID_I2C] = 7; // this must be fixed
-		i2c_cmd_l2offset[i-PER_ID_I2C] = $urandom_range(i*32+8,i*32+16); // when allocating memory, account for the worst case 
+		i2c_cmd_l2offset[i-PER_ID_I2C] = $urandom_range(i*32+MEM_DISP_OFFSET+8,i*32+8+2*MEM_DISP_OFFSET); // when allocating memory, account for the worst case 
 		$display("[CMD %0d] WORDS = %0d, L2OFFSET = %0d",i,i2c_cmd_words[i-PER_ID_I2C],i2c_cmd_l2offset[i-PER_ID_I2C]);
 		// here the content can't be random
 		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 0] = 32'he0000000  + $urandom_range(12'h08f,12'h08f);
@@ -296,6 +414,44 @@ initial begin
 		apb_test_pkg::udma_i2c_setup(PERIPH_ID_OFFSET + i*128,sys_clk_i,APB_BUS); // enable the transmission
 	end
 
+	 $display("QSPI TEST");
+	 for (int i = PER_ID_QSPIM; i < PER_ID_QSPIM+N_QSPIM; i++) begin
+	 	apb_test_pkg::udma_core_cg_en(i,sys_clk_i,APB_BUS); // enabling clock for periph id i
+	 end
+
+	 // generating random data to transfer
+	 for (int i = PER_ID_QSPIM; i < PER_ID_QSPIM + N_QSPIM; i++) begin
+	 	// generating random data
+	 	qspi_words[i-PER_ID_QSPIM] = $urandom_range(1,8);            // transmit up to 128 bytes
+	 	qspi_l2offset[i-PER_ID_QSPIM] = $urandom_range(i*32+MEM_DISP_OFFSET+8,i*32+8+2*MEM_DISP_OFFSET); // when allocating memory, account for the worst case 
+	 	$display("[DATA %0d] WORDS = %0d, L2OFFSET = %0d",i,qspi_words[i-PER_ID_I2C],qspi_l2offset[i-PER_ID_I2C]);
+	 	for (int j = 0; j < qspi_words[i-PER_ID_QSPIM]; j++) begin
+	 		pulp_io_tb.i_tcdm_model.memory[qspi_l2offset[i-PER_ID_QSPIM] + j] = 32'h87654321;
+	 	end
+
+	 	// generating writing commands
+	 	qspi_cmd_words[i-PER_ID_QSPIM] = 5; // this must be fixed
+	 	qspi_cmd_l2offset[i-PER_ID_QSPIM] = $urandom_range(i*32+16,i*32+MEM_DISP_OFFSET+16); // when allocating memory, account for the worst case 
+	 	$display("[CMD %0d] WORDS = %0d, L2OFFSET = %0d",i,qspi_cmd_words[i-PER_ID_QSPIM],qspi_cmd_l2offset[i-PER_ID_QSPIM]);
+	 	// here the content can't be random
+	 	pulp_io_tb.i_tcdm_model.memory[qspi_cmd_l2offset[i-PER_ID_QSPIM] + 0] = 32'h000000ff;
+	 	pulp_io_tb.i_tcdm_model.memory[qspi_cmd_l2offset[i-PER_ID_QSPIM] + 1] = 32'h10000000;
+	 	pulp_io_tb.i_tcdm_model.memory[qspi_cmd_l2offset[i-PER_ID_QSPIM] + 2] = 32'h20000000  + (1'b0 << 27) + (8'h07 << 16) + 8'hfa;
+	 	pulp_io_tb.i_tcdm_model.memory[qspi_cmd_l2offset[i-PER_ID_QSPIM] + 3] = 32'h60000000  + (1'b0 << 27) + ( 1'b1 << 26) + (8'h07 << 16) + qspi_words[i-PER_ID_QSPIM];
+	 	pulp_io_tb.i_tcdm_model.memory[qspi_cmd_l2offset[i-PER_ID_QSPIM] + 4] = 32'h90000000;
+
+	 	$writememh("tcdm_stim_out_data_cmd.txt", pulp_io_tb.i_tcdm_model.memory);
+
+	 	// configuring data channels
+	 	apb_test_pkg::udma_lin_tx_saddr(  PERIPH_ID_OFFSET + i*128,8'h10,32'h1C000000 + qspi_l2offset[i-PER_ID_QSPIM]*4,sys_clk_i,APB_BUS); // write L2 start address
+	 	apb_test_pkg::udma_lin_tx_size(   PERIPH_ID_OFFSET + i*128,8'h14,(qspi_words[i-PER_ID_QSPIM])*4,sys_clk_i,APB_BUS); // configure the transfer size
+
+	 	// configuring command channels
+	 	apb_test_pkg::udma_lin_tx_saddr( PERIPH_ID_OFFSET + i*128,8'h20,32'h1C000000 + qspi_cmd_l2offset[i-PER_ID_QSPIM]*4,sys_clk_i,APB_BUS); // write L2 start address
+	 	apb_test_pkg::udma_lin_tx_size(  PERIPH_ID_OFFSET + i*128,8'h24,(qspi_cmd_words[i-PER_ID_QSPIM])*4,sys_clk_i,APB_BUS); // configure the transfer size		
+	 	apb_test_pkg::udma_qspi_setup(PERIPH_ID_OFFSET + i*128,sys_clk_i,APB_BUS); // enable the transmission
+	 end
+
 	#10000us;
 
 	for (int i = PER_ID_I2C; i < PER_ID_I2C + N_I2C; i++) begin
@@ -304,7 +460,7 @@ initial begin
 
 		// generating reading commands
 		i2c_cmd_words[i-PER_ID_I2C] = 10; // this must be fixed
-		i2c_cmd_l2offset[i-PER_ID_I2C] = $urandom_range(i*32+8,i*32+23); // when allocating memory, account for the worst case 
+		i2c_cmd_l2offset[i-PER_ID_I2C] = $urandom_range(i*32+MEM_DISP_OFFSET+8,i*32+8+2*MEM_DISP_OFFSET); // when allocating memory, account for the worst case 
 		$display("[CMD %0d] WORDS = %0d, L2OFFSET = %0d",i,i2c_cmd_words[i-PER_ID_I2C],i2c_cmd_l2offset[i-PER_ID_I2C]);
 		// here the content can't be random
 		pulp_io_tb.i_tcdm_model.memory[i2c_cmd_l2offset[i-PER_ID_I2C] + 0] = 32'he0000000  + $urandom_range(12'h08f,12'h08f);
@@ -321,7 +477,7 @@ initial begin
 		$writememh("tcdm_stim_out_data_cmd.txt", pulp_io_tb.i_tcdm_model.memory);
 
 		// configuring data channels
-		apb_test_pkg::udma_lin_rx_saddr(  PERIPH_ID_OFFSET + i*128,8'h00,32'h1C000900 + i2c_l2offset[i-PER_ID_I2C]*4,sys_clk_i,APB_BUS); // write L2 start address
+		apb_test_pkg::udma_lin_rx_saddr(  PERIPH_ID_OFFSET + i*128,8'h00,32'h1C001100 + i2c_l2offset[i-PER_ID_I2C]*4,sys_clk_i,APB_BUS); // write L2 start address
 		apb_test_pkg::udma_lin_rx_size(   PERIPH_ID_OFFSET + i*128,8'h04,(i2c_words[i-PER_ID_I2C])*4,sys_clk_i,APB_BUS); // configure the transfer size
 
 		// configuring command channels (override previous ones)
@@ -332,8 +488,6 @@ initial begin
 	for (int i = PER_ID_I2C; i < PER_ID_I2C + N_I2C; i++) begin
 		apb_test_pkg::udma_i2c_rw(PERIPH_ID_OFFSET + i*128,sys_clk_i,APB_BUS); // enable the transmission
 	end
-	// artificial error injected here
-	// pulp_io_tb.i_tcdm_model.memory[446] = 0;
 
 	#10000us;
 
@@ -342,9 +496,9 @@ initial begin
 	for (int i = 0; i < N_UART; i++) begin
 		for (int j = 0; j < uart_words[i]; j++) begin
 			uart_transactions = uart_transactions + 4;
-			if (pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j] !== pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j + 512]) begin
+			if (pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j] !== pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j + 1024]) begin
 				uart_errors = uart_errors + 4;
-				$display("ERROR @ %8x --> TX = %8x, RX = %8x", 32'h1C000800 + (uart_l2offset[i] + j)*4, pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j + 512]);
+				$display("ERROR @ %8x --> TX = %8x, RX = %8x", 32'h1C001000 + (uart_l2offset[i] + j)*4, pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[uart_l2offset[i] + j + 512]);
 			end else begin
 				//$display("TX = %8x, RX = %8x",pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j + 512]);
 			end
@@ -360,9 +514,9 @@ initial begin
 	for (int i = 0; i < N_I2C; i++) begin
 		for (int j = 0; j < i2c_words[i]; j++) begin
 			i2c_transactions = i2c_transactions + 4;
-			if (pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j] !== pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j + 576]) begin
+			if (pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j] !== pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j + 1024+64]) begin
 				i2c_errors = i2c_errors + 4;
-				$display("ERROR @ %8x --> TX = %8x, RX = %8x", 32'h1C000900 + (i2c_l2offset[i] + j)*4, pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j + 576]);
+				$display("ERROR @ %8x --> TX = %8x, RX = %8x", 32'h1C001100 + (i2c_l2offset[i] + j)*4, pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[i2c_l2offset[i] + j + 576]);
 			end else begin
 				//$display("TX = %8x, RX = %8x",pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j],pulp_io_tb.i_tcdm_model.memory[l2offset[i] + j + 512]);
 			end

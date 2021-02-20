@@ -353,6 +353,24 @@ task automatic udma_i2c_rw(
 endtask : udma_i2c_rw
 
 
+// qspi
+//setup read/write
+task automatic udma_qspi_setup(
+	input logic [31:0] CH_OFFSET,
+	ref   logic        clk_i   , 
+	ref   APB_BUS_t    APB_BUS);
+	logic [31:0] reg_val;
+	APB_READ(CH_OFFSET + 8'h18,reg_val,clk_i,APB_BUS);
+	reg_val = reg_val | (1'b1 << 4); 
+	APB_WRITE(CH_OFFSET + 8'h18,reg_val,clk_i,APB_BUS);  
+	
+	APB_READ(CH_OFFSET + 8'h28,reg_val,clk_i,APB_BUS);
+	reg_val = reg_val | (1'b1 << 4); 
+	APB_WRITE(CH_OFFSET + 8'h28,reg_val,clk_i,APB_BUS);  
+	`ifdef VERBOSE
+		$display("[UART: TXEN]");
+	`endif
+endtask : udma_qspi_setup
 
 
 
