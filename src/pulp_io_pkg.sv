@@ -21,15 +21,10 @@ package pulp_io_pkg;
 		logic sd3_o;
 		logic sd3_oe;
 		logic csn0_o;
-		logic csn0_oe;
 		logic csn1_o;
-		logic csn1_oe;
 		logic csn2_o;
-		logic csn2_oe;
 		logic csn3_o;
-		logic csn3_oe;
 		logic sck_o;
-		logic sck_oe;
 	} qspi_to_pad_t;
 	typedef struct packed {
 		logic sd0_i;
