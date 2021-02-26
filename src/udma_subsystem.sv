@@ -27,6 +27,8 @@ module udma_subsystem
     import udma_pkg::DEST_SIZE;  
 
     import udma_pkg::udma_evt_t;
+    import apb_gpio_pkg::*;
+    import pulp_io_pkg::*;
 
     // peripherals and channels configuration
     import udma_cfg_pkg::*;   
@@ -84,66 +86,19 @@ module udma_subsystem
 
     //--- IO peripheral pads
     // UART  
-    BIPAD_IF.PERIPH_SIDE PAD_UART_RX[N_UART-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_UART_TX[N_UART-1:0],
+    output  uart_to_pad_t [N_UART-1:0] uart_to_pad,
+    input   pad_to_uart_t [N_UART-1:0] pad_to_uart,
     // I2C
-    BIPAD_IF.PERIPH_SIDE PAD_I2C_SCL[ N_I2C-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_I2C_SDA[ N_I2C-1:0],
-    // QSPI
-    BIPAD_IF.PERIPH_SIDE PAD_QSPI_SCLK[     N_QSPIM-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_QSPI_CSN0[     N_QSPIM-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_QSPI_CSN1[     N_QSPIM-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_QSPI_CSN2[     N_QSPIM-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_QSPI_CSN3[     N_QSPIM-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_QSPI_MOSI_IO0[ N_QSPIM-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_QSPI_MISO_IO1[ N_QSPIM-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_QSPI_IO2[      N_QSPIM-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_QSPI_IO3[      N_QSPIM-1:0],
-    //CPI
-    BIPAD_IF.PERIPH_SIDE PAD_CPI_PCLK[        N_CPI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_CPI_VSYNCH[      N_CPI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_CPI_HSYNCH[      N_CPI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_CPI_DATA0[       N_CPI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_CPI_DATA1[       N_CPI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_CPI_DATA2[       N_CPI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_CPI_DATA3[       N_CPI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_CPI_DATA4[       N_CPI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_CPI_DATA5[       N_CPI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_CPI_DATA6[       N_CPI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_CPI_DATA7[       N_CPI-1:0],
-    // DVSI
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_ASA[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_ARE[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_ASY[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_YNRST[     N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_YCLK[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_SXY[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_XCLK[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_XNRST[     N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_ON0[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_ON1[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_ON2[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_ON3[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_OFF0[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_OFF1[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_OFF2[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_OFF3[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_XY0[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_XY1[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_XY2[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_XY3[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_XY4[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_XY5[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_XY6[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_XY7[       N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_CFG0[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_CFG1[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_CFG2[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_CFG3[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_CFG4[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_CFG5[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_CFG6[      N_DVSI-1:0],
-    BIPAD_IF.PERIPH_SIDE PAD_DVSI_CFG7[      N_DVSI-1:0]
+    output  i2c_to_pad_t  [ N_I2C-1:0] i2c_to_pad,
+    input   pad_to_i2c_t  [ N_I2C-1:0] pad_to_i2c,
+    //// QSPI
+    output  qspi_to_pad_t [ N_QSPIM-1:0] qspi_to_pad,
+    input   pad_to_qspi_t [ N_QSPIM-1:0] pad_to_qspi,
+    ////CPI
+    input  pad_to_cpi_t [ N_CPI-1:0] pad_to_cpi,
+    //// DVSI
+    output  dvsi_to_pad_t [ N_DVSI-1:0] dvsi_to_pad,
+    input   pad_to_dvsi_t [ N_DVSI-1:0] pad_to_dvsi
                        
 );
 
@@ -271,8 +226,8 @@ module udma_subsystem
             // events_i    () missing
             .events_o    ( s_evt_uart[                      g_uart] ), 
             // pads
-            .PAD_UART_RX ( PAD_UART_RX[                     g_uart] ),
-            .PAD_UART_TX ( PAD_UART_TX[                     g_uart] ),
+            .uart_to_pad ( uart_to_pad[                     g_uart] ),
+            .pad_to_uart ( pad_to_uart[                     g_uart] ),
             // data channels
             .rx_ch       ( lin_ch_rx[CH_ID_LIN_RX_UART + g_uart:CH_ID_LIN_RX_UART + g_uart] ),
             .tx_ch       ( lin_ch_tx[CH_ID_LIN_TX_UART + g_uart:CH_ID_LIN_TX_UART + g_uart] )
@@ -299,8 +254,8 @@ module udma_subsystem
             .events_o    ( s_evt_i2c[                      g_i2c] ),
             .events_i    ( s_trigger_events                       ),
             //pads
-            .PAD_I2C_SCL ( PAD_I2C_SCL[                    g_i2c] ),
-            .PAD_I2C_SDA ( PAD_I2C_SDA[                    g_i2c] ),
+            .i2c_to_pad ( i2c_to_pad[                      g_i2c] ),
+            .pad_to_i2c ( pad_to_i2c[                      g_i2c] ),
             // data channels
             .rx_ch       ( lin_ch_rx[    CH_ID_LIN_RX_I2C + g_i2c:    CH_ID_LIN_RX_I2C + g_i2c] ),
             .tx_ch       ( lin_ch_tx[    CH_ID_LIN_TX_I2C + g_i2c:    CH_ID_LIN_TX_I2C + g_i2c] ),
@@ -327,15 +282,8 @@ module udma_subsystem
             .events_o         ( s_evt_qspi[                       g_qspi] ), 
             .events_i         ( s_trigger_events                          ),
             // pads
-            .PAD_QSPI_SCLK    ( PAD_QSPI_SCLK[                    g_qspi] ),
-            .PAD_QSPI_CSN0    ( PAD_QSPI_CSN0[                    g_qspi] ),
-            .PAD_QSPI_CSN1    ( PAD_QSPI_CSN1[                    g_qspi] ),
-            .PAD_QSPI_CSN2    ( PAD_QSPI_CSN2[                    g_qspi] ),
-            .PAD_QSPI_CSN3    ( PAD_QSPI_CSN3[                    g_qspi] ),
-            .PAD_QSPI_MOSI_IO0( PAD_QSPI_MOSI_IO0[                g_qspi] ),
-            .PAD_QSPI_MISO_IO1( PAD_QSPI_MISO_IO1[                g_qspi] ),
-            .PAD_QSPI_IO2     ( PAD_QSPI_IO2[                     g_qspi] ),
-            .PAD_QSPI_IO3     ( PAD_QSPI_IO3[                     g_qspi] ),
+            .qspi_to_pad      ( qspi_to_pad[                      g_qspi] ),
+            .pad_to_qspi      ( pad_to_qspi[                      g_qspi] ),
             // channels
             .tx_ch            ( lin_ch_tx[    CH_ID_LIN_TX_QSPIM + g_qspi:    CH_ID_LIN_TX_QSPIM + g_qspi] ),
             .rx_ch            ( lin_ch_rx[    CH_ID_LIN_RX_QSPIM + g_qspi:    CH_ID_LIN_RX_QSPIM + g_qspi] ),
@@ -360,17 +308,7 @@ module udma_subsystem
             //.ch_events_i ( ch_events_i                             ), // FIXME ALFIO (Connect udma events channels)
             .events_o    ( s_evt_cpi[                       g_cpi] ), 
             .events_i    ( s_trigger_events                        ),
-            .PAD_PCLK    ( PAD_CPI_PCLK[                    g_cpi] ),
-            .PAD_VSYNCH  ( PAD_CPI_VSYNCH[                  g_cpi] ),
-            .PAD_HSYNCH  ( PAD_CPI_HSYNCH[                  g_cpi] ),
-            .PAD_DATA0   ( PAD_CPI_DATA0[                   g_cpi] ),
-            .PAD_DATA1   ( PAD_CPI_DATA1[                   g_cpi] ),
-            .PAD_DATA2   ( PAD_CPI_DATA2[                   g_cpi] ),
-            .PAD_DATA3   ( PAD_CPI_DATA3[                   g_cpi] ),
-            .PAD_DATA4   ( PAD_CPI_DATA4[                   g_cpi] ),
-            .PAD_DATA5   ( PAD_CPI_DATA5[                   g_cpi] ),
-            .PAD_DATA6   ( PAD_CPI_DATA6[                   g_cpi] ),
-            .PAD_DATA7   ( PAD_CPI_DATA7[                   g_cpi] ),
+            .pad_to_cpi  ( pad_to_cpi[                      g_cpi] ),
             .rx_ch       ( lin_ch_rx[  CH_ID_LIN_RX_CPI + g_cpi:    CH_ID_LIN_RX_CPI + g_cpi]       )
         );
     end: cpi
@@ -390,44 +328,11 @@ module udma_subsystem
             .cfg_rwn_i     ( s_periph_rwn                             ),
             .cfg_ready_o   ( s_periph_ready[    PER_ID_DVSI + g_dvsi] ),
             .cfg_data_o    ( s_periph_data_from[PER_ID_DVSI + g_dvsi] ),
-
             //.ch_events_i   ( ch_events_i                              ), // FIXME ALFIO
             .events_o      ( s_evt_dvsi                               ), 
             .events_i      ( s_trigger_events                         ),
-
-            .PAD_DVSI_ASA  ( PAD_DVSI_ASA[                    g_dvsi] ),
-            .PAD_DVSI_ARE  ( PAD_DVSI_ARE[                    g_dvsi] ),
-            .PAD_DVSI_ASY  ( PAD_DVSI_ASY[                    g_dvsi] ),
-            .PAD_DVSI_YNRST( PAD_DVSI_YNRST[                  g_dvsi] ),
-            .PAD_DVSI_YCLK ( PAD_DVSI_YCLK[                   g_dvsi] ),
-            .PAD_DVSI_SXY  ( PAD_DVSI_SXY[                    g_dvsi] ),
-            .PAD_DVSI_XCLK ( PAD_DVSI_XCLK[                   g_dvsi] ),
-            .PAD_DVSI_XNRST( PAD_DVSI_XNRST[                  g_dvsi] ),
-            .PAD_DVSI_ON0  ( PAD_DVSI_ON0[                    g_dvsi] ),
-            .PAD_DVSI_ON1  ( PAD_DVSI_ON1[                    g_dvsi] ),
-            .PAD_DVSI_ON2  ( PAD_DVSI_ON2[                    g_dvsi] ),
-            .PAD_DVSI_ON3  ( PAD_DVSI_ON3[                    g_dvsi] ),
-            .PAD_DVSI_OFF0 ( PAD_DVSI_OFF0[                   g_dvsi] ),
-            .PAD_DVSI_OFF1 ( PAD_DVSI_OFF1[                   g_dvsi] ),
-            .PAD_DVSI_OFF2 ( PAD_DVSI_OFF2[                   g_dvsi] ),
-            .PAD_DVSI_OFF3 ( PAD_DVSI_OFF3[                   g_dvsi] ),
-            .PAD_DVSI_XY0  ( PAD_DVSI_XY0[                    g_dvsi] ),
-            .PAD_DVSI_XY1  ( PAD_DVSI_XY1[                    g_dvsi] ),
-            .PAD_DVSI_XY2  ( PAD_DVSI_XY2[                    g_dvsi] ),
-            .PAD_DVSI_XY3  ( PAD_DVSI_XY3[                    g_dvsi] ),
-            .PAD_DVSI_XY4  ( PAD_DVSI_XY4[                    g_dvsi] ),
-            .PAD_DVSI_XY5  ( PAD_DVSI_XY5[                    g_dvsi] ),
-            .PAD_DVSI_XY6  ( PAD_DVSI_XY6[                    g_dvsi] ),
-            .PAD_DVSI_XY7  ( PAD_DVSI_XY7[                    g_dvsi] ),
-            .PAD_DVSI_CFG0 ( PAD_DVSI_CFG0[                   g_dvsi] ),
-            .PAD_DVSI_CFG1 ( PAD_DVSI_CFG1[                   g_dvsi] ),
-            .PAD_DVSI_CFG2 ( PAD_DVSI_CFG2[                   g_dvsi] ),
-            .PAD_DVSI_CFG3 ( PAD_DVSI_CFG3[                   g_dvsi] ),
-            .PAD_DVSI_CFG4 ( PAD_DVSI_CFG4[                   g_dvsi] ),
-            .PAD_DVSI_CFG5 ( PAD_DVSI_CFG5[                   g_dvsi] ),
-            .PAD_DVSI_CFG6 ( PAD_DVSI_CFG6[                   g_dvsi] ),
-            .PAD_DVSI_CFG7 ( PAD_DVSI_CFG7[                   g_dvsi] ),
-
+            .dvsi_to_pad   ( dvsi_to_pad[                     g_dvsi] ),
+            .pad_to_dvsi   ( pad_to_dvsi[                     g_dvsi] ),
             .rx_ch         ( ext_ch_rx[CH_ID_EXT_RX_DVSI + g_dvsi:    CH_ID_EXT_RX_DVSI + g_dvsi] )
         );
     end

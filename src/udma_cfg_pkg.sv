@@ -19,9 +19,9 @@
 package udma_cfg_pkg;
 
 	// entry point, select io peripherals
-	localparam N_QSPIM                 = 2                               ;
+	localparam N_QSPIM                 = 4                               ;
 	localparam N_UART                  = 2                               ;
-	localparam N_I2C                   = 2                               ;
+	localparam N_I2C                   = 4                               ;
 	localparam N_CPI                   = 1                               ;
 	localparam N_DVSI                  = 1                               ;
 	localparam N_I2S                   = 0                               ;
@@ -47,17 +47,12 @@ package udma_cfg_pkg;
 	localparam CH_ID_LIN_TX_CMD_QSPIM  = CH_ID_LIN_TX_QSPIM     + N_QSPIM ; //8
 	localparam CH_ID_LIN_TX_I2C        = CH_ID_LIN_TX_CMD_QSPIM + N_QSPIM ; //12
 	localparam CH_ID_LIN_TX_CMD_I2C    = CH_ID_LIN_TX_I2C       + N_I2C   ; 
-	//localparam CH_ID_LIN_TX_I2S        = CH_ID_LIN_TX_CMD_I2C   + N_I2C   ; 
-	//localparam CH_ID_LIN_TX_HYPER      = CH_ID_LIN_TX_I2S       + N_I2S   ; 
-	//localparam CH_ID_LIN_TX_TGEN       = CH_ID_LIN_TX_HYPER     + N_HYPER ;
 
 	//--- RX Lin. Channels
 	localparam CH_ID_LIN_RX_UART       = 0                                ; 
 	localparam CH_ID_LIN_RX_QSPIM      = CH_ID_LIN_RX_UART      + N_UART  ; 
 	localparam CH_ID_LIN_RX_I2C        = CH_ID_LIN_RX_QSPIM     + N_QSPIM ; 
 	localparam CH_ID_LIN_RX_CPI        = CH_ID_LIN_RX_I2C       + N_I2C   ; 
-	//localparam CH_ID_LIN_RX_I2S        = CH_ID_LIN_RX_CPI       + N_CPI   ; 
-	//localparam CH_ID_LIN_RX_HYPER      = CH_ID_LIN_RX_I2S       + N_I2S   ; 
 
 	// External channel restart from ID o
 	//--- Tx Ext. channels
@@ -76,9 +71,5 @@ package udma_cfg_pkg;
 	localparam PER_ID_I2C              = PER_ID_QSPIM       + N_QSPIM     ; 
 	localparam PER_ID_CPI              = PER_ID_I2C         + N_I2C       ; 
 	localparam PER_ID_DVSI             = PER_ID_CPI         + N_CPI       ; 
-	
-	//localparam PER_ID_I2S              = PER_ID_CAM         + N_CAM       ; 
-	//localparam PER_ID_FILTER           = PER_ID_DVS         + N_DVSI       ; 
-	//localparam PER_ID_TGEN_TX_LIN      = PER_ID_DVS         + N_FILTER    ;
 	
 endpackage
