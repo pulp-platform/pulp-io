@@ -46,7 +46,21 @@ module pulp_io_tb;
 
 	apb_test_pkg::APB_BUS_t APB_BUS;
 	import udma_cfg_pkg::*;
+	import apb_gpio_pkg::*;
+	import pulp_io_pkg::*;
 	localparam PAD_NUM = 4;
+
+	gpio_to_pad_t                gpio_to_pad;
+	pad_to_gpio_t                pad_to_gpio;
+	uart_to_pad_t [  N_UART-1:0] uart_to_pad;
+	pad_to_uart_t [  N_UART-1:0] pad_to_uart;
+	i2c_to_pad_t  [   N_I2C-1:0]  i2c_to_pad;
+	pad_to_i2c_t  [   N_I2C-1:0]  pad_to_i2c;
+	qspi_to_pad_t [ N_QSPIM-1:0] qspi_to_pad;
+	pad_to_qspi_t [ N_QSPIM-1:0] pad_to_qspi;
+	pad_to_cpi_t  [   N_CPI-1:0]  pad_to_cpi;
+	dvsi_to_pad_t [  N_DVSI-1:0] dvsi_to_pad;
+	pad_to_dvsi_t [  N_DVSI-1:0] pad_to_dvsi;
 
 tcdm_model #(
 	.MP(2), 
@@ -69,69 +83,6 @@ tcdm_model #(
 	.tcdm_r_valid_o(tcdm_r_valid_o ),
 	.tcdm_r_data_o (tcdm_r_data_o  )
 );
-
-BIPAD_IF PAD_GPIO[PAD_NUM-1:0]();
-BIPAD_IF PAD_UART_RX[N_UART-1:0]();
-BIPAD_IF PAD_UART_TX[N_UART-1:0]();
-
-BIPAD_IF PAD_I2C_SCL[N_I2C-1:0]();
-BIPAD_IF PAD_I2C_SDA[N_I2C-1:0]();
-
-// QSPI
-BIPAD_IF PAD_QSPI_SCLK[     N_QSPIM-1:0]();
-BIPAD_IF PAD_QSPI_CSN0[     N_QSPIM-1:0]();
-BIPAD_IF PAD_QSPI_CSN1[     N_QSPIM-1:0]();
-BIPAD_IF PAD_QSPI_CSN2[     N_QSPIM-1:0]();
-BIPAD_IF PAD_QSPI_CSN3[     N_QSPIM-1:0]();
-BIPAD_IF PAD_QSPI_MOSI_IO0[ N_QSPIM-1:0]();
-BIPAD_IF PAD_QSPI_MISO_IO1[ N_QSPIM-1:0]();
-BIPAD_IF PAD_QSPI_IO2[      N_QSPIM-1:0]();
-BIPAD_IF PAD_QSPI_IO3[      N_QSPIM-1:0]();
-
-BIPAD_IF PAD_CPI_PCLK[        N_CPI-1:0]();   
-BIPAD_IF PAD_CPI_VSYNCH[      N_CPI-1:0](); 
-BIPAD_IF PAD_CPI_HSYNCH[      N_CPI-1:0](); 
-BIPAD_IF PAD_CPI_DATA0[       N_CPI-1:0]();  
-BIPAD_IF PAD_CPI_DATA1[       N_CPI-1:0]();  
-BIPAD_IF PAD_CPI_DATA2[       N_CPI-1:0]();  
-BIPAD_IF PAD_CPI_DATA3[       N_CPI-1:0]();  
-BIPAD_IF PAD_CPI_DATA4[       N_CPI-1:0]();  
-BIPAD_IF PAD_CPI_DATA5[       N_CPI-1:0]();  
-BIPAD_IF PAD_CPI_DATA6[       N_CPI-1:0]();  
-BIPAD_IF PAD_CPI_DATA7[       N_CPI-1:0]();  
-
-BIPAD_IF PAD_DVSI_ASA[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_ARE[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_ASY[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_YNRST[     N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_YCLK[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_SXY[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_XCLK[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_XNRST[     N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_ON0[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_ON1[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_ON2[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_ON3[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_OFF0[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_OFF1[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_OFF2[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_OFF3[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_XY0[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_XY1[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_XY2[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_XY3[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_XY4[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_XY5[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_XY6[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_XY7[       N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_CFG0[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_CFG1[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_CFG2[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_CFG3[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_CFG4[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_CFG5[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_CFG6[      N_DVSI-1:0]();
-BIPAD_IF PAD_DVSI_CFG7[      N_DVSI-1:0]();
 
 pulp_io #(
 	.APB_ADDR_WIDTH(32)
@@ -175,70 +126,31 @@ pulp_io #(
 	.event_valid_i    ( event_valid_i     ),
 	.event_data_i     ( event_data_i      ),
 	.event_ready_o    ( event_ready_o     ),
+	.gpio_apb_paddr   ( gpio_apb_paddr    ),
+	.gpio_apb_pwdata  ( gpio_apb_pwdata   ),
+	.gpio_apb_pwrite  ( gpio_apb_pwrite   ),
+	.gpio_apb_psel    ( gpio_apb_psel     ),
+	.gpio_apb_penable ( gpio_apb_penable  ),
+	.gpio_apb_prdata  ( gpio_apb_prdata   ),
+	.gpio_apb_pready  ( gpio_apb_pready   ),
+	.gpio_apb_pslverr ( gpio_apb_pslverr  ),
+	.interrupt_o      ( interrupt_o       ),
+	.gpio_in_sync_o   ( gpio_in_sync_o    ),
+	.gpio_padcfg_o    ( gpio_padcfg_o     ),
 
-	.PAD_GPIO         ( PAD_GPIO          ),
+	.gpio_to_pad      ( gpio_to_pad       ),
+	.pad_to_gpio      ( pad_to_gpio       ),
 
-	.PAD_I2C_SCL      ( PAD_I2C_SCL       ),
-	.PAD_I2C_SDA      ( PAD_I2C_SDA       ),
+	.uart_to_pad      ( uart_to_pad       ),
+	.pad_to_uart      ( pad_to_uart       ),
+	.i2c_to_pad       ( i2c_to_pad        ),
+	.pad_to_i2c       ( pad_to_i2c        ),
+	.qspi_to_pad      ( qspi_to_pad       ),
+	.pad_to_qspi      ( pad_to_qspi       ),
+	.pad_to_cpi       ( pad_to_cpi        ),
+	.dvsi_to_pad      ( dvsi_to_pad       ),
+	.pad_to_dvsi      ( pad_to_dvsi       )
 
-	.PAD_UART_RX      ( PAD_UART_RX       ),
-	.PAD_UART_TX      ( PAD_UART_TX       ),
-
-	.PAD_QSPI_SCLK    ( PAD_QSPI_SCLK     ),
-	.PAD_QSPI_CSN0    ( PAD_QSPI_CSN0     ),
-	.PAD_QSPI_CSN1    ( PAD_QSPI_CSN1     ),
-	.PAD_QSPI_CSN2    ( PAD_QSPI_CSN2     ),
-	.PAD_QSPI_CSN3    ( PAD_QSPI_CSN3     ),
-	.PAD_QSPI_MOSI_IO0( PAD_QSPI_MOSI_IO0 ),
-	.PAD_QSPI_MISO_IO1( PAD_QSPI_MISO_IO1 ),
-	.PAD_QSPI_IO2     ( PAD_QSPI_IO2      ),
-	.PAD_QSPI_IO3     ( PAD_QSPI_IO3      ),
-
-	.PAD_CPI_PCLK     ( PAD_CPI_PCLK      ),
-	.PAD_CPI_VSYNCH   ( PAD_CPI_VSYNCH    ),
-	.PAD_CPI_HSYNCH   ( PAD_CPI_HSYNCH    ),
-	.PAD_CPI_DATA0    ( PAD_CPI_DATA0     ),
-	.PAD_CPI_DATA1    ( PAD_CPI_DATA1     ),
-	.PAD_CPI_DATA2    ( PAD_CPI_DATA2     ),
-	.PAD_CPI_DATA3    ( PAD_CPI_DATA3     ),
-	.PAD_CPI_DATA4    ( PAD_CPI_DATA4     ),
-	.PAD_CPI_DATA5    ( PAD_CPI_DATA5     ),
-	.PAD_CPI_DATA6    ( PAD_CPI_DATA6     ),
-	.PAD_CPI_DATA7    ( PAD_CPI_DATA7     ),
-
-	.PAD_DVSI_ASA     ( PAD_DVSI_ASA      ),
-	.PAD_DVSI_ARE     ( PAD_DVSI_ARE      ),
-	.PAD_DVSI_ASY     ( PAD_DVSI_ASY      ),
-	.PAD_DVSI_YNRST   ( PAD_DVSI_YNRST    ),
-	.PAD_DVSI_YCLK    ( PAD_DVSI_YCLK     ),
-	.PAD_DVSI_SXY     ( PAD_DVSI_SXY      ),
-	.PAD_DVSI_XCLK    ( PAD_DVSI_XCLK     ),
-	.PAD_DVSI_XNRST   ( PAD_DVSI_XNRST    ),
-	.PAD_DVSI_ON0     ( PAD_DVSI_ON0      ),
-	.PAD_DVSI_ON1     ( PAD_DVSI_ON1      ),
-	.PAD_DVSI_ON2     ( PAD_DVSI_ON2      ),
-	.PAD_DVSI_ON3     ( PAD_DVSI_ON3      ),
-	.PAD_DVSI_OFF0    ( PAD_DVSI_OFF0     ),
-	.PAD_DVSI_OFF1    ( PAD_DVSI_OFF1     ),
-	.PAD_DVSI_OFF2    ( PAD_DVSI_OFF2     ),
-	.PAD_DVSI_OFF3    ( PAD_DVSI_OFF3     ),
-	.PAD_DVSI_XY0     ( PAD_DVSI_XY0      ),
-	.PAD_DVSI_XY1     ( PAD_DVSI_XY1      ),
-	.PAD_DVSI_XY2     ( PAD_DVSI_XY2      ),
-	.PAD_DVSI_XY3     ( PAD_DVSI_XY3      ),
-	.PAD_DVSI_XY4     ( PAD_DVSI_XY4      ),
-	.PAD_DVSI_XY5     ( PAD_DVSI_XY5      ),
-	.PAD_DVSI_XY6     ( PAD_DVSI_XY6      ),
-	.PAD_DVSI_XY7     ( PAD_DVSI_XY7      ),
-	.PAD_DVSI_CFG0    ( PAD_DVSI_CFG0     ),
-	.PAD_DVSI_CFG1    ( PAD_DVSI_CFG1     ),
-	.PAD_DVSI_CFG2    ( PAD_DVSI_CFG2     ),
-	.PAD_DVSI_CFG3    ( PAD_DVSI_CFG3     ),
-	.PAD_DVSI_CFG4    ( PAD_DVSI_CFG4     ),
-	.PAD_DVSI_CFG5    ( PAD_DVSI_CFG5     ),
-	.PAD_DVSI_CFG6    ( PAD_DVSI_CFG6     ),
-	.PAD_DVSI_CFG7    ( PAD_DVSI_CFG7     )
-	
 );
 
 always #13ns sys_clk_i    = ~sys_clk_i;
@@ -247,18 +159,15 @@ always #20ns periph_clk_i = ~periph_clk_i;
 // attach uarts to simple receiver, and loop back the tx signals on RX
 for (genvar i = 0; i < N_UART; i++) begin
 	uart_tb_rx #(
-
 		.ID (i),
 		.BAUD_RATE(1470588)
-
 	)i_uart_tb_rx (
-		.rx(PAD_UART_TX[i].OUT), 
-		.tx(PAD_UART_RX[i].IN), 
+		.rx(uart_to_pad[i].tx_o), 
+		.tx(pad_to_uart[i].rx_i), 
 		.rx_en(1'b1), 
 		.tx_en(1'b1),
 		.word_done()
 	);
-	assign PAD_UART_TX[i].IN = 1'b1;
 end
 
 logic power_cycle;
@@ -280,12 +189,12 @@ for (genvar i = 0; i < N_I2C; i++) begin: FRAM
 	// active high buffer (verilog primitive)
 	//       out        in                 control
 	assign (pull1,weak0) w_sda[i] = 1'b1; // this should play the role of a pullup
-	bufif1 (w_sda[i],PAD_I2C_SDA[i].OUT, PAD_I2C_SDA[i].OE); // this should drive with "strong0/1" > "pull0/1" strength
-	assign PAD_I2C_SDA[i].IN = w_sda[i];
+	bufif1 (w_sda[i],i2c_to_pad[i].sda_o, i2c_to_pad[i].sda_oe); // this should drive with "strong0/1" > "pull0/1" strength
+	assign pad_to_i2c[i].sda_i = w_sda[i];
 
 	assign (pull1,weak0) w_scl[i] = 1'b1;
-	bufif1 (w_scl[i],PAD_I2C_SCL[i].OUT, PAD_I2C_SCL[i].OE);
-	assign PAD_I2C_SCL[i].IN = w_scl[i];
+	bufif1 (w_scl[i],i2c_to_pad[i].scl_o, i2c_to_pad[i].scl_oe);
+	assign pad_to_i2c[i].scl_i = w_scl[i];
 
 end: FRAM
 
