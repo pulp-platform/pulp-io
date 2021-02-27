@@ -28,8 +28,11 @@ module udma_subsystem
 
     import udma_pkg::udma_evt_t;
     import apb_gpio_pkg::*;
-    import pulp_io_pkg::*;
-
+    import uart_pkg::*;
+    import qspi_pkg::*;
+    import i2c_pkg::*;
+    import cpi_pkg::*;
+    import dvsi_pkg::*;
     // peripherals and channels configuration
     import udma_cfg_pkg::*;   
 
