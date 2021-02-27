@@ -4,7 +4,11 @@ module pulp_io
 	import udma_pkg::L2_DATA_WIDTH;  
 	import udma_pkg::L2_ADDR_WIDTH;  
 	import apb_gpio_pkg::*;
-	import pulp_io_pkg::*;
+	import uart_pkg::*;
+	import qspi_pkg::*;
+	import i2c_pkg::*;
+	import cpi_pkg::*;
+	import dvsi_pkg::*;
 	// peripherals and channels configuration
 	import udma_cfg_pkg::*;  
 
