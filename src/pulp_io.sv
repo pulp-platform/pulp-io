@@ -9,6 +9,7 @@ module pulp_io
 	import i2c_pkg::*;
 	import cpi_pkg::*;
 	import dvsi_pkg::*;
+	import hyper_pkg::*;
 	// peripherals and channels configuration
 	import udma_cfg_pkg::*;  
 
@@ -95,7 +96,10 @@ module pulp_io
 	input   pad_to_cpi_t   [   N_CPI-1:0] pad_to_cpi,
 	// DVSI
 	output  dvsi_to_pad_t [  N_DVSI-1:0] dvsi_to_pad,
-	input   pad_to_dvsi_t [  N_DVSI-1:0] pad_to_dvsi
+	input   pad_to_dvsi_t [  N_DVSI-1:0] pad_to_dvsi,
+	// HYPER
+	output  hyper_to_pad_t [ N_HYPER-1:0] hyper_to_pad,
+	input   pad_to_hyper_t [ N_HYPER-1:0] pad_to_hyper
 	
 );
 
@@ -171,7 +175,6 @@ module pulp_io
 	.event_valid_i       ( event_valid_i     ),
 	.event_data_i        ( event_data_i      ),
 	.event_ready_o       ( event_ready_o     ),
-
 	.uart_to_pad         ( uart_to_pad       ),
 	.pad_to_uart         ( pad_to_uart       ),
 	.i2c_to_pad          ( i2c_to_pad        ),
@@ -180,7 +183,9 @@ module pulp_io
 	.pad_to_qspi         ( pad_to_qspi       ),
 	.pad_to_cpi          ( pad_to_cpi        ),
 	.dvsi_to_pad         ( dvsi_to_pad       ),
-	.pad_to_dvsi         ( pad_to_dvsi       )
+	.pad_to_dvsi         ( pad_to_dvsi       ),
+	.hyper_to_pad        ( hyper_to_pad      ),
+	.pad_to_hyper        ( pad_to_hyper      )
 );
 
 

@@ -47,7 +47,11 @@ module pulp_io_tb;
 	apb_test_pkg::APB_BUS_t APB_BUS;
 	import udma_cfg_pkg::*;
 	import apb_gpio_pkg::*;
-	import pulp_io_pkg::*;
+	import uart_pkg::*;
+	import qspi_pkg::*;
+	import i2c_pkg::*;
+	import cpi_pkg::*;
+	import dvsi_pkg::*;
 	localparam PAD_NUM = 4;
 
 	gpio_to_pad_t                gpio_to_pad;

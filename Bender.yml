@@ -26,6 +26,8 @@ dependencies:
   udma_qspi: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_qspi.git", rev: "devel"}
   
   udma_dvsi: {git: "git@iis-git.ee.ethz.ch:pulp-io/dvsi.git", rev: "devel"}
+
+  udma_hyper: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_hyper.git", rev: "main"}
   #udma_sdio: {path: "local/udma_sdio"}
   #udma_sdio: {git: "git@github.com:pulp-platform/udma_sdio.git", version: 1.0.0}
   #udma_i2s: {path: "local/udma_i2s"}

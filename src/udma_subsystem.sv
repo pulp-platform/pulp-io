@@ -25,14 +25,14 @@ module udma_subsystem
     import udma_pkg::L2_AWIDTH_NOAL; 
     import udma_pkg::STREAM_ID_WIDTH;
     import udma_pkg::DEST_SIZE;  
-
     import udma_pkg::udma_evt_t;
-    import apb_gpio_pkg::*;
+
     import uart_pkg::*;
     import qspi_pkg::*;
     import i2c_pkg::*;
     import cpi_pkg::*;
     import dvsi_pkg::*;
+    import hyper_pkg::*;
     // peripherals and channels configuration
     import udma_cfg_pkg::*;   
 
@@ -94,14 +94,17 @@ module udma_subsystem
     // I2C
     output  i2c_to_pad_t  [ N_I2C-1:0] i2c_to_pad,
     input   pad_to_i2c_t  [ N_I2C-1:0] pad_to_i2c,
-    //// QSPI
+    // QSPI
     output  qspi_to_pad_t [ N_QSPIM-1:0] qspi_to_pad,
     input   pad_to_qspi_t [ N_QSPIM-1:0] pad_to_qspi,
-    ////CPI
+    // CPI
     input  pad_to_cpi_t [ N_CPI-1:0] pad_to_cpi,
-    //// DVSI
+    // DVSI
     output  dvsi_to_pad_t [ N_DVSI-1:0] dvsi_to_pad,
-    input   pad_to_dvsi_t [ N_DVSI-1:0] pad_to_dvsi
+    input   pad_to_dvsi_t [ N_DVSI-1:0] pad_to_dvsi,
+    // HYPER
+    output  hyper_to_pad_t [ N_HYPER-1:0] hyper_to_pad,
+    input   pad_to_hyper_t [ N_HYPER-1:0] pad_to_hyper
                        
 );
 
@@ -317,7 +320,7 @@ module udma_subsystem
     end: cpi
 
     udma_evt_t [N_DVSI-1:0] s_evt_dvsi;
-    for (genvar g_dvsi = 0; g_dvsi < N_DVSI; g_dvsi++) begin
+    for (genvar g_dvsi = 0; g_dvsi < N_DVSI; g_dvsi++) begin: dvsi
 
         udma_dvsi_wrap i_udma_dvsi_wrap (
 
@@ -338,7 +341,34 @@ module udma_subsystem
             .pad_to_dvsi   ( pad_to_dvsi[                     g_dvsi] ),
             .rx_ch         ( ext_ch_rx[CH_ID_EXT_RX_DVSI + g_dvsi:    CH_ID_EXT_RX_DVSI + g_dvsi] )
         );
-    end
+    end: dvsi
+
+    udma_evt_t [N_HYPER-1:0] s_evt_hyper;
+    for (genvar g_hyper = 0; g_hyper < N_HYPER; g_hyper++) begin: hyper
+        udma_hyper_wrap i_udma_hyper_wrap (
+            .sys_clk_i    ( s_clk_periphs_core[PER_ID_HYPER + g_hyper] ),
+            .periph_clk_i ( s_clk_periphs_per[ PER_ID_HYPER + g_hyper] ),
+            .rstn_i       ( sys_resetn_i                               ),
+
+            .cfg_data_i   ( s_periph_data_to                           ),
+            .cfg_addr_i   ( s_periph_addr                              ),
+            .cfg_valid_i  ( s_periph_valid[    PER_ID_HYPER + g_hyper] ),
+            .cfg_rwn_i    ( s_periph_rwn                               ),
+            .cfg_ready_o  ( s_periph_ready[    PER_ID_HYPER + g_hyper] ),
+            .cfg_data_o   ( s_periph_data_from[PER_ID_HYPER + g_hyper] ),
+
+            //.ch_events_ i (           ),
+
+            .events_o     ( s_evt_hyper                                ), 
+            .events_i     ( s_trigger_events                           ),
+
+            .tx_ch        ( lin_ch_tx[  CH_ID_LIN_TX_HYPER + g_hyper:    CH_ID_LIN_TX_HYPER + g_hyper] ),
+            .rx_ch        ( lin_ch_rx[  CH_ID_LIN_RX_HYPER + g_hyper:    CH_ID_LIN_RX_HYPER + g_hyper] ),
+
+            .hyper_to_pad( hyper_to_pad[ g_hyper                     ] ),
+            .pad_to_hyper( pad_to_hyper[ g_hyper                     ] )
+        );
+    end: hyper
 
 
     // pad unused events
