@@ -9,7 +9,7 @@ dependencies:
 
   pad_utils: {path: "local/pad_utils"}
 
-  udma_hyper: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_hyper.git", rev: "main"}
+  udma_hyper: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_hyper.git", rev: "devel"}
 
   #udma_uart: {path: "local/udma_uart"}
   #udma_uart: {git: "git@github.com:pulp-platform/udma_uart.git", version: 1.0.1}
