@@ -9,6 +9,8 @@ dependencies:
 
   pad_utils: {path: "local/pad_utils"}
 
+  udma_hyper: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_hyper.git", rev: "main"}
+
   #udma_uart: {path: "local/udma_uart"}
   #udma_uart: {git: "git@github.com:pulp-platform/udma_uart.git", version: 1.0.1}
   udma_uart: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_uart.git", rev: "devel"}
@@ -27,7 +29,7 @@ dependencies:
   
   udma_dvsi: {git: "git@iis-git.ee.ethz.ch:pulp-io/dvsi.git", rev: "devel"}
 
-  udma_hyper: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_hyper.git", rev: "main"}
+  
   #udma_sdio: {path: "local/udma_sdio"}
   #udma_sdio: {git: "git@github.com:pulp-platform/udma_sdio.git", version: 1.0.0}
   #udma_i2s: {path: "local/udma_i2s"}
