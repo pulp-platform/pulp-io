@@ -10,10 +10,14 @@ package:
 
 sources:
     # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+
     # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
     # levels 1 and 0, etc. Files within a level are ordered alphabetically.
     # Level 0
-    - uart/uart_tb_rx.sv
-    - i2c/fram_i2c.v
-    - i2c/config.v
-    - qspi/s25fs256s.v
+    - target: test
+      files:
+        - uart/uart_tb_rx.sv
+        - i2c/fram_i2c.v
+        - i2c/config.v
+        - qspi/s25fs256s.v
+
