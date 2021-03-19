@@ -1,8 +1,0 @@
-udma_subsystem:
-  rtl:
-    files: [
-      src/udma_subsystem.sv,
-    ]
-  include:
-    files:
-

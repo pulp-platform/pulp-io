@@ -3,62 +3,34 @@ axi_slice_dc:
   group: pulp-platform
   server: https://github.com
 common_cells:
-  commit: 0b8c10c21c9f810509bbd7bf86cfbdc4e6626c8e
-  group: pulp-platform
-  server: https://github.com
+  commit: v1.20.0
 tech_cells_generic:
-  commit: 0532e53c1a323db4a55381d123c55bdc4fab06f6
-  group: pulp-platform
+  commit: v0.1.6
   server: https://github.com
-udma_adc_rx:
-  commit: 24e1c7d3c44f24d3080c560749a759351d9269c0
-  group: pulp-platform
-  server: https://github.com
-udma_adc_ts:
-  commit: 294cbdd6095468e421b553db178e608395f33815
-  group: pulp-platform
-  server: https://github.com
-udma_camera:
-  commit: vega_v1.0.2
-  group: pulp-platform
-  server: https://github.com
-udma_core:
-  commit: vega_v1.0.6
-  group: pulp-platform
-  server: https://github.com
-udma_external_per:
-  commit: 0e53cfed00a2b9cd60e5fc0e9397d335f7145457
-  group: pulp-platform
-  server: https://github.com
-udma_filter:
-  commit: vega_v1.0.3
-  group: pulp-platform
-  server: https://github.com
-udma_hyperbus:
-  commit: 78613abaaba74abf83ebe72cc1e04cc3db846064
-  group: pulp-platform
-  server: https://github.com
-udma_i2c:
-  commit: vega_v1.0.0
-  group: pulp-platform
-  server: https://github.com
-udma_i2s:
-  commit: 407e4c6fb89854aae67ac7f89276f77a775b0e95
-  group: pulp-platform
-  server: https://github.com
-udma_jtag_fifo:
-  commit: 1459a8252808bb624e34071a85d64338579581c9
-  group: pulp-platform
-  server: https://github.com
-udma_qspi:
-  commit: vega_v1.0.0
-  group: pulp-platform
-  server: https://github.com
-udma_sdio:
-  commit: vega_v1.0.5
-  group: pulp-platform
-  server: https://github.com
-udma_uart:
-  commit: vega_v1.0.1
-  group: pulp-platform
-  server: https://github.com
+udma/udma_core:
+  commit: v1.0.2
+  domain: [soc, swu, pulp, hyper]
+udma/udma_uart:
+  commit: v1.0.1
+  domain: [soc, pulp]
+udma/udma_i2c:
+  commit: v1.0.0
+  domain: [soc, pulp]
+udma/udma_sdio:
+  commit: v1.0.0
+  domain: [soc, pulp]
+udma/udma_i2s:
+  commit: v1.1.1
+  domain: [soc, pulp]
+udma/udma_qspi:
+  commit: v1.0.3
+  domain: [soc, pulp]
+udma/udma_camera:
+  commit: v1.1.1
+  domain: [soc, pulp]
+udma/udma_filter:
+  commit: v1.0.2
+  domain: [soc, pulp]
+udma/udma_external_per:
+  commit: v1.0.3
+  domain: [soc, pulp]
