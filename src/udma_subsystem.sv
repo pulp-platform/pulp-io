@@ -272,7 +272,7 @@ module udma_subsystem
     end: i2c
 
     // QSPI Peripheral
-    udma_evt_t [N_QSPIM-1] s_evt_qspi;
+    udma_evt_t [N_QSPIM-1:0] s_evt_qspi;
     for (genvar g_qspi = 0; g_qspi < N_QSPIM; g_qspi++) begin: qspi
         udma_qspi_wrap i_udma_qspi_wrap (
             .sys_clk_i        ( s_clk_periphs_core[PER_ID_QSPIM + g_qspi] ),
