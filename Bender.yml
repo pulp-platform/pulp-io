@@ -12,9 +12,8 @@ dependencies:
   udma_camera: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_camera.git", rev: "devel"}
   udma_qspi: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_qspi.git", rev: "devel"}
   udma_dvsi: {git: "git@iis-git.ee.ethz.ch:pulp-io/dvsi.git", rev: "devel"}
-  udma_hyper: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_hyper.git", rev: "main"}
+  udma_hyper: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_hyper.git", rev: "devel"}
   udma_filter: {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_filter.git", rev: "devel"}
-
 
 sources:
   - target: rtl
