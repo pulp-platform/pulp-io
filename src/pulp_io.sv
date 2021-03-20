@@ -10,6 +10,8 @@ module pulp_io
 	import cpi_pkg::*;
 	import dvsi_pkg::*;
 	import hyper_pkg::*;
+	import udma_pkg::udma_stream_req_t;
+	import udma_pkg::udma_stream_rsp_t;
 	// peripherals and channels configuration
 	import udma_cfg_pkg::*;  
 
@@ -49,6 +51,10 @@ module pulp_io
 
 	input  logic                       dft_test_mode_i,
 	input  logic                       dft_cg_enable_i,
+
+	// external streamer
+	output udma_stream_req_t          udma_stream_req,
+	input  udma_stream_rsp_t          udma_stream_rsp,
 
 
 	input  logic  [APB_ADDR_WIDTH-1:0] udma_apb_paddr,
@@ -171,6 +177,8 @@ module pulp_io
 	.udma_apb_prdata     ( udma_apb_prdata   ),
 	.udma_apb_pready     ( udma_apb_pready   ),
 	.udma_apb_pslverr    ( udma_apb_pslverr  ),
+	.udma_stream_req     ( udma_stream_req   ),
+	.udma_stream_rsp     ( udma_stream_rsp   ),
 	.events_o            ( events_o          ),
 	.event_valid_i       ( event_valid_i     ),
 	.event_data_i        ( event_data_i      ),
