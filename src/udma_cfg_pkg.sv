@@ -26,13 +26,13 @@ package udma_cfg_pkg;
 	localparam N_DVSI                  = 1                               ;
 	localparam N_HYPER                 = 1                               ;
 	localparam N_I2S                   = 0                               ;
-	localparam N_FILTER                = 0                               ;
-	localparam N_TGEN_TX_LIN           = 0                               ;
+	localparam N_FILTER                = 1                               ;
+	localparam N_EXT_STREAMS           = 1                               ;
 
 	localparam N_PERIPHS               = N_UART + N_FILTER + N_QSPIM + N_I2C + N_CPI + N_HYPER + N_I2S + N_DVSI;
 
 	// derive the total number of channels
-	localparam N_STREAMS               = N_FILTER                                               ;
+	localparam N_STREAMS               = N_FILTER + N_EXT_STREAMS                               ;
 	localparam N_TX_LIN_CHANNELS       = N_UART + N_QSPIM*2 + N_I2C*2 +         N_HYPER + N_I2S ;
 	localparam N_RX_LIN_CHANNELS       = N_UART + N_QSPIM   + N_I2C   + N_CPI + N_HYPER + N_I2S ;
 	localparam N_TX_EXT_CHANNELS       = N_FILTER*2                                             ;
@@ -66,6 +66,7 @@ package udma_cfg_pkg;
 	
 	//--- Stream (Ext.) channels
 	localparam STREAM_ID_FILTER        = 0                                ;
+	localparam STREAM_ID_EXTERNAL      = STREAM_ID_FILTER + N_FILTER      ;
 
 	//--- peripheral IDs (unique for each peripheral, regardless of the number of channels)
 	localparam PER_ID_UART             = 0                                ; 
@@ -74,5 +75,6 @@ package udma_cfg_pkg;
 	localparam PER_ID_CPI              = PER_ID_I2C         + N_I2C       ; 
 	localparam PER_ID_DVSI             = PER_ID_CPI         + N_CPI       ; 
 	localparam PER_ID_HYPER            = PER_ID_DVSI        + N_DVSI      ;
+	localparam PER_ID_FILTER           = PER_ID_HYPER       + N_HYPER     ;
 	
 endpackage
