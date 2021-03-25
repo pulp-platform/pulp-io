@@ -83,7 +83,9 @@ module pulp_io
 	output logic                      interrupt_o,
 	output logic        [PAD_NUM-1:0] gpio_in_sync_o,
 	output logic   [PAD_NUM-1:0][3:0] gpio_padcfg_o,
-
+  // triggers for DVSI readout
+  input logic                       dvsi_saer_frame_timer_i,
+  input logic                       dvsi_framebuf_frame_timer_i,
 	//--- IO peripheral pads
 	// GPIOS
 	// PAD SIGNALS CONNECTION
@@ -179,6 +181,8 @@ module pulp_io
 	.udma_apb_pslverr    ( udma_apb_pslverr  ),
 	.udma_stream_req     ( udma_stream_req   ),
 	.udma_stream_rsp     ( udma_stream_rsp   ),
+  .dvsi_saer_frame_timer_i,
+  .dvsi_framebuf_frame_timer_i,
 	.events_o            ( events_o          ),
 	.event_valid_i       ( event_valid_i     ),
 	.event_data_i        ( event_data_i      ),

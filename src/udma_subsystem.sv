@@ -92,6 +92,9 @@ module udma_subsystem
     output logic                       udma_apb_pready,
     output logic                       udma_apb_pslverr,
 
+    input  logic                       dvsi_saer_frame_timer_i,
+    input  logic                       dvsi_framebuf_frame_timer_i,
+
     output logic           [31:0][3:0] events_o,
     input  logic                       event_valid_i,
     input  logic                 [7:0] event_data_i,
@@ -102,7 +105,7 @@ module udma_subsystem
     input  udma_stream_rsp_t          udma_stream_rsp,
 
     //--- IO peripheral pads
-    // UART  
+    // UART
     output  uart_to_pad_t [N_UART-1:0] uart_to_pad,
     input   pad_to_uart_t [N_UART-1:0] pad_to_uart,
     // I2C
@@ -348,8 +351,10 @@ module udma_subsystem
             .cfg_rwn_i     ( s_periph_rwn                             ),
             .cfg_ready_o   ( s_periph_ready[    PER_ID_DVSI + g_dvsi] ),
             .cfg_data_o    ( s_periph_data_from[PER_ID_DVSI + g_dvsi] ),
-            .events_o      ( s_evt_dvsi[                      g_dvsi] ), 
+            .events_o      ( s_evt_dvsi[                      g_dvsi] ),
             .events_i      ( s_trigger_events                         ),
+            .saer_frame_timer_i( dvsi_saer_frame_timer_i              ),
+            .framebuf_frame_timer_i( dvsi_framebuf_frame_timer_i      ),
             .dvsi_to_pad   ( dvsi_to_pad[                     g_dvsi] ),
             .pad_to_dvsi   ( pad_to_dvsi[                     g_dvsi] ),
             .rx_ch         ( ext_ch_rx[CH_ID_EXT_RX_DVSI + g_dvsi:    CH_ID_EXT_RX_DVSI + g_dvsi] )
