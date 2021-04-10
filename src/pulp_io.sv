@@ -86,9 +86,11 @@ module pulp_io
   // triggers for DVSI readout
   input logic                       dvsi_saer_frame_timer_i,
   input logic                       dvsi_framebuf_frame_timer_i,
-	//--- IO peripheral pads
-	// GPIOS
-	// PAD SIGNALS CONNECTION
+  // output trigger for CUTIE
+  output logic                      cutie_trigger_o,
+  //--- IO peripheral pads
+  // GPIOS
+  // PAD SIGNALS CONNECTION
 	output  gpio_to_pad_t                gpio_to_pad,
 	input   pad_to_gpio_t                pad_to_gpio,
 	// UART
@@ -183,6 +185,7 @@ module pulp_io
 	.udma_stream_rsp     ( udma_stream_rsp   ),
   .dvsi_saer_frame_timer_i,
   .dvsi_framebuf_frame_timer_i,
+  .cutie_trigger_o,
 	.events_o            ( events_o          ),
 	.event_valid_i       ( event_valid_i     ),
 	.event_data_i        ( event_data_i      ),

@@ -94,6 +94,7 @@ module udma_subsystem
 
     input  logic                       dvsi_saer_frame_timer_i,
     input  logic                       dvsi_framebuf_frame_timer_i,
+    output logic                       cutie_trigger_o,
 
     output logic           [31:0][3:0] events_o,
     input  logic                       event_valid_i,
@@ -361,6 +362,10 @@ module udma_subsystem
         );
         //bind DVSI events
         assign s_events[PER_ID_DVSI + g_dvsi] = s_evt_dvsi[g_dvsi];
+        if (g_dvsi == 0) begin
+          // CUTIE can be triggered by the framebuffer_done event -> #2
+          assign cutie_trigger_o = s_evt_dvsi[g_dvsi][2];
+        end
     end: dvsi
 
     // Hyperbus peripheral
