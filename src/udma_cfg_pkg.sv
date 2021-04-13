@@ -25,20 +25,21 @@ package udma_cfg_pkg;
 	localparam N_CPI                   = 1                               ;
 	localparam N_DVSI                  = 1                               ;
 	localparam N_HYPER                 = 1                               ;
+  localparam N_CH_HYPER              = 1                               ;
 	localparam N_I2S                   = 0                               ;
 	localparam N_FILTER                = 1                               ;
 	localparam N_EXT_STREAMS           = 1                               ;
 
-	localparam N_PERIPHS               = N_UART + N_FILTER + N_QSPIM + N_I2C + N_CPI + N_HYPER + N_I2S + N_DVSI;
+	localparam N_PERIPHS               = N_UART + N_FILTER + N_QSPIM + N_I2C + N_CPI + (N_HYPER * (1 + N_CH_HYPER)) + N_I2S + N_DVSI;
 
 	// derive the total number of channels
-	localparam N_STREAMS               = N_FILTER + N_EXT_STREAMS                               ;
-	localparam N_TX_LIN_CHANNELS       = N_UART + N_QSPIM*2 + N_I2C*2 +         N_HYPER + N_I2S ;
-	localparam N_RX_LIN_CHANNELS       = N_UART + N_QSPIM   + N_I2C   + N_CPI + N_HYPER + N_I2S ;
-	localparam N_TX_EXT_CHANNELS       = N_FILTER*2                                             ;
-	localparam N_RX_EXT_CHANNELS       = N_FILTER + N_DVSI                                      ;
+	localparam N_STREAMS               = N_FILTER + N_EXT_STREAMS                                            ;
+	localparam N_TX_LIN_CHANNELS       = N_UART + N_QSPIM*2 + N_I2C*2 +         (N_HYPER*N_CH_HYPER) + N_I2S ;
+	localparam N_RX_LIN_CHANNELS       = N_UART + N_QSPIM   + N_I2C   + N_CPI + (N_HYPER*N_CH_HYPER) + N_I2S ;
+	localparam N_TX_EXT_CHANNELS       = N_FILTER*2                                                          ;
+	localparam N_RX_EXT_CHANNELS       = N_FILTER + N_DVSI                                                   ;
 
-	// Channel IDs, not related to peripheral order, and they are not symmetrical for most of the peripherals. 
+	// Channel IDs, not related to peripheral order, and they are not symmetrical for most of the peripherals.
 	// Example: SPI0 might be connected on Tx lin channel 3 and 7, and on Rx channel 9
 	// Drivers need to know the exact peripheral channel mapping to enque data/commands on them.
 	//--- TX Lin. Channels
@@ -46,15 +47,15 @@ package udma_cfg_pkg;
 	localparam CH_ID_LIN_TX_QSPIM      = CH_ID_LIN_TX_UART      + N_UART  ; //4
 	localparam CH_ID_LIN_TX_CMD_QSPIM  = CH_ID_LIN_TX_QSPIM     + N_QSPIM ; //8
 	localparam CH_ID_LIN_TX_I2C        = CH_ID_LIN_TX_CMD_QSPIM + N_QSPIM ; //12
-	localparam CH_ID_LIN_TX_CMD_I2C    = CH_ID_LIN_TX_I2C       + N_I2C   ; 
+	localparam CH_ID_LIN_TX_CMD_I2C    = CH_ID_LIN_TX_I2C       + N_I2C   ;
 	localparam CH_ID_LIN_TX_HYPER      = CH_ID_LIN_TX_CMD_I2C   + N_I2C   ;
 
 	//--- RX Lin. Channels
-	localparam CH_ID_LIN_RX_UART       = 0                                ; 
-	localparam CH_ID_LIN_RX_QSPIM      = CH_ID_LIN_RX_UART      + N_UART  ; 
-	localparam CH_ID_LIN_RX_I2C        = CH_ID_LIN_RX_QSPIM     + N_QSPIM ; 
-	localparam CH_ID_LIN_RX_CPI        = CH_ID_LIN_RX_I2C       + N_I2C   ; 
-	localparam CH_ID_LIN_RX_HYPER      = CH_ID_LIN_RX_CPI       + N_CPI   ; 
+	localparam CH_ID_LIN_RX_UART       = 0                                ;
+	localparam CH_ID_LIN_RX_QSPIM      = CH_ID_LIN_RX_UART      + N_UART  ;
+	localparam CH_ID_LIN_RX_I2C        = CH_ID_LIN_RX_QSPIM     + N_QSPIM ;
+	localparam CH_ID_LIN_RX_CPI        = CH_ID_LIN_RX_I2C       + N_I2C   ;
+	localparam CH_ID_LIN_RX_HYPER      = CH_ID_LIN_RX_CPI       + N_CPI   ;
 
 	// External channel restart from ID o
 	//--- Tx Ext. channels
@@ -69,12 +70,12 @@ package udma_cfg_pkg;
 	localparam STREAM_ID_EXTERNAL      = STREAM_ID_FILTER + N_FILTER      ;
 
 	//--- peripheral IDs (unique for each peripheral, regardless of the number of channels)
-	localparam PER_ID_UART             = 0                                ; 
-	localparam PER_ID_QSPIM            = PER_ID_UART        + N_UART      ; 
-	localparam PER_ID_I2C              = PER_ID_QSPIM       + N_QSPIM     ; 
-	localparam PER_ID_CPI              = PER_ID_I2C         + N_I2C       ; 
-	localparam PER_ID_DVSI             = PER_ID_CPI         + N_CPI       ; 
-	localparam PER_ID_HYPER            = PER_ID_DVSI        + N_DVSI      ;
-	localparam PER_ID_FILTER           = PER_ID_HYPER       + N_HYPER     ;
+	localparam PER_ID_UART             = 0                                               ;
+	localparam PER_ID_QSPIM            = PER_ID_UART        + N_UART                     ; // 2 - 5
+	localparam PER_ID_I2C              = PER_ID_QSPIM       + N_QSPIM                    ; // 6 - 9
+	localparam PER_ID_CPI              = PER_ID_I2C         + N_I2C                      ; // 10
+	localparam PER_ID_DVSI             = PER_ID_CPI         + N_CPI                      ; // 11
+	localparam PER_ID_HYPER            = PER_ID_DVSI        + N_DVSI                     ; // 12 - 13
+	localparam PER_ID_FILTER           = PER_ID_HYPER       + N_HYPER*(1+N_CH_HYPER)     ; // 14
 	
 endpackage

@@ -369,7 +369,7 @@ module udma_subsystem
     end: dvsi
 
     // Hyperbus peripheral
-    udma_evt_t [N_HYPER-1:0] s_evt_hyper;
+    udma_evt_t [N_HYPER*N_CH_HYPER-1:0] s_evt_hyper;
     for (genvar g_hyper = 0; g_hyper < N_HYPER; g_hyper++) begin: hyper
         udma_hyper_wrap i_udma_hyper_wrap (
             .sys_clk_i    ( s_clk_periphs_core[PER_ID_HYPER + g_hyper] ),
@@ -377,14 +377,14 @@ module udma_subsystem
             .rstn_i       ( sys_resetn_i                               ),
             .cfg_data_i   ( s_periph_data_to                           ),
             .cfg_addr_i   ( s_periph_addr                              ),
-            .cfg_valid_i  ( s_periph_valid[    PER_ID_HYPER + g_hyper] ),
+            .cfg_valid_i  ( s_periph_valid[    PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
             .cfg_rwn_i    ( s_periph_rwn                               ),
-            .cfg_ready_o  ( s_periph_ready[    PER_ID_HYPER + g_hyper] ),
-            .cfg_data_o   ( s_periph_data_from[PER_ID_HYPER + g_hyper] ),
-            .events_o     ( s_evt_hyper[                      g_hyper] ), 
+            .cfg_ready_o  ( s_periph_ready[    PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
+            .cfg_data_o   ( s_periph_data_from[PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
+            .events_o     ( s_evt_hyper[                      (g_hyper+1)*N_CH_HYPER-1:g_hyper*N_CH_HYPER] ),
             .events_i     ( s_trigger_events                           ),
-            .tx_ch        ( lin_ch_tx[  CH_ID_LIN_TX_HYPER + g_hyper:    CH_ID_LIN_TX_HYPER + g_hyper] ),
-            .rx_ch        ( lin_ch_rx[  CH_ID_LIN_RX_HYPER + g_hyper:    CH_ID_LIN_RX_HYPER + g_hyper] ),
+            .tx_ch        ( lin_ch_tx[  CH_ID_LIN_TX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_TX_HYPER + g_hyper*N_CH_HYPER] ),
+            .rx_ch        ( lin_ch_rx[  CH_ID_LIN_RX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_RX_HYPER + g_hyper*N_CH_HYPER] ),
             .hyper_to_pad( hyper_to_pad[ g_hyper                     ] ),
             .pad_to_hyper( pad_to_hyper[ g_hyper                     ] )
         );
