@@ -340,7 +340,7 @@ module udma_subsystem
     // DVSI peripheral
     udma_evt_t [N_DVSI-1:0] s_evt_dvsi;
     for (genvar g_dvsi = 0; g_dvsi < N_DVSI; g_dvsi++) begin: dvsi
-
+      logic cutie_start_s;
         udma_dvsi_wrap i_udma_dvsi_wrap (
 
             .sys_clk_i     ( s_clk_periphs_core[PER_ID_DVSI + g_dvsi] ),
@@ -354,6 +354,7 @@ module udma_subsystem
             .cfg_data_o    ( s_periph_data_from[PER_ID_DVSI + g_dvsi] ),
             .events_o      ( s_evt_dvsi[                      g_dvsi] ),
             .events_i      ( s_trigger_events                         ),
+            .cutie_start_o ( cutie_start_s                            ),
             .saer_frame_timer_i( dvsi_saer_frame_timer_i              ),
             .framebuf_frame_timer_i( dvsi_framebuf_frame_timer_i      ),
             .dvsi_to_pad   ( dvsi_to_pad[                     g_dvsi] ),
@@ -364,7 +365,7 @@ module udma_subsystem
         assign s_events[PER_ID_DVSI + g_dvsi] = s_evt_dvsi[g_dvsi];
         if (g_dvsi == 0) begin
           // CUTIE can be triggered by the framebuffer_done event -> #2
-          assign cutie_trigger_o = s_evt_dvsi[g_dvsi][2];
+          assign cutie_trigger_o = cutie_start_s;
         end
     end: dvsi
 
