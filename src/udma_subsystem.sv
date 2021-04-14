@@ -369,8 +369,8 @@ module udma_subsystem
         end
     end: dvsi
 
+    udma_evt_t [N_HYPER-1:0] s_evt_hyper;
     // Hyperbus peripheral
-    udma_evt_t [N_HYPER*N_CH_HYPER-1:0] s_evt_hyper;
     for (genvar g_hyper = 0; g_hyper < N_HYPER; g_hyper++) begin: hyper
         udma_hyper_wrap i_udma_hyper_wrap (
             .sys_clk_i    ( s_clk_periphs_core[PER_ID_HYPER + g_hyper] ),
@@ -382,7 +382,7 @@ module udma_subsystem
             .cfg_rwn_i    ( s_periph_rwn                               ),
             .cfg_ready_o  ( s_periph_ready[    PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
             .cfg_data_o   ( s_periph_data_from[PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
-            .events_o     ( s_evt_hyper[                      (g_hyper+1)*N_CH_HYPER-1:g_hyper*N_CH_HYPER] ),
+            .events_o     ( s_evt_hyper[       g_hyper         ]       ),
             .events_i     ( s_trigger_events                           ),
             .tx_ch        ( lin_ch_tx[  CH_ID_LIN_TX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_TX_HYPER + g_hyper*N_CH_HYPER] ),
             .rx_ch        ( lin_ch_rx[  CH_ID_LIN_RX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_RX_HYPER + g_hyper*N_CH_HYPER] ),
@@ -390,7 +390,11 @@ module udma_subsystem
             .pad_to_hyper( pad_to_hyper[ g_hyper                     ] )
         );
         //bind Hyperbus events
-        assign s_events[PER_ID_HYPER + g_hyper] = s_evt_hyper[g_hyper];
+        assign s_events[PER_ID_HYPER + g_hyper * N_CH_HYPER] = s_evt_hyper[g_hyper];
+        for (genvar i=0; i<N_CH_HYPER; i++) begin : hyper_open_events
+          assign s_events[PER_ID_HYPER + g_hyper * N_CH_HYPER + i + 1] = '0;
+        end
+
     end: hyper
 
     // uDMA filter peripheral
