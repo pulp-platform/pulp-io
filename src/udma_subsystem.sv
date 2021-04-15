@@ -102,9 +102,8 @@ module udma_subsystem
     output logic                       event_ready_o,
 
     // external streams
-    // not used
-    //output udma_stream_req_t          udma_stream_req,
-    //input  udma_stream_rsp_t          udma_stream_rsp,
+    output udma_stream_req_t          udma_stream_req,
+    input  udma_stream_rsp_t          udma_stream_rsp,
 
     //--- IO peripheral pads
     // UART
