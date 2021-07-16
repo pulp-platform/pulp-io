@@ -2,10 +2,10 @@ package:
   name: pulp_io
 
 dependencies:
-  common_cells: {git: "git@github.com:pulp-platform/common_cells.git", rev: master }
-  apb_gpio:     {git: "git@iis-git.ee.ethz.ch:pulp-io/apb_gpio.git", rev: devel }
+  common_cells: {git: "git@github.com:pulp-platform/common_cells.git", rev: "master" }
+  apb_gpio:     {git: "git@iis-git.ee.ethz.ch:pulp-io/apb_gpio.git", rev: "devel" }
   udma_uart:    {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_uart.git", rev: "devel"}
-  udma_core:    {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_core.git", rev: "devel"}
+  udma_core:    {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_core.git", version: 2.0.0 }
   udma_i2c:     {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_i2c.git", rev: "devel"}
   udma_camera:  {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_camera.git", rev: "devel"}
   udma_qspi:    {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_qspi.git", rev: "devel"}
@@ -21,7 +21,7 @@ sources:
     - src/udma_subsystem.sv
     - src/pulp_io.sv
 
-  - target: test
+  - target: all(test,test_io)
     files:
     - tb/tcdm_model.sv
     - tb/apb_test_pkg.sv
