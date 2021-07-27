@@ -14,10 +14,10 @@ dependencies:
   udma_filter:  {git: "git@iis-git.ee.ethz.ch:pulp-io/udma_filter.git", rev: "devel"}
 
 sources:
-  - target: rtl
+  - 
     files:
-    - src/pulp_io_pkg.sv
     - src/udma_cfg_pkg.sv
+    - src/pulp_io_pkg.sv
     - src/udma_subsystem.sv
     - src/pulp_io.sv
 

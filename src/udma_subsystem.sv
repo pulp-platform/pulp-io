@@ -26,16 +26,7 @@
 module udma_subsystem
 
     // signal bitwidths
-    import udma_pkg::L2_DATA_WIDTH;  
-    import udma_pkg::L2_ADDR_WIDTH;  
-    import udma_pkg::CAM_DATA_WIDTH; 
-    import udma_pkg::TRANS_SIZE;     
-    import udma_pkg::L2_AWIDTH_NOAL; 
-    import udma_pkg::STREAM_ID_WIDTH;
-    import udma_pkg::DEST_SIZE;  
-    import udma_pkg::udma_evt_t;
-    import udma_pkg::udma_stream_req_t;
-    import udma_pkg::udma_stream_rsp_t;
+    import udma_pkg::*;  
     import uart_pkg::*;
     import qspi_pkg::*;
     import i2c_pkg::*;
@@ -102,8 +93,8 @@ module udma_subsystem
     output logic                       event_ready_o,
 
     // external streams
-    output udma_stream_req_t          udma_stream_req,
-    input  udma_stream_rsp_t          udma_stream_rsp,
+    // output udma_stream_req_t          udma_stream_req,
+    // input  udma_stream_rsp_t          udma_stream_rsp,
 
     //--- IO peripheral pads
     // UART
@@ -420,7 +411,7 @@ module udma_subsystem
     end: filter
 
     // here we are connecting the last stream to the output port
-    `EXPORT_UDMA_STREAM(str_ch_tx[STREAM_ID_EXTERNAL],udma_stream)
+    // `EXPORT_UDMA_STREAM(str_ch_tx[STREAM_ID_EXTERNAL],udma_stream)
 
     // pad unused events
     for (genvar i = N_PERIPHS; i < 32; i++) begin: evt_zero
