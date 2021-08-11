@@ -13,6 +13,9 @@ dependencies:
   udma_hyper:   {git: "git@github.com:siracusa-soc/udma_hyper.git", rev: "master"}
   udma_filter:  {git: "git@github.com:siracusa-soc/udma_filter.git", rev: "master"}
 
+export_include_dirs:
+  - inc
+
 sources:
   - 
     files:

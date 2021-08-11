@@ -1,16 +1,33 @@
+/* 
+ * Copyright (C) 2018-2020 ETH Zurich, University of Bologna
+ * Copyright and related rights are licensed under the Solderpad Hardware
+ * License, Version 0.51 (the "License"); you may not use this file except in
+ * compliance with the License.  You may obtain a copy of the License at
+ *
+ *                http://solderpad.org/licenses/SHL-0.51. 
+ *
+ * Unless required by applicable law
+ * or agreed to in writing, software, hardware and materials distributed under
+ * this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+ * CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations under the License.
+ *
+ * Alfio Di Mauro <adimauro@iis.ee.ethz.ch>
+ *
+ */
+
+ `include "pulp_io.svh"
+
 module pulp_io 
 
 	// signal bitwidths
-	import udma_pkg::L2_DATA_WIDTH;  
-	import udma_pkg::L2_ADDR_WIDTH;  
 	import uart_pkg::*;
 	import qspi_pkg::*;
 	import i2c_pkg::*;
 	import cpi_pkg::*;
 	import dvsi_pkg::*;
 	import hyper_pkg::*;
-	import udma_pkg::udma_stream_req_t;
-	import udma_pkg::udma_stream_rsp_t;
+	import udma_pkg::*;
 	// peripherals and channels configuration
 	import udma_cfg_pkg::*;  
 
@@ -84,9 +101,23 @@ module pulp_io
 	input   pad_to_qspi_t [ N_QSPIM-1:0]  pad_to_qspi,
 	//CPI
 	input   pad_to_cpi_t   [   N_CPI-1:0] pad_to_cpi,
+
+	`ifndef HYPER_MACRO
 	// HYPER
 	output  hyper_to_pad_t [ N_HYPER-1:0] hyper_to_pad,
 	input   pad_to_hyper_t [ N_HYPER-1:0] pad_to_hyper
+	`else 
+	// configuration from udma core to the macro
+	output cfg_req_t [N_HYPER-1:0] hyper_cfg_req_o,
+	input cfg_rsp_t [N_HYPER-1:0] hyper_cfg_rsp_i,
+	// data channels from/to the macro
+	output udma_linch_tx_req_t [N_HYPER-1:0] hyper_linch_tx_req_o,
+	input udma_linch_tx_rsp_t [N_HYPER-1:0] hyper_linch_tx_rsp_i,
+	input udma_linch_rx_req_t [N_HYPER-1:0] hyper_linch_rx_req_i,
+	output udma_linch_rx_rsp_t [N_HYPER-1:0] hyper_linch_rx_rsp_o,
+	input udma_evt_t [N_HYPER-1:0] hyper_macro_evt_i,
+	output udma_evt_t [N_HYPER-1:0] hyper_macro_evt_o
+	`endif
 	
 );
 
@@ -129,26 +160,30 @@ module pulp_io
 	.udma_apb_prdata     ( udma_apb_prdata   ),
 	.udma_apb_pready     ( udma_apb_pready   ),
 	.udma_apb_pslverr    ( udma_apb_pslverr  ),
-	// .udma_stream_req     ( udma_stream_req   ),
-	// .udma_stream_rsp     ( udma_stream_rsp   ),
 	.events_o            ( events_o          ),
 	.event_valid_i       ( event_valid_i     ),
 	.event_data_i        ( event_data_i      ),
 	.event_ready_o       ( event_ready_o     ),
-	
 	.uart_to_pad         ( uart_to_pad       ),
 	.pad_to_uart         ( pad_to_uart       ),
-
 	.i2c_to_pad          ( i2c_to_pad        ),
 	.pad_to_i2c          ( pad_to_i2c        ),
-
 	.qspi_to_pad         ( qspi_to_pad       ),
 	.pad_to_qspi         ( pad_to_qspi       ),
-
 	.pad_to_cpi          ( pad_to_cpi        ),
-
-	.hyper_to_pad        ( hyper_to_pad      ),
-	.pad_to_hyper        ( pad_to_hyper      )
+	`ifndef HYPER_MACRO
+	.hyper_to_pad        ( hyper_to_pad         ),
+	.pad_to_hyper        ( pad_to_hyper         ),
+	`else  
+	.hyper_cfg_req_o     ( hyper_cfg_req_o      ),
+	.hyper_cfg_rsp_i     ( hyper_cfg_rsp_i      ),
+	.hyper_linch_tx_req_o( hyper_linch_tx_req_o ),
+	.hyper_linch_tx_rsp_i( hyper_linch_tx_rsp_i ),
+	.hyper_linch_rx_req_i( hyper_linch_rx_req_i ),
+	.hyper_linch_rx_rsp_o( hyper_linch_rx_rsp_o ),
+	.hyper_macro_evt_i   ( hyper_macro_evt_i    ),
+	.hyper_macro_evt_o   ( hyper_macro_evt_o    )
+	`endif
 );
 
 

@@ -32,6 +32,11 @@ package udma_cfg_pkg;
 
 	localparam N_PERIPHS               = N_UART + N_FILTER + N_QSPIM + N_I2C + N_CPI + (N_HYPER * (1 + N_CH_HYPER)) + N_I2S + N_DVSI;
 
+	// general configurations
+
+	// determines wether the hyperbus is synthesized or instantiated as a macro
+	localparam HYPER_MACRO = 1;
+
 	// derive the total number of channels
 	localparam N_STREAMS               = N_FILTER + N_EXT_STREAMS                                            ;
 	localparam N_TX_LIN_CHANNELS       = N_UART + N_QSPIM*2 + N_I2C*2 +         (N_HYPER*N_CH_HYPER) + N_I2S ;

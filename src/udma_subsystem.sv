@@ -16,6 +16,8 @@
  *
  */
 
+ `include "pulp_io.svh"
+
 `define EXPORT_UDMA_STREAM(str_ch,port) \
     assign ``port``_req.addr = str_ch.addr; \
     assign ``port``_req.datasize = str_ch.datasize; \
@@ -92,10 +94,6 @@ module udma_subsystem
     input  logic                 [7:0] event_data_i,
     output logic                       event_ready_o,
 
-    // external streams
-    // output udma_stream_req_t          udma_stream_req,
-    // input  udma_stream_rsp_t          udma_stream_rsp,
-
     //--- IO peripheral pads
     // UART
     output  uart_to_pad_t [N_UART-1:0] uart_to_pad,
@@ -111,15 +109,31 @@ module udma_subsystem
     // DVSI
     output  dvsi_to_pad_t [ N_DVSI-1:0] dvsi_to_pad,
     input   pad_to_dvsi_t [ N_DVSI-1:0] pad_to_dvsi,
+
+    `ifndef HYPER_MACRO
     // HYPER
     output  hyper_to_pad_t [ N_HYPER-1:0] hyper_to_pad,
     input   pad_to_hyper_t [ N_HYPER-1:0] pad_to_hyper
+    `else 
+    // configuration from udma core to the macro
+    output cfg_req_t [N_HYPER-1:0] hyper_cfg_req_o,
+    input cfg_rsp_t [N_HYPER-1:0] hyper_cfg_rsp_i,
+    // data channels from/to the macro
+    output udma_linch_tx_req_t [N_HYPER-1:0] hyper_linch_tx_req_o,
+    input udma_linch_tx_rsp_t [N_HYPER-1:0] hyper_linch_tx_rsp_i,
+
+    input udma_linch_rx_req_t [N_HYPER-1:0] hyper_linch_rx_req_i,
+    output udma_linch_rx_rsp_t [N_HYPER-1:0] hyper_linch_rx_rsp_o,
+
+    input udma_evt_t [N_HYPER-1:0] hyper_macro_evt_i,
+    output udma_evt_t [N_HYPER-1:0] hyper_macro_evt_o
+    `endif
                        
 );
 
     // max 32 peripherals
-    udma_evt_t   [31:0] s_events;
-    logic         [1:0] s_rf_event;
+    udma_evt_t [31:0] s_events;
+    logic [1:0] s_rf_event;
 
     logic [N_PERIPHS-1:0]        s_clk_periphs_core;
     logic [N_PERIPHS-1:0]        s_clk_periphs_per;
@@ -363,28 +377,62 @@ module udma_subsystem
     udma_evt_t [N_HYPER-1:0] s_evt_hyper;
     // Hyperbus peripheral
     for (genvar g_hyper = 0; g_hyper < N_HYPER; g_hyper++) begin: hyper
-        udma_hyper_wrap i_udma_hyper_wrap (
-            .sys_clk_i    ( s_clk_periphs_core[PER_ID_HYPER + g_hyper] ),
-            .periph_clk_i ( s_clk_periphs_per[ PER_ID_HYPER + g_hyper] ),
-            .rstn_i       ( sys_resetn_i                               ),
-            .cfg_data_i   ( s_periph_data_to                           ),
-            .cfg_addr_i   ( s_periph_addr                              ),
-            .cfg_valid_i  ( s_periph_valid[    PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
-            .cfg_rwn_i    ( s_periph_rwn                               ),
-            .cfg_ready_o  ( s_periph_ready[    PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
-            .cfg_data_o   ( s_periph_data_from[PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
-            .events_o     ( s_evt_hyper[       g_hyper         ]       ),
-            .events_i     ( s_trigger_events                           ),
-            .tx_ch        ( lin_ch_tx[  CH_ID_LIN_TX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_TX_HYPER + g_hyper*N_CH_HYPER] ),
-            .rx_ch        ( lin_ch_rx[  CH_ID_LIN_RX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_RX_HYPER + g_hyper*N_CH_HYPER] ),
-            .hyper_to_pad( hyper_to_pad[ g_hyper                     ] ),
-            .pad_to_hyper( pad_to_hyper[ g_hyper                     ] )
-        );
-        //bind Hyperbus events
-        assign s_events[PER_ID_HYPER + g_hyper * N_CH_HYPER] = s_evt_hyper[g_hyper];
-        for (genvar i=0; i<N_CH_HYPER; i++) begin : hyper_open_events
-          assign s_events[PER_ID_HYPER + g_hyper * N_CH_HYPER + i + 1] = '0;
-        end
+        `ifndef HYPER_MACRO
+            udma_hyper_wrap i_udma_hyper_wrap (
+                .sys_clk_i    ( s_clk_periphs_core[PER_ID_HYPER + g_hyper] ),
+                .periph_clk_i ( s_clk_periphs_per[ PER_ID_HYPER + g_hyper] ),
+                .rstn_i       ( sys_resetn_i                               ),
+                .cfg_data_i   ( s_periph_data_to                           ),
+                .cfg_addr_i   ( s_periph_addr                              ),
+                .cfg_valid_i  ( s_periph_valid[    PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
+                .cfg_rwn_i    ( s_periph_rwn                               ),
+                .cfg_ready_o  ( s_periph_ready[    PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
+                .cfg_data_o   ( s_periph_data_from[PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
+                .events_o     ( s_evt_hyper[       g_hyper         ]       ),
+                .events_i     ( s_trigger_events                           ),
+                .tx_ch        ( lin_ch_tx[  CH_ID_LIN_TX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_TX_HYPER + g_hyper*N_CH_HYPER] ),
+                .rx_ch        ( lin_ch_rx[  CH_ID_LIN_RX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_RX_HYPER + g_hyper*N_CH_HYPER] ),
+
+                .hyper_to_pad( hyper_to_pad[ g_hyper                     ] ),
+                .pad_to_hyper( pad_to_hyper[ g_hyper                     ] )
+            );
+            //bind Hyperbus events
+            assign s_events[PER_ID_HYPER + g_hyper * N_CH_HYPER] = s_evt_hyper[g_hyper];
+            for (genvar i=0; i<N_CH_HYPER; i++) begin : hyper_open_events
+              assign s_events[PER_ID_HYPER + g_hyper * N_CH_HYPER + i + 1] = '0;
+            end
+        `else 
+            hyper_macro_bridge i_hyper_macro_bridge (
+                .sys_clk_i           ( s_clk_periphs_core[PER_ID_HYPER + g_hyper] ),
+                .periph_clk_i        ( s_clk_periphs_per[ PER_ID_HYPER + g_hyper] ),
+                .rstn_i              ( sys_resetn_i                               ),
+                .cfg_data_i          ( s_periph_data_to                           ),
+                .cfg_addr_i          ( s_periph_addr                              ),
+                .cfg_valid_i         ( s_periph_valid[    PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
+                .cfg_rwn_i           ( s_periph_rwn                               ),
+                .cfg_ready_o         ( s_periph_ready[    PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
+                .cfg_data_o          ( s_periph_data_from[PER_ID_HYPER + (g_hyper+1)*(1+N_CH_HYPER)-1:PER_ID_HYPER + g_hyper*(1+N_CH_HYPER)] ),
+                .events_o            ( s_evt_hyper[       g_hyper         ]       ),
+                .events_i            ( s_trigger_events                           ),
+                .tx_ch               ( lin_ch_tx[  CH_ID_LIN_TX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_TX_HYPER + g_hyper*N_CH_HYPER] ),
+                .rx_ch               ( lin_ch_rx[  CH_ID_LIN_RX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_RX_HYPER + g_hyper*N_CH_HYPER] ),
+                
+                .hyper_macro_evt_i   ( hyper_macro_evt_i[g_hyper]                 ),
+                .hyper_macro_evt_o   ( hyper_macro_evt_o[g_hyper]                 ),
+                .hyper_cfg_req_o     ( hyper_cfg_req_o[g_hyper]                   ),
+                .hyper_cfg_rsp_i     ( hyper_cfg_rsp_i[g_hyper]                   ),
+                .hyper_linch_tx_req_o( hyper_linch_tx_req_o[g_hyper]              ),
+                .hyper_linch_tx_rsp_i( hyper_linch_tx_rsp_i[g_hyper]              ),
+
+                .hyper_linch_rx_req_i( hyper_linch_rx_req_i[g_hyper]              ),
+                .hyper_linch_rx_rsp_o( hyper_linch_rx_rsp_o[g_hyper]              )
+            );
+            //bind Hyperbus events
+            assign s_events[PER_ID_HYPER + g_hyper * N_CH_HYPER] = s_evt_hyper[g_hyper];
+            for (genvar i=0; i<N_CH_HYPER; i++) begin : hyper_open_events
+              assign s_events[PER_ID_HYPER + g_hyper * N_CH_HYPER + i + 1] = '0;
+            end
+        `endif
 
     end: hyper
 
