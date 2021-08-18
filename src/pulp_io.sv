@@ -1,10 +1,10 @@
-/* 
+/*
  * Copyright (C) 2018-2020 ETH Zurich, University of Bologna
  * Copyright and related rights are licensed under the Solderpad Hardware
  * License, Version 0.51 (the "License"); you may not use this file except in
  * compliance with the License.  You may obtain a copy of the License at
  *
- *                http://solderpad.org/licenses/SHL-0.51. 
+ *                http://solderpad.org/licenses/SHL-0.51.
  *
  * Unless required by applicable law
  * or agreed to in writing, software, hardware and materials distributed under
@@ -18,7 +18,7 @@
 
  `include "pulp_io.svh"
 
-module pulp_io 
+module pulp_io
 
 	// signal bitwidths
 	import uart_pkg::*;
@@ -28,12 +28,16 @@ module pulp_io
 	import dvsi_pkg::*;
 	import hyper_pkg::*;
 	import udma_pkg::*;
+  import gpio_reg_pkg::GPIOCount;
 	// peripherals and channels configuration
-	import udma_cfg_pkg::*;  
+	import udma_cfg_pkg::*;
 
 	#(
-	    parameter APB_ADDR_WIDTH = 12,  //APB slaves are 4KB by default
-	    parameter PAD_NUM        = 4
+	    parameter APB_ADDR_WIDTH = 12,  // APB slaves are 4KB by default
+	    localparam NUM_GPIOS      = GPIOCount  // The number of GPIOs.
+                                             // If you want to change this number you have to regenerate the control register file
+                                             // for the GPIO peripheral. There is a make target to do that automatically
+                                             // in the toplevel repo of the GPIO peripheral.
 	)
 	(
 
@@ -43,7 +47,7 @@ module pulp_io
 	input  logic                       sys_clk_i      ,
 	// peripheral clock
 	input  logic                       periph_clk_i   ,
-	
+
 	// memory ports
 	// read only port
 	output logic                       L2_ro_wen_o    ,
@@ -90,7 +94,15 @@ module pulp_io
 	input  logic                       event_valid_i,
 	input  logic                 [7:0] event_data_i,
 	output logic                       event_ready_o,
-	// UART
+
+  // GPIO
+  input logic [NUM_GPIOS-1:0]           gpio_in,
+  output logic [NUM_GPIOS-1:0]          gpio_out,
+  output logic [NUM_GPIOS-1:0]          gpio_tx_en_o,
+  output logic [NUM_GPIOS-1:0]          gpio_in_sync_o, //Synchronized GPIO inputs (can be used as external signal)
+  output logic                          gpio_interrupt_o,
+
+  // UART
 	output  uart_to_pad_t [  N_UART-1:0]  uart_to_pad,
 	input   pad_to_uart_t [  N_UART-1:0]  pad_to_uart,
 	// I2C
@@ -106,7 +118,7 @@ module pulp_io
 	// HYPER
 	output  hyper_to_pad_t [ N_HYPER-1:0] hyper_to_pad,
 	input   pad_to_hyper_t [ N_HYPER-1:0] pad_to_hyper
-	`else 
+	`else
 	// configuration from udma core to the macro
 	output cfg_req_t [N_HYPER-1:0] hyper_cfg_req_o,
 	input cfg_rsp_t [N_HYPER-1:0] hyper_cfg_rsp_i,
@@ -118,8 +130,33 @@ module pulp_io
 	input udma_evt_t [N_HYPER-1:0] hyper_macro_evt_i,
 	output udma_evt_t [N_HYPER-1:0] hyper_macro_evt_o
 	`endif
-	
 );
+
+  APB #(.DATA_WIDTH(32), .ADDR_WIDTH(32)) s_apb_gpio();
+  assign s_apb_gpio.paddr = gpio_apb_paddr;
+  assign s_apb_gpio.pprot = '0;
+  assign s_apb_gpio.psel = gpio_apb_psel;
+  assign s_apb_gpio.penable = gpio_apb_penable;
+  assign s_apb_gpio.pwrite = gpio_apb_pwrite;
+  assign s_apb_gpio.pwdata = gpio_apb_pwdata;
+  assign s_apb_gpio.pstrb = '1;
+  assign gpio_apb_pready = s_apb_gpio.pready;
+  assign gpio_apb_prdata = s_apb_gpio.prdata;
+  assign gpio_apb_pslverr = s_apb_gpio.pslverr;
+
+  gpio_apb_wrap_intf #(
+    .ADDR_WIDTH(32),
+    .DATA_WIDTH(32)
+  ) i_gpio (
+    .clk_i       ( sys_clk_i        ),
+    .rst_ni      ( sys_rst_ni       ),
+    .gpio_in,
+    .gpio_out,
+    .gpio_tx_en_o,
+    .gpio_in_sync_o,
+    .interrupt_o ( gpio_interrupt_o ),
+    .apb_slave   ( s_apb_gpio       )
+  );
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	// ██╗   ██╗██████╗ ███╗   ███╗ █████╗     ███████╗██╗   ██╗██████╗ ███████╗██╗   ██╗███████╗ //
@@ -174,7 +211,7 @@ module pulp_io
 	`ifndef HYPER_MACRO
 	.hyper_to_pad        ( hyper_to_pad         ),
 	.pad_to_hyper        ( pad_to_hyper         ),
-	`else  
+	`else
 	.hyper_cfg_req_o     ( hyper_cfg_req_o      ),
 	.hyper_cfg_rsp_i     ( hyper_cfg_rsp_i      ),
 	.hyper_linch_tx_req_o( hyper_linch_tx_req_o ),
