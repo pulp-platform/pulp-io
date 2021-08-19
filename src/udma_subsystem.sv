@@ -16,7 +16,7 @@
  *
  */
 
- `include "pulp_soc_defines.svh"
+ `include "pulp_soc_defines.sv"
 
 `define EXPORT_UDMA_STREAM(str_ch,port) \
     assign ``port``_req.addr = str_ch.addr; \

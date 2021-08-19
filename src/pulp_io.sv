@@ -16,7 +16,7 @@
  *
  */
 
- `include "pulp_soc_defines.svh"
+ `include "pulp_soc_defines.sv"
 
 module pulp_io
 
@@ -210,7 +210,7 @@ module pulp_io
 	.pad_to_cpi          ( pad_to_cpi        ),
 	`ifndef HYPER_MACRO
 	.hyper_to_pad        ( hyper_to_pad         ),
-	.pad_to_hyper        ( pad_to_hyper         ),
+	.pad_to_hyper        ( pad_to_hyper         )
 	`else
 	.hyper_cfg_req_o     ( hyper_cfg_req_o      ),
 	.hyper_cfg_rsp_i     ( hyper_cfg_rsp_i      ),
