@@ -16,7 +16,7 @@
  *
  */
 
- `include "pulp_io.svh"
+ `include "pulp_soc_defines.svh"
 
 module pulp_io
 
