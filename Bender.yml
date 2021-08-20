@@ -9,7 +9,6 @@ dependencies:
   udma_i2c:     {git: "git@github.com:siracusa-soc/udma_i2c.git", rev: "master"}
   udma_camera:  {git: "git@github.com:siracusa-soc/udma_camera.git", rev: "master"}
   udma_qspi:    {git: "git@github.com:siracusa-soc/udma_qspi.git", rev: "master"}
-  udma_dvsi:    {git: "git@github.com:siracusa-soc/udma_dvsi.git", rev: "master"}
   udma_filter:  {git: "git@github.com:siracusa-soc/udma_filter.git", rev: "master"}
   udma_hyper:   {git: "git@github.com:siracusa-soc/udma_hyper.git", rev: "master"}
 

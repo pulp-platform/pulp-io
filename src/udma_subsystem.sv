@@ -31,7 +31,6 @@ module udma_subsystem
     import qspi_pkg::*;
     import i2c_pkg::*;
     import cpi_pkg::*;
-    import dvsi_pkg::*;
     import hyper_pkg::*;
     import filter_pkg::*;
     // peripherals and channels configuration
@@ -83,10 +82,6 @@ module udma_subsystem
     output logic                       udma_apb_pready,
     output logic                       udma_apb_pslverr,
 
-    input  logic                       dvsi_saer_frame_timer_i,
-    input  logic                       dvsi_framebuf_frame_timer_i,
-    output logic                       cutie_trigger_o,
-
     output logic           [31:0][3:0] events_o,
     input  logic                       event_valid_i,
     input  logic                 [7:0] event_data_i,
@@ -104,9 +99,6 @@ module udma_subsystem
     input   pad_to_qspi_t [ N_QSPIM-1:0] pad_to_qspi,
     // CPI
     input  pad_to_cpi_t [ N_CPI-1:0] pad_to_cpi,
-    // DVSI
-    output  dvsi_to_pad_t [ N_DVSI-1:0] dvsi_to_pad,
-    input   pad_to_dvsi_t [ N_DVSI-1:0] pad_to_dvsi,
 
     `ifndef HYPER_MACRO
     // HYPER
@@ -341,38 +333,6 @@ module udma_subsystem
         //bind cpi events
         assign s_events[PER_ID_CPI + g_cpi] = s_evt_cpi[g_cpi];
     end: cpi
-
-    // DVSI peripheral
-    udma_evt_t [N_DVSI-1:0] s_evt_dvsi;
-    for (genvar g_dvsi = 0; g_dvsi < N_DVSI; g_dvsi++) begin: dvsi
-      logic cutie_start_s;
-        udma_dvsi_wrap i_udma_dvsi_wrap (
-
-            .sys_clk_i     ( s_clk_periphs_core[PER_ID_DVSI + g_dvsi] ),
-            .periph_clk_i  ( s_clk_periphs_per[ PER_ID_DVSI + g_dvsi] ),
-            .rstn_i        ( sys_resetn_i                             ),
-            .cfg_data_i    ( s_periph_data_to                         ),
-            .cfg_addr_i    ( s_periph_addr                            ),
-            .cfg_valid_i   ( s_periph_valid[    PER_ID_DVSI + g_dvsi] ),
-            .cfg_rwn_i     ( s_periph_rwn                             ),
-            .cfg_ready_o   ( s_periph_ready[    PER_ID_DVSI + g_dvsi] ),
-            .cfg_data_o    ( s_periph_data_from[PER_ID_DVSI + g_dvsi] ),
-            .events_o      ( s_evt_dvsi[                      g_dvsi] ),
-            .events_i      ( s_trigger_events                         ),
-            .cutie_start_o ( cutie_start_s                            ),
-            .saer_frame_timer_i( dvsi_saer_frame_timer_i              ),
-            .framebuf_frame_timer_i( dvsi_framebuf_frame_timer_i      ),
-            .dvsi_to_pad   ( dvsi_to_pad[                     g_dvsi] ),
-            .pad_to_dvsi   ( pad_to_dvsi[                     g_dvsi] ),
-            .rx_ch         ( ext_ch_rx[CH_ID_EXT_RX_DVSI + g_dvsi:    CH_ID_EXT_RX_DVSI + g_dvsi] )
-        );
-        //bind DVSI events
-        assign s_events[PER_ID_DVSI + g_dvsi] = s_evt_dvsi[g_dvsi];
-        if (g_dvsi == 0) begin
-          // CUTIE can be triggered by the framebuffer_done event -> #2
-          assign cutie_trigger_o = cutie_start_s;
-        end
-    end: dvsi
 
     udma_evt_t [N_HYPER-1:0] s_evt_hyper;
     // Hyperbus peripheral

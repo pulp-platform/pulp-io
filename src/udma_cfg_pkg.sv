@@ -1,4 +1,4 @@
-/* 
+/*
  * Alfio Di Mauro <adimauro@iis.ee.ethz.ch>
  *
  * Copyright (C) 2018-2020 ETH Zurich, University of Bologna
@@ -6,7 +6,7 @@
  * License, Version 0.51 (the "License"); you may not use this file except in
  * compliance with the License.  You may obtain a copy of the License at
  *
- *                http://solderpad.org/licenses/SHL-0.51. 
+ *                http://solderpad.org/licenses/SHL-0.51.
  *
  * Unless required by applicable law
  * or agreed to in writing, software, hardware and materials distributed under
@@ -23,14 +23,13 @@ package udma_cfg_pkg;
 	localparam N_UART                  = 1                               ;
 	localparam N_I2C                   = 1                               ;
 	localparam N_CPI                   = 1                               ;
-	localparam N_DVSI                  = 0                               ;
 	localparam N_HYPER                 = 1                               ;
-    localparam N_CH_HYPER              = 1                               ;
+  localparam N_CH_HYPER              = 1                               ;
 	localparam N_I2S                   = 0                               ;
 	localparam N_FILTER                = 1                               ;
 	localparam N_EXT_STREAMS           = 0                               ;
 
-	localparam N_PERIPHS               = N_UART + N_FILTER + N_QSPIM + N_I2C + N_CPI + (N_HYPER * (1 + N_CH_HYPER)) + N_I2S + N_DVSI;
+	localparam N_PERIPHS               = N_UART + N_FILTER + N_QSPIM + N_I2C + N_CPI + (N_HYPER * (1 + N_CH_HYPER)) + N_I2S;
 
 	// general configurations
 
@@ -42,7 +41,7 @@ package udma_cfg_pkg;
 	localparam N_TX_LIN_CHANNELS       = N_UART + N_QSPIM*2 + N_I2C*2 +         (N_HYPER*N_CH_HYPER) + N_I2S ;
 	localparam N_RX_LIN_CHANNELS       = N_UART + N_QSPIM   + N_I2C   + N_CPI + (N_HYPER*N_CH_HYPER) + N_I2S ;
 	localparam N_TX_EXT_CHANNELS       = N_FILTER*2                                                          ;
-	localparam N_RX_EXT_CHANNELS       = N_FILTER + N_DVSI                                                   ;
+	localparam N_RX_EXT_CHANNELS       = N_FILTER;
 
 	// Channel IDs, not related to peripheral order, and they are not symmetrical for most of the peripherals.
 	// Example: SPI0 might be connected on Tx lin channel 3 and 7, and on Rx channel 9
@@ -68,8 +67,7 @@ package udma_cfg_pkg;
 
 	//--- Rx Ext. channels
 	localparam CH_ID_EXT_RX_FILTER     = 0                                ;
-	localparam CH_ID_EXT_RX_DVSI       = CH_ID_EXT_RX_FILTER    + N_FILTER;
-	
+
 	//--- Stream (Ext.) channels
 	localparam STREAM_ID_FILTER        = 0                                ;
 	localparam STREAM_ID_EXTERNAL      = STREAM_ID_FILTER + N_FILTER      ;
@@ -79,8 +77,7 @@ package udma_cfg_pkg;
 	localparam PER_ID_QSPIM            = PER_ID_UART        + N_UART                     ; // 2 - 5
 	localparam PER_ID_I2C              = PER_ID_QSPIM       + N_QSPIM                    ; // 6 - 9
 	localparam PER_ID_CPI              = PER_ID_I2C         + N_I2C                      ; // 10
-	localparam PER_ID_DVSI             = PER_ID_CPI         + N_CPI                      ; // 11
-	localparam PER_ID_HYPER            = PER_ID_DVSI        + N_DVSI                     ; // 12 - 13
-	localparam PER_ID_FILTER           = PER_ID_HYPER       + N_HYPER*(1+N_CH_HYPER)     ; // 14
-	
+	localparam PER_ID_HYPER            = PER_ID_CPI         + N_CPI                      ; // 11 - 12
+	localparam PER_ID_FILTER           = PER_ID_HYPER       + N_HYPER*(1+N_CH_HYPER)     ; // 13
+
 endpackage

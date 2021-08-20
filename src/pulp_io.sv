@@ -23,7 +23,6 @@ module pulp_io
 	import qspi_pkg::*;
 	import i2c_pkg::*;
 	import cpi_pkg::*;
-	import dvsi_pkg::*;
 	import hyper_pkg::*;
 	import udma_pkg::*;
   import gpio_reg_pkg::GPIOCount;
