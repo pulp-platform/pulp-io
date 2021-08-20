@@ -19,10 +19,20 @@ export_include_dirs:
 sources:
   - 
     files:
-    - src/udma_cfg_pkg.sv
-    - src/pulp_io_pkg.sv
-    - src/udma_subsystem.sv
-    - src/pulp_io.sv
+      - src/udma_cfg_pkg.sv
+      - src/pulp_io_pkg.sv
+
+  - target: hyper_external
+    defines:
+      HYPER_MACRO: ~
+    files:
+      - src/udma_subsystem.sv
+      - src/pulp_io.sv
+
+  - target: not(hyper_external)
+    files:
+      - src/udma_subsystem.sv
+      - src/pulp_io.sv
 
   - target: all(test,test_io)
     files:

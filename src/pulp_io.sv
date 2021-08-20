@@ -16,8 +16,6 @@
  *
  */
 
- `include "pulp_soc_defines.sv"
-
 module pulp_io
 
 	// signal bitwidths
