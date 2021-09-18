@@ -325,6 +325,8 @@ module udma_subsystem
             .sys_clk_i   ( s_clk_periphs_core[PER_ID_CPI + g_cpi]  ),
             .periph_clk_i( s_clk_periphs_per[ PER_ID_CPI + g_cpi]  ),
             .rstn_i      ( sys_resetn_i                            ),
+            .dft_test_mode_i,
+            .dft_cg_enable_i,
             .cfg_data_i  ( s_periph_data_to                        ),
             .cfg_addr_i  ( s_periph_addr                           ),
             .cfg_valid_i ( s_periph_valid[    PER_ID_CPI + g_cpi]  ),
