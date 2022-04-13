@@ -1,10 +1,10 @@
-/* 
+/*
  * Copyright (C) 2018-2020 ETH Zurich, University of Bologna
  * Copyright and related rights are licensed under the Solderpad Hardware
  * License, Version 0.51 (the "License"); you may not use this file except in
  * compliance with the License.  You may obtain a copy of the License at
  *
- *                http://solderpad.org/licenses/SHL-0.51. 
+ *                http://solderpad.org/licenses/SHL-0.51.
  *
  * Unless required by applicable law
  * or agreed to in writing, software, hardware and materials distributed under
@@ -21,12 +21,12 @@
     assign ``port``_req.datasize = str_ch.datasize; \
     assign ``port``_req.data = str_ch.data; \
     assign ``port``_req.valid = str_ch.valid; \
-    assign  str_ch.ready = ``port``_rsp.ready; 
+    assign  str_ch.ready = ``port``_rsp.ready;
 
 module udma_subsystem
 
     // signal bitwidths
-    import udma_pkg::*;  
+    import udma_pkg::*;
     import uart_pkg::*;
     import qspi_pkg::*;
     import i2c_pkg::*;
@@ -35,7 +35,7 @@ module udma_subsystem
     import hyper_pkg::*;
     import filter_pkg::*;
     // peripherals and channels configuration
-    import udma_cfg_pkg::*;   
+    import udma_cfg_pkg::*;
 
 #(
     parameter APB_ADDR_WIDTH = 12  //APB slaves are 4KB by default
@@ -48,7 +48,7 @@ module udma_subsystem
     input  logic                       sys_clk_i      ,
     // peripheral clock
     input  logic                       periph_clk_i   ,
-    
+
     // memory ports
     // read only port
     output logic                       L2_ro_wen_o    ,
@@ -112,7 +112,7 @@ module udma_subsystem
     // HYPER
     output  hyper_to_pad_t [ N_HYPER-1:0] hyper_to_pad,
     input   pad_to_hyper_t [ N_HYPER-1:0] pad_to_hyper
-    `else 
+    `else
     // configuration from udma core to the macro
     output cfg_req_t [N_HYPER-1:0] hyper_cfg_req_o,
     input cfg_rsp_t [N_HYPER-1:0] hyper_cfg_rsp_i,
@@ -126,7 +126,7 @@ module udma_subsystem
     input udma_evt_t [N_HYPER-1:0] hyper_macro_evt_i,
     output udma_evt_t [N_HYPER-1:0] hyper_macro_evt_o
     `endif
-                       
+
 );
 
     // max 32 peripherals
@@ -209,19 +209,19 @@ module udma_subsystem
         .periph_ready_i          ( s_periph_ready       ),
         .periph_valid_o          ( s_periph_valid       ),
         .periph_rwn_o            ( s_periph_rwn         ),
-    
+
         .tx_l2_req_o             ( L2_ro_req_o          ),
         .tx_l2_gnt_i             ( L2_ro_gnt_i          ),
         .tx_l2_addr_o            ( L2_ro_addr_o         ),
         .tx_l2_rdata_i           ( L2_ro_rdata_i        ),
         .tx_l2_rvalid_i          ( L2_ro_rvalid_i       ),
-    
+
         .rx_l2_req_o             ( L2_wo_req_o          ),
         .rx_l2_gnt_i             ( L2_wo_gnt_i          ),
         .rx_l2_addr_o            ( L2_wo_addr_o         ),
         .rx_l2_be_o              ( L2_wo_be_o           ),
         .rx_l2_wdata_o           ( L2_wo_wdata_o        ),
-    
+
         //--- stream channels connections
         .str_ch_tx               ( str_ch_tx            ),
         //--- Tx lin channels connections
@@ -249,7 +249,7 @@ module udma_subsystem
             .cfg_ready_o ( s_periph_ready[    PER_ID_UART + g_uart] ),
             .cfg_data_o  ( s_periph_data_from[PER_ID_UART + g_uart] ),
             .events_i    ( 4'b0000                                  ), // UART do not receive events
-            .events_o    ( s_evt_uart[                      g_uart] ), 
+            .events_o    ( s_evt_uart[                      g_uart] ),
             // pads
             .uart_to_pad ( uart_to_pad[                     g_uart] ),
             .pad_to_uart ( pad_to_uart[                     g_uart] ),
@@ -303,7 +303,7 @@ module udma_subsystem
             .cfg_rwn_i   ( s_periph_rwn                              ),
             .cfg_ready_o ( s_periph_ready[    PER_ID_QSPIM + g_qspi] ),
             .cfg_data_o  ( s_periph_data_from[PER_ID_QSPIM + g_qspi] ),
-            .events_o    ( s_evt_qspi[                       g_qspi] ), 
+            .events_o    ( s_evt_qspi[                       g_qspi] ),
             .events_i    ( s_trigger_events                          ),
             // pads
             .qspi_to_pad ( qspi_to_pad[                      g_qspi] ),
@@ -331,7 +331,7 @@ module udma_subsystem
             .cfg_rwn_i   ( s_periph_rwn                            ),
             .cfg_ready_o ( s_periph_ready[    PER_ID_CPI + g_cpi]  ),
             .cfg_data_o  ( s_periph_data_from[PER_ID_CPI + g_cpi]  ),
-            .events_o    ( s_evt_cpi[                       g_cpi] ), 
+            .events_o    ( s_evt_cpi[                       g_cpi] ),
             .events_i    ( s_trigger_events                        ),
             .pad_to_cpi  ( pad_to_cpi[                      g_cpi] ),
             .rx_ch       ( lin_ch_rx[  CH_ID_LIN_RX_CPI + g_cpi:    CH_ID_LIN_RX_CPI + g_cpi]       )
@@ -399,7 +399,7 @@ module udma_subsystem
             for (genvar i=0; i<N_CH_HYPER; i++) begin : hyper_open_events
               assign s_events[PER_ID_HYPER + g_hyper * N_CH_HYPER + i + 1] = '0;
             end
-        `else 
+        `else
             hyper_macro_bridge i_hyper_macro_bridge (
                 .sys_clk_i           ( s_clk_periphs_core[PER_ID_HYPER + g_hyper] ),
                 .periph_clk_i        ( s_clk_periphs_per[ PER_ID_HYPER + g_hyper] ),
@@ -414,7 +414,7 @@ module udma_subsystem
                 .events_i            ( s_trigger_events                           ),
                 .tx_ch               ( lin_ch_tx[  CH_ID_LIN_TX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_TX_HYPER + g_hyper*N_CH_HYPER] ),
                 .rx_ch               ( lin_ch_rx[  CH_ID_LIN_RX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_RX_HYPER + g_hyper*N_CH_HYPER] ),
-                
+
                 .hyper_macro_evt_i   ( hyper_macro_evt_i[g_hyper]                 ),
                 .hyper_macro_evt_o   ( hyper_macro_evt_o[g_hyper]                 ),
                 .hyper_cfg_req_o     ( hyper_cfg_req_o[g_hyper]                   ),
@@ -446,7 +446,7 @@ module udma_subsystem
             .cfg_rwn_i    (s_periph_rwn                                 ),
             .cfg_ready_o  (s_periph_ready[    PER_ID_FILTER + g_filter] ),
             .cfg_data_o   (s_periph_data_from[PER_ID_FILTER + g_filter] ),
-            .events_o     (s_evt_filter[                      g_filter] ), 
+            .events_o     (s_evt_filter[                      g_filter] ),
             .events_i     (4'h0                                         ),
             .rx_ch        (ext_ch_rx[   CH_ID_EXT_RX_FILTER + g_filter: CH_ID_EXT_RX_FILTER + g_filter] ),
             .tx_ch        (ext_ch_tx[   CH_ID_EXT_TX_FILTER + g_filter*2 + 1: CH_ID_EXT_TX_FILTER + g_filter*2] ),
