@@ -255,6 +255,11 @@ module udma_subsystem
 
     // I2C Peripheral
     udma_evt_t [N_I2C-1:0] s_evt_i2c;
+    logic s_evt_i2c_nack[N_I2C-1:0]; // The original structure of the udma
+                                     // reserved 4 events for each peripheral.
+                                     // The I2C uses more so we create extra
+                                     // signals for them
+    logic s_evt_i2c_err[N_I2C-1:0];
     for (genvar g_i2c = 0; g_i2c < N_I2C; g_i2c++) begin: i2c
         udma_i2c_wrap i_udma_i2c_wrap (
             .sys_clk_i   ( s_clk_periphs_core[PER_ID_I2C + g_i2c] ),
@@ -267,10 +272,12 @@ module udma_subsystem
             .cfg_ready_o ( s_periph_ready[    PER_ID_I2C + g_i2c] ),
             .cfg_data_o  ( s_periph_data_from[PER_ID_I2C + g_i2c] ),
             .events_o    ( s_evt_i2c[                      g_i2c] ),
+            .err_o       ( s_evt_i2c_err[g_i2c]                   ),
+            .nack_o      ( s_evt_i2c_nack[g_i2c]                  ),
             .events_i    ( s_trigger_events                       ),
             //pads
-            .i2c_to_pad ( i2c_to_pad[                      g_i2c] ),
-            .pad_to_i2c ( pad_to_i2c[                      g_i2c] ),
+            .i2c_to_pad ( i2c_to_pad[ g_i2c]                      ),
+            .pad_to_i2c ( pad_to_i2c[ g_i2c]                      ),
             // data channels
             .rx_ch       ( lin_ch_rx[    CH_ID_LIN_RX_I2C + g_i2c:    CH_ID_LIN_RX_I2C + g_i2c] ),
             .tx_ch       ( lin_ch_tx[    CH_ID_LIN_TX_I2C + g_i2c:    CH_ID_LIN_TX_I2C + g_i2c] ),
@@ -278,6 +285,9 @@ module udma_subsystem
         );
         // bind i2c events
         assign s_events[PER_ID_I2C + g_i2c] = s_evt_i2c[g_i2c];
+        // bind the additional i2c events to the end of the events array to not
+        // alter the existing ID assignment of all other peripherals
+        assign s_events[N_PERIPHS + g_i2c] = {2'b0, s_evt_i2c_nack[g_i2c], s_evt_i2c_err[g_i2c]}
     end: i2c
 
     // QSPI Peripheral
@@ -421,8 +431,10 @@ module udma_subsystem
     // here we are connecting the last stream to the output port
     // `EXPORT_UDMA_STREAM(str_ch_tx[STREAM_ID_EXTERNAL],udma_stream)
 
-    // pad unused events
-    for (genvar i = N_PERIPHS; i < 32; i++) begin: evt_zero
+    // pad unused events (the I2C peripherals use one additional slot at the
+    // very end to pack the err_o and nack_o signals that do not fit into the 4
+    // events dedicated per peripheral)
+    for (genvar i = N_PERIPHS+N_I2C; i < 32; i++) begin: evt_zero
         assign s_events[i] = 4'b0000;
     end: evt_zero
 
