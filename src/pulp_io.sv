@@ -22,6 +22,7 @@ module pulp_io
 	import uart_pkg::*;
 	import qspi_pkg::*;
 	import i2c_pkg::*;
+  import sdio_pkg::*;
 	import cpi_pkg::*;
 	import hyper_pkg::*;
 	import udma_pkg::*;
@@ -30,7 +31,7 @@ module pulp_io
 	import udma_cfg_pkg::*;
 
 	#(
-	    parameter APB_ADDR_WIDTH = 12,  // APB slaves are 4KB by default
+	    parameter APB_ADDR_WIDTH = 12,         // APB slaves are 4KB by default
 	    localparam NUM_GPIOS      = GPIOCount  // The number of GPIOs.
                                              // If you want to change this number you have to regenerate the control register file
                                              // for the GPIO peripheral. There is a make target to do that automatically
@@ -105,10 +106,13 @@ module pulp_io
 	// I2C
 	output  i2c_to_pad_t  [   N_I2C-1:0]  i2c_to_pad,
 	input   pad_to_i2c_t  [   N_I2C-1:0]  pad_to_i2c,
-	// QSPI
+  // SDIO
+  output  sdio_to_pad_t [  N_SDIO-1:0]  sdio_to_pad,
+  input   pad_to_sdio_t [  N_SDIO-1:0]  pad_to_sdio,
+  // QSPI
 	output  qspi_to_pad_t [ N_QSPIM-1:0]  qspi_to_pad,
 	input   pad_to_qspi_t [ N_QSPIM-1:0]  pad_to_qspi,
-	//CPI
+  // CPI
 	input   pad_to_cpi_t   [   N_CPI-1:0] pad_to_cpi,
 
 	`ifndef HYPER_MACRO
@@ -202,6 +206,8 @@ module pulp_io
 	.pad_to_uart         ( pad_to_uart       ),
 	.i2c_to_pad          ( i2c_to_pad        ),
 	.pad_to_i2c          ( pad_to_i2c        ),
+  .sdio_to_pad         ( sdio_to_pad       ),
+  .pad_to_sdio         ( pad_to_sdio       ),
 	.qspi_to_pad         ( qspi_to_pad       ),
 	.pad_to_qspi         ( pad_to_qspi       ),
 	.pad_to_cpi          ( pad_to_cpi        ),

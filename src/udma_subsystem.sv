@@ -30,6 +30,7 @@ module udma_subsystem
     import uart_pkg::*;
     import qspi_pkg::*;
     import i2c_pkg::*;
+    import sdio_pkg::*;
     import cpi_pkg::*;
     import hyper_pkg::*;
     import filter_pkg::*;
@@ -94,6 +95,9 @@ module udma_subsystem
     // I2C
     output  i2c_to_pad_t  [ N_I2C-1:0] i2c_to_pad,
     input   pad_to_i2c_t  [ N_I2C-1:0] pad_to_i2c,
+    // SDIO
+    output  sdio_to_pad_t [  N_SDIO-1:0]  sdio_to_pad,
+    input   pad_to_sdio_t [  N_SDIO-1:0]  pad_to_sdio,
     // QSPI
     output  qspi_to_pad_t [ N_QSPIM-1:0] qspi_to_pad,
     input   pad_to_qspi_t [ N_QSPIM-1:0] pad_to_qspi,
@@ -288,7 +292,36 @@ module udma_subsystem
         // bind the additional i2c events to the end of the events array to not
         // alter the existing ID assignment of all other peripherals
         assign s_events[N_PERIPHS + g_i2c] = {2'b0, s_evt_i2c_nack[g_i2c], s_evt_i2c_err[g_i2c]}
-    end: i2c
+                                             end: i2c
+
+
+    // SDIO Peripheral
+    udma_evt_t [N_SDIO-1:0] s_evt_sdio;
+    for (genvar g_sdio = 0; g_sdio < N_SDIO; g_sdio++) begin :gen_sdio
+      udma_sdio_wrap i_udma_sdio_wrap (
+          .sys_clk_i   ( s_clk_periphs_core[PER_ID_SDIO + g_sdio] ),
+          .periph_clk_i( s_clk_periphs_per[ PER_ID_SDIO + g_sdio] ),
+          .rstn_i      ( sys_resetn_i                             ),
+          .dft_test_mode_i(dft_test_mode_i                        ),
+          .dft_cg_enable_i(dft_cg_enable_i                        ),
+          .cfg_data_i  ( s_periph_data_to                         ),
+          .cfg_addr_i  ( s_periph_addr                            ),
+          .cfg_valid_i ( s_periph_valid[PER_ID_SDIO + g_sdio]     ),
+          .cfg_rwn_i   ( s_periph_rwn                             ),
+          .cfg_ready_o ( s_periph_ready[PER_ID_SDIO + g_sdio]     ),
+          .cfg_data_o  ( s_periph_data_from[PER_ID_SDIO + g_sdio] ),
+          .events_o    ( s_evt_sdio[g_sdio]                       ),
+          .events_i    ( s_trigger_events                         ),
+          // pads
+          .sdio_to_pad ( sdio_to_pad[g_sdio]                      ),
+          .pad_to_sdio ( pad_to_sdio[g_sdio]                      ),
+          // channels
+          .tx_ch       ( lin_ch_tx[CH_ID_LIN_TX_SDIO + g_sdio:    CH_ID_LIN_TX_SDIO + g_sdio]     ),
+          .rx_ch       ( lin_ch_rx[CH_ID_LIN_RX_SDIO + g_sdio:    CH_ID_LIN_RX_SDIO + g_sdio]     ),
+          .cmd_ch      ( lin_ch_tx[CH_ID_LIN_TX_CMD_SDIO + g_sdio:CH_ID_LIN_TX_CMD_SDIO + g_sdio] )
+      );
+    end
+
 
     // QSPI Peripheral
     udma_evt_t [N_QSPIM-1:0] s_evt_qspi;
