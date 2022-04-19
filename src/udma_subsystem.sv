@@ -98,6 +98,9 @@ module udma_subsystem
     // SDIO
     output  sdio_to_pad_t [  N_SDIO-1:0]  sdio_to_pad,
     input   pad_to_sdio_t [  N_SDIO-1:0]  pad_to_sdio,
+    // I2S
+    output  i2s_to_pad_t  [ N_I2S-1:0]    i2s_to_pad,
+    input   pad_to_i2s_t  [ N_I2S-1:0]    pad_to_i2s,
     // QSPI
     output  qspi_to_pad_t [ N_QSPIM-1:0] qspi_to_pad,
     input   pad_to_qspi_t [ N_QSPIM-1:0] pad_to_qspi,
@@ -322,6 +325,33 @@ module udma_subsystem
       );
     end
 
+
+    // I2S Peripheral
+    udma_evt_t [N_I2S-1:0] s_evt_i2s;
+    for (genvar g_i2s = 0; g_i2s < N_I2S; g_i2s++) begin :gen_i2s
+      udma_i2s_wrap i_udma_i2s_wrap (
+          .sys_clk_i   ( s_clk_periphs_core[PER_ID_I2S + g_i2s] ),
+          .periph_clk_i( s_clk_periphs_per[ PER_ID_I2S + g_i2s] ),
+          .rstn_i      ( sys_resetn_i                           ),
+          .dft_test_mode_i(dft_test_mode_i                      ),
+          .dft_cg_enable_i(dft_cg_enable_i                      ),
+          .cfg_data_i  ( s_periph_data_to                       ),
+          .cfg_addr_i  ( s_periph_addr                          ),
+          .cfg_valid_i ( s_periph_valid[PER_ID_I2S + g_i2s]     ),
+          .cfg_rwn_i   ( s_periph_rwn                           ),
+          .cfg_ready_o ( s_periph_ready[PER_ID_I2S + g_i2s]     ),
+          .cfg_data_o  ( s_periph_data_from[PER_ID_I2S + g_i2s] ),
+          .events_o    ( s_evt_i2s[g_i2s]                       ),
+          .events_i    ( s_trigger_events                       ),
+          // pads
+          .i2s_to_pad ( i2s_to_pad[g_i2s]                       ),
+          .pad_to_i2s ( pad_to_i2s[g_i2s]                       ),
+          // channels
+          .tx_ch       ( lin_ch_tx[CH_ID_LIN_TX_I2S + g_i2s:    CH_ID_LIN_TX_I2S + g_i2s]     ),
+          .rx_ch       ( lin_ch_rx[CH_ID_LIN_RX_I2S + g_i2s:    CH_ID_LIN_RX_I2S + g_i2s]     ),
+          .cmd_ch      ( lin_ch_tx[CH_ID_LIN_TX_CMD_I2S + g_i2s:CH_ID_LIN_TX_CMD_I2S + g_i2s] )
+      );
+    end
 
     // QSPI Peripheral
     udma_evt_t [N_QSPIM-1:0] s_evt_qspi;

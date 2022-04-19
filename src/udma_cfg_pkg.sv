@@ -54,14 +54,16 @@ package udma_cfg_pkg;
 	localparam CH_ID_LIN_TX_I2C        = CH_ID_LIN_TX_CMD_QSPIM + N_QSPIM ; //12
 	localparam CH_ID_LIN_TX_CMD_I2C    = CH_ID_LIN_TX_I2C       + N_I2C   ;
   localparam CH_ID_LIN_TX_SDIO       = CH_ID_LIN_TX_CMD_I2C   + N_I2C   ;
-  localparam CH_ID_LIN_TX_HYPER      = CH_ID_LIN_TX_SDIO      + N_SDIO  ;
+  localparam CH_ID_LIN_TX_I2S        = CH_ID_LIN_TX_SDIO      + N_SDIO  ;
+  localparam CH_ID_LIN_TX_HYPER      = CH_ID_LIN_TX_I2S       + N_I2S   ;
 
 	//--- RX Lin. Channels
 	localparam CH_ID_LIN_RX_UART       = 0                                ;
 	localparam CH_ID_LIN_RX_QSPIM      = CH_ID_LIN_RX_UART      + N_UART  ;
 	localparam CH_ID_LIN_RX_I2C        = CH_ID_LIN_RX_QSPIM     + N_QSPIM ;
 	localparam CH_ID_LIN_RX_SDIO       = CH_ID_LIN_RX_I2C       + N_I2C   ;
-  localparam CH_ID_LIN_RX_CPI        = CH_ID_LIN_RX_SDIO      + N_SDIO  ;
+  localparam CH_ID_LIN_RX_I2S        = CH_ID_LIN_RX_SDIO      + N_SDIO  ;
+  localparam CH_ID_LIN_RX_CPI        = CH_ID_LIN_RX_I2S       + N_I2S   ;
 	localparam CH_ID_LIN_RX_HYPER      = CH_ID_LIN_RX_CPI       + N_CPI   ;
 
 	// External channel restart from ID o
@@ -79,9 +81,10 @@ package udma_cfg_pkg;
 	localparam PER_ID_UART             = 0                                               ;
 	localparam PER_ID_QSPIM            = PER_ID_UART        + N_UART                     ; // 2 - 5
 	localparam PER_ID_I2C              = PER_ID_QSPIM       + N_QSPIM                    ; // 6 - 9
-	localparam PER_ID_SDIO             = PER_ID_I2C         + N_SDIO                     ; // 10
-  localparam PER_ID_CPI              = PER_ID_I2C         + N_I2C                      ; // 11
-	localparam PER_ID_HYPER            = PER_ID_CPI         + N_CPI                      ; // 12 - 13
-	localparam PER_ID_FILTER           = PER_ID_HYPER       + N_HYPER*(1+N_CH_HYPER)     ; // 14
+	localparam PER_ID_SDIO             = PER_ID_I2C         + N_I2C                      ; // 10
+  localparam PER_ID_I2S              = PER_ID_SDIO        + N_SDIO                     ; // 11
+  localparam PER_ID_CPI              = PER_ID_I2S         + N_I2S                      ; // 12
+	localparam PER_ID_HYPER            = PER_ID_CPI         + N_CPI                      ; // 13 - 14
+	localparam PER_ID_FILTER           = PER_ID_HYPER       + N_HYPER*(1+N_CH_HYPER)     ; // 15
 
 endpackage

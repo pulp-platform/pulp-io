@@ -23,6 +23,7 @@ module pulp_io
 	import qspi_pkg::*;
 	import i2c_pkg::*;
   import sdio_pkg::*;
+  import i2s_pkg::*;
 	import cpi_pkg::*;
 	import hyper_pkg::*;
 	import udma_pkg::*;
@@ -109,6 +110,9 @@ module pulp_io
   // SDIO
   output  sdio_to_pad_t [  N_SDIO-1:0]  sdio_to_pad,
   input   pad_to_sdio_t [  N_SDIO-1:0]  pad_to_sdio,
+  // I2S
+  output  i2s_to_pad_t  [ N_I2S-1:0]    i2s_to_pad,
+  input   pad_to_i2s_t  [ N_I2S-1:0]    pad_to_i2s,
   // QSPI
 	output  qspi_to_pad_t [ N_QSPIM-1:0]  qspi_to_pad,
 	input   pad_to_qspi_t [ N_QSPIM-1:0]  pad_to_qspi,
@@ -208,7 +212,9 @@ module pulp_io
 	.pad_to_i2c          ( pad_to_i2c        ),
   .sdio_to_pad         ( sdio_to_pad       ),
   .pad_to_sdio         ( pad_to_sdio       ),
-	.qspi_to_pad         ( qspi_to_pad       ),
+	.i2s_to_pad          ( i2s_to_pad        ),
+  .pad_to_i2s          ( pad_to_i2s        ),
+  .qspi_to_pad         ( qspi_to_pad       ),
 	.pad_to_qspi         ( pad_to_qspi       ),
 	.pad_to_cpi          ( pad_to_cpi        ),
 	`ifndef HYPER_MACRO
