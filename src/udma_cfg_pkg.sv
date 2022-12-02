@@ -39,7 +39,7 @@ package udma_cfg_pkg;
 
 	// derive the total number of channels
 	localparam N_STREAMS               = N_FILTER + N_EXT_STREAMS                                            ;
-	localparam N_TX_LIN_CHANNELS       = N_UART + N_QSPIM*2 + N_I2C*2 + N_SDIO +          N_I2S + (N_HYPER*N_CH_HYPER) ;
+	localparam N_TX_LIN_CHANNELS       = N_UART + N_QSPIM*2 + N_I2C*2 + N_SDIO*2 + N_I2S*2 + (N_HYPER*N_CH_HYPER) ;
 	localparam N_RX_LIN_CHANNELS       = N_UART + N_QSPIM   + N_I2C   + N_SDIO + N_CPI  + N_I2S + (N_HYPER*N_CH_HYPER) ;
 	localparam N_TX_EXT_CHANNELS       = N_FILTER*2                                                          ;
 	localparam N_RX_EXT_CHANNELS       = N_FILTER;
@@ -54,8 +54,10 @@ package udma_cfg_pkg;
 	localparam CH_ID_LIN_TX_I2C        = CH_ID_LIN_TX_CMD_QSPIM + N_QSPIM ; //12
 	localparam CH_ID_LIN_TX_CMD_I2C    = CH_ID_LIN_TX_I2C       + N_I2C   ;
   localparam CH_ID_LIN_TX_SDIO       = CH_ID_LIN_TX_CMD_I2C   + N_I2C   ;
-  localparam CH_ID_LIN_TX_I2S        = CH_ID_LIN_TX_SDIO      + N_SDIO  ;
-  localparam CH_ID_LIN_TX_HYPER      = CH_ID_LIN_TX_I2S       + N_I2S   ;
+  localparam CH_ID_LIN_TX_CMD_SDIO   = CH_ID_LIN_TX_SDIO      + N_SDIO  ;
+  localparam CH_ID_LIN_TX_I2S        = CH_ID_LIN_TX_CMD_SDIO  + N_SDIO  ;
+  localparam CH_ID_LIN_TX_CMD_I2S    = CH_ID_LIN_TX_I2S       + N_SDIO  ;
+  localparam CH_ID_LIN_TX_HYPER      = CH_ID_LIN_TX_CMD_I2S   + N_I2S   ;
 
 	//--- RX Lin. Channels
 	localparam CH_ID_LIN_RX_UART       = 0                                ;

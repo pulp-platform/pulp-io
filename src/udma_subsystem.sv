@@ -30,6 +30,7 @@ module udma_subsystem
     import uart_pkg::*;
     import qspi_pkg::*;
     import i2c_pkg::*;
+    import i2s_pkg::*;
     import sdio_pkg::*;
     import cpi_pkg::*;
     import hyper_pkg::*;
@@ -39,8 +40,7 @@ module udma_subsystem
 
 #(
     parameter APB_ADDR_WIDTH = 12  //APB slaves are 4KB by default
-)
-(
+) (
 
     // udma reset
     input  logic                       sys_resetn_i   ,
@@ -268,34 +268,34 @@ module udma_subsystem
                                      // signals for them
     logic s_evt_i2c_err[N_I2C-1:0];
     for (genvar g_i2c = 0; g_i2c < N_I2C; g_i2c++) begin: i2c
-        udma_i2c_wrap i_udma_i2c_wrap (
-            .sys_clk_i   ( s_clk_periphs_core[PER_ID_I2C + g_i2c] ),
-            .periph_clk_i( s_clk_periphs_per[ PER_ID_I2C + g_i2c] ),
-            .rstn_i      ( sys_resetn_i                           ),
-            .cfg_data_i  ( s_periph_data_to                       ),
-            .cfg_addr_i  ( s_periph_addr                          ),
-            .cfg_valid_i ( s_periph_valid[    PER_ID_I2C + g_i2c] ),
-            .cfg_rwn_i   ( s_periph_rwn                           ),
-            .cfg_ready_o ( s_periph_ready[    PER_ID_I2C + g_i2c] ),
-            .cfg_data_o  ( s_periph_data_from[PER_ID_I2C + g_i2c] ),
-            .events_o    ( s_evt_i2c[                      g_i2c] ),
-            .err_o       ( s_evt_i2c_err[g_i2c]                   ),
-            .nack_o      ( s_evt_i2c_nack[g_i2c]                  ),
-            .events_i    ( s_trigger_events                       ),
-            //pads
-            .i2c_to_pad ( i2c_to_pad[ g_i2c]                      ),
-            .pad_to_i2c ( pad_to_i2c[ g_i2c]                      ),
-            // data channels
-            .rx_ch       ( lin_ch_rx[    CH_ID_LIN_RX_I2C + g_i2c:    CH_ID_LIN_RX_I2C + g_i2c] ),
-            .tx_ch       ( lin_ch_tx[    CH_ID_LIN_TX_I2C + g_i2c:    CH_ID_LIN_TX_I2C + g_i2c] ),
-            .cmd_ch      ( lin_ch_tx[CH_ID_LIN_TX_CMD_I2C + g_i2c:CH_ID_LIN_TX_CMD_I2C + g_i2c] )
-        );
-        // bind i2c events
-        assign s_events[PER_ID_I2C + g_i2c] = s_evt_i2c[g_i2c];
-        // bind the additional i2c events to the end of the events array to not
-        // alter the existing ID assignment of all other peripherals
-        assign s_events[N_PERIPHS + g_i2c] = {2'b0, s_evt_i2c_nack[g_i2c], s_evt_i2c_err[g_i2c]}
-                                             end: i2c
+      udma_i2c_wrap i_udma_i2c_wrap (
+        .sys_clk_i   ( s_clk_periphs_core[PER_ID_I2C + g_i2c] ),
+        .periph_clk_i( s_clk_periphs_per[ PER_ID_I2C + g_i2c] ),
+        .rstn_i      ( sys_resetn_i                           ),
+        .cfg_data_i  ( s_periph_data_to                       ),
+        .cfg_addr_i  ( s_periph_addr                          ),
+        .cfg_valid_i ( s_periph_valid[    PER_ID_I2C + g_i2c] ),
+        .cfg_rwn_i   ( s_periph_rwn                           ),
+        .cfg_ready_o ( s_periph_ready[    PER_ID_I2C + g_i2c] ),
+        .cfg_data_o  ( s_periph_data_from[PER_ID_I2C + g_i2c] ),
+        .events_o    ( s_evt_i2c[                      g_i2c] ),
+        .err_o       ( s_evt_i2c_err[g_i2c]                   ),
+        .nack_o      ( s_evt_i2c_nack[g_i2c]                  ),
+        .events_i    ( s_trigger_events                       ),
+        //pads
+        .i2c_to_pad ( i2c_to_pad[ g_i2c]                      ),
+        .pad_to_i2c ( pad_to_i2c[ g_i2c]                      ),
+        // data channels
+        .rx_ch       ( lin_ch_rx[    CH_ID_LIN_RX_I2C + g_i2c:    CH_ID_LIN_RX_I2C + g_i2c] ),
+        .tx_ch       ( lin_ch_tx[    CH_ID_LIN_TX_I2C + g_i2c:    CH_ID_LIN_TX_I2C + g_i2c] ),
+        .cmd_ch      ( lin_ch_tx[CH_ID_LIN_TX_CMD_I2C + g_i2c:CH_ID_LIN_TX_CMD_I2C + g_i2c] )
+      );
+      // bind i2c events
+      assign s_events[PER_ID_I2C + g_i2c] = s_evt_i2c[g_i2c];
+      // bind the additional i2c events to the end of the events array to not
+      // alter the existing ID assignment of all other peripherals
+      assign s_events[N_PERIPHS + g_i2c] = {2'b0, s_evt_i2c_nack[g_i2c], s_evt_i2c_err[g_i2c]};
+    end: i2c
 
 
     // SDIO Peripheral
