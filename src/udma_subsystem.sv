@@ -305,8 +305,6 @@ module udma_subsystem
           .sys_clk_i   ( s_clk_periphs_core[PER_ID_SDIO + g_sdio] ),
           .periph_clk_i( s_clk_periphs_per[ PER_ID_SDIO + g_sdio] ),
           .rstn_i      ( sys_resetn_i                             ),
-          .dft_test_mode_i(dft_test_mode_i                        ),
-          .dft_cg_enable_i(dft_cg_enable_i                        ),
           .cfg_data_i  ( s_periph_data_to                         ),
           .cfg_addr_i  ( s_periph_addr                            ),
           .cfg_valid_i ( s_periph_valid[PER_ID_SDIO + g_sdio]     ),
@@ -320,8 +318,7 @@ module udma_subsystem
           .pad_to_sdio ( pad_to_sdio[g_sdio]                      ),
           // channels
           .tx_ch       ( lin_ch_tx[CH_ID_LIN_TX_SDIO + g_sdio:    CH_ID_LIN_TX_SDIO + g_sdio]     ),
-          .rx_ch       ( lin_ch_rx[CH_ID_LIN_RX_SDIO + g_sdio:    CH_ID_LIN_RX_SDIO + g_sdio]     ),
-          .cmd_ch      ( lin_ch_tx[CH_ID_LIN_TX_CMD_SDIO + g_sdio:CH_ID_LIN_TX_CMD_SDIO + g_sdio] )
+          .rx_ch       ( lin_ch_rx[CH_ID_LIN_RX_SDIO + g_sdio:    CH_ID_LIN_RX_SDIO + g_sdio]     )
       );
     end
 
@@ -348,8 +345,7 @@ module udma_subsystem
           .pad_to_i2s ( pad_to_i2s[g_i2s]                       ),
           // channels
           .tx_ch       ( lin_ch_tx[CH_ID_LIN_TX_I2S + g_i2s:    CH_ID_LIN_TX_I2S + g_i2s]     ),
-          .rx_ch       ( lin_ch_rx[CH_ID_LIN_RX_I2S + g_i2s:    CH_ID_LIN_RX_I2S + g_i2s]     ),
-          .cmd_ch      ( lin_ch_tx[CH_ID_LIN_TX_CMD_I2S + g_i2s:CH_ID_LIN_TX_CMD_I2S + g_i2s] )
+          .rx_ch       ( lin_ch_rx[CH_ID_LIN_RX_I2S + g_i2s:    CH_ID_LIN_RX_I2S + g_i2s]     )
       );
     end
 
