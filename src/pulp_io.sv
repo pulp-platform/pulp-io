@@ -99,7 +99,8 @@ module pulp_io
   output logic [NUM_GPIOS-1:0]          gpio_out,
   output logic [NUM_GPIOS-1:0]          gpio_tx_en_o,
   output logic [NUM_GPIOS-1:0]          gpio_in_sync_o, //Synchronized GPIO inputs (can be used as external signal)
-  output logic                          gpio_interrupt_o,
+  output logic                          gpio_global_interrupt_o,
+  output logic [NUM_GPIOS-1:0]          gpio_pin_level_interrupt_o,
 
   // UART
   output  uart_to_pad_t [  N_UART-1:0]  uart_to_pad,
@@ -153,14 +154,15 @@ module pulp_io
     .ADDR_WIDTH(32),
     .DATA_WIDTH(32)
   ) i_gpio (
-    .clk_i       ( sys_clk_i        ),
-    .rst_ni      ( sys_rst_ni       ),
+    .clk_i                  ( sys_clk_i                  ),
+    .rst_ni                 ( sys_rst_ni                 ),
     .gpio_in,
     .gpio_out,
     .gpio_tx_en_o,
     .gpio_in_sync_o,
-    .interrupt_o ( gpio_interrupt_o ),
-    .apb_slave   ( s_apb_gpio       )
+    .global_interrupt_o     ( gpio_global_interrupt_o    ),
+    .pin_level_interrupts_o ( gpio_pin_level_interrupt_o ),
+    .apb_slave              ( s_apb_gpio                 )
   );
 
   ////////////////////////////////////////////////////////////////////////////////////////////////
