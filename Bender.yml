@@ -2,17 +2,17 @@ package:
   name: pulp_io
 
 dependencies:
-  common_cells: {git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0   }
-  gpio:         {git: "https://github.com/pulp-platform/gpio.git",         version: 0.2.0    }
-  udma_uart:    {git: "https://github.com/pulp-platform/udma_uart.git",    rev: v2.0.0-draft }
-  udma_core:    {git: "https://github.com/pulp-platform/udma_core.git",    rev: v2.1.0-draft }
-  udma_i2c:     {git: "https://github.com/pulp-platform/udma_i2c.git",     rev: v3.0.0-draft }
-  udma_sdio:    {git: "https://github.com/pulp-platform/udma_sdio.git",    rev: v2.0.0-draft }
-  udma_i2s:    {git: "https://github.com/pulp-platform/udma_i2s.git",      rev: v2.0.0-draft }
-  udma_camera:  {git: "https://github.com/pulp-platform/udma_camera.git",  rev: v2.0.0-draft }
-  udma_qspi:    {git: "https://github.com/pulp-platform/udma_qspi.git",    rev: v2.0.0-draft }
-  udma_filter:  {git: "https://github.com/pulp-platform/udma_filter.git",  rev: v2.0.0-draft }
-  udma_hyper:   {git: "https://github.com/pulp-platform/udma_hyper.git",   rev: v0.1.0-draft }
+  common_cells: {git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0 }
+  gpio:         {git: "https://github.com/pulp-platform/gpio.git",         version: 0.2.0  }
+  udma_uart:    {git: "https://github.com/pulp-platform/udma_uart.git",    version: 2.0.0  }
+  udma_core:    {git: "https://github.com/pulp-platform/udma_core.git",    version: 2.0.0  }
+  udma_i2c:     {git: "https://github.com/pulp-platform/udma_i2c.git",     version: 3.0.0  }
+  udma_sdio:    {git: "https://github.com/pulp-platform/udma_sdio.git",    version: 2.0.0  }
+  udma_i2s:     {git: "https://github.com/pulp-platform/udma_i2s.git",     version: 2.0.0  }
+  udma_camera:  {git: "https://github.com/pulp-platform/udma_camera.git",  version: 2.0.0  }
+  udma_qspi:    {git: "https://github.com/pulp-platform/udma_qspi.git",    version: 2.0.0  }
+  udma_filter:  {git: "https://github.com/pulp-platform/udma_filter.git",  version: 2.0.0  }
+  udma_hyper:   {git: "https://github.com/pulp-platform/udma_hyper.git",   version: 0.1.0  }
 
 export_include_dirs:
   - inc
