@@ -3,6 +3,7 @@ package:
 
 dependencies:
   common_cells: {git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0 }
+  apb:           { git: "https://github.com/pulp-platform/apb.git",        version: 0.2.2  }
   gpio:         {git: "https://github.com/pulp-platform/gpio.git",         version: 0.2.0  }
   udma_uart:    {git: "https://github.com/pulp-platform/udma_uart.git",    version: 2.0.0  }
   udma_core:    {git: "https://github.com/pulp-platform/udma_core.git",    version: 2.0.0  }
