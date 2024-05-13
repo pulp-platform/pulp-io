@@ -1,10 +1,10 @@
-/* 
+/*
  * Copyright (C) 2018-2020 ETH Zurich, University of Bologna
  * Copyright and related rights are licensed under the Solderpad Hardware
  * License, Version 0.51 (the "License"); you may not use this file except in
  * compliance with the License.  You may obtain a copy of the License at
  *
- *                http://solderpad.org/licenses/SHL-0.51. 
+ *                http://solderpad.org/licenses/SHL-0.51.
  *
  * Unless required by applicable law
  * or agreed to in writing, software, hardware and materials distributed under
@@ -21,26 +21,26 @@
     assign ``port``_req.datasize = str_ch.datasize; \
     assign ``port``_req.data = str_ch.data; \
     assign ``port``_req.valid = str_ch.valid; \
-    assign  str_ch.ready = ``port``_rsp.ready; 
+    assign  str_ch.ready = ``port``_rsp.ready;
 
 module udma_subsystem
 
     // signal bitwidths
-    import udma_pkg::*;  
+    import udma_pkg::*;
     import uart_pkg::*;
     import qspi_pkg::*;
     import i2c_pkg::*;
+    import i2s_pkg::*;
+    import sdio_pkg::*;
     import cpi_pkg::*;
-    import dvsi_pkg::*;
     import hyper_pkg::*;
     import filter_pkg::*;
     // peripherals and channels configuration
-    import udma_cfg_pkg::*;   
+    import udma_cfg_pkg::*;
 
 #(
     parameter APB_ADDR_WIDTH = 12  //APB slaves are 4KB by default
-)
-(
+) (
 
     // udma reset
     input  logic                       sys_resetn_i   ,
@@ -48,7 +48,7 @@ module udma_subsystem
     input  logic                       sys_clk_i      ,
     // peripheral clock
     input  logic                       periph_clk_i   ,
-    
+
     // memory ports
     // read only port
     output logic                       L2_ro_wen_o    ,
@@ -83,10 +83,6 @@ module udma_subsystem
     output logic                       udma_apb_pready,
     output logic                       udma_apb_pslverr,
 
-    input  logic                       dvsi_saer_frame_timer_i,
-    input  logic                       dvsi_framebuf_frame_timer_i,
-    output logic                       cutie_trigger_o,
-
     output logic           [31:0][3:0] events_o,
     input  logic                       event_valid_i,
     input  logic                 [7:0] event_data_i,
@@ -99,20 +95,23 @@ module udma_subsystem
     // I2C
     output  i2c_to_pad_t  [ N_I2C-1:0] i2c_to_pad,
     input   pad_to_i2c_t  [ N_I2C-1:0] pad_to_i2c,
+    // SDIO
+    output  sdio_to_pad_t [  N_SDIO-1:0]  sdio_to_pad,
+    input   pad_to_sdio_t [  N_SDIO-1:0]  pad_to_sdio,
+    // I2S
+    output  i2s_to_pad_t  [ N_I2S-1:0]    i2s_to_pad,
+    input   pad_to_i2s_t  [ N_I2S-1:0]    pad_to_i2s,
     // QSPI
     output  qspi_to_pad_t [ N_QSPIM-1:0] qspi_to_pad,
     input   pad_to_qspi_t [ N_QSPIM-1:0] pad_to_qspi,
     // CPI
     input  pad_to_cpi_t [ N_CPI-1:0] pad_to_cpi,
-    // DVSI
-    output  dvsi_to_pad_t [ N_DVSI-1:0] dvsi_to_pad,
-    input   pad_to_dvsi_t [ N_DVSI-1:0] pad_to_dvsi,
 
     `ifndef HYPER_MACRO
     // HYPER
     output  hyper_to_pad_t [ N_HYPER-1:0] hyper_to_pad,
     input   pad_to_hyper_t [ N_HYPER-1:0] pad_to_hyper
-    `else 
+    `else
     // configuration from udma core to the macro
     output cfg_req_t [N_HYPER-1:0] hyper_cfg_req_o,
     input cfg_rsp_t [N_HYPER-1:0] hyper_cfg_rsp_i,
@@ -126,7 +125,7 @@ module udma_subsystem
     input udma_evt_t [N_HYPER-1:0] hyper_macro_evt_i,
     output udma_evt_t [N_HYPER-1:0] hyper_macro_evt_o
     `endif
-                       
+
 );
 
     // max 32 peripherals
@@ -209,19 +208,19 @@ module udma_subsystem
         .periph_ready_i          ( s_periph_ready       ),
         .periph_valid_o          ( s_periph_valid       ),
         .periph_rwn_o            ( s_periph_rwn         ),
-    
+
         .tx_l2_req_o             ( L2_ro_req_o          ),
         .tx_l2_gnt_i             ( L2_ro_gnt_i          ),
         .tx_l2_addr_o            ( L2_ro_addr_o         ),
         .tx_l2_rdata_i           ( L2_ro_rdata_i        ),
         .tx_l2_rvalid_i          ( L2_ro_rvalid_i       ),
-    
+
         .rx_l2_req_o             ( L2_wo_req_o          ),
         .rx_l2_gnt_i             ( L2_wo_gnt_i          ),
         .rx_l2_addr_o            ( L2_wo_addr_o         ),
         .rx_l2_be_o              ( L2_wo_be_o           ),
         .rx_l2_wdata_o           ( L2_wo_wdata_o        ),
-    
+
         //--- stream channels connections
         .str_ch_tx               ( str_ch_tx            ),
         //--- Tx lin channels connections
@@ -249,7 +248,7 @@ module udma_subsystem
             .cfg_ready_o ( s_periph_ready[    PER_ID_UART + g_uart] ),
             .cfg_data_o  ( s_periph_data_from[PER_ID_UART + g_uart] ),
             .events_i    ( 4'b0000                                  ), // UART do not receive events
-            .events_o    ( s_evt_uart[                      g_uart] ), 
+            .events_o    ( s_evt_uart[                      g_uart] ),
             // pads
             .uart_to_pad ( uart_to_pad[                     g_uart] ),
             .pad_to_uart ( pad_to_uart[                     g_uart] ),
@@ -263,30 +262,92 @@ module udma_subsystem
 
     // I2C Peripheral
     udma_evt_t [N_I2C-1:0] s_evt_i2c;
+    logic s_evt_i2c_nack[N_I2C-1:0]; // The original structure of the udma
+                                     // reserved 4 events for each peripheral.
+                                     // The I2C uses more so we create extra
+                                     // signals for them
+    logic s_evt_i2c_err[N_I2C-1:0];
     for (genvar g_i2c = 0; g_i2c < N_I2C; g_i2c++) begin: i2c
-        udma_i2c_wrap i_udma_i2c_wrap (
-            .sys_clk_i   ( s_clk_periphs_core[PER_ID_I2C + g_i2c] ),
-            .periph_clk_i( s_clk_periphs_per[ PER_ID_I2C + g_i2c] ),
-            .rstn_i      ( sys_resetn_i                           ),
-            .cfg_data_i  ( s_periph_data_to                       ),
-            .cfg_addr_i  ( s_periph_addr                          ),
-            .cfg_valid_i ( s_periph_valid[    PER_ID_I2C + g_i2c] ),
-            .cfg_rwn_i   ( s_periph_rwn                           ),
-            .cfg_ready_o ( s_periph_ready[    PER_ID_I2C + g_i2c] ),
-            .cfg_data_o  ( s_periph_data_from[PER_ID_I2C + g_i2c] ),
-            .events_o    ( s_evt_i2c[                      g_i2c] ),
-            .events_i    ( s_trigger_events                       ),
-            //pads
-            .i2c_to_pad ( i2c_to_pad[                      g_i2c] ),
-            .pad_to_i2c ( pad_to_i2c[                      g_i2c] ),
-            // data channels
-            .rx_ch       ( lin_ch_rx[    CH_ID_LIN_RX_I2C + g_i2c:    CH_ID_LIN_RX_I2C + g_i2c] ),
-            .tx_ch       ( lin_ch_tx[    CH_ID_LIN_TX_I2C + g_i2c:    CH_ID_LIN_TX_I2C + g_i2c] ),
-            .cmd_ch      ( lin_ch_tx[CH_ID_LIN_TX_CMD_I2C + g_i2c:CH_ID_LIN_TX_CMD_I2C + g_i2c] )
-        );
-        // bind i2c events
-        assign s_events[PER_ID_I2C + g_i2c] = s_evt_i2c[g_i2c];
+      udma_i2c_wrap i_udma_i2c_wrap (
+        .sys_clk_i   ( s_clk_periphs_core[PER_ID_I2C + g_i2c] ),
+        .periph_clk_i( s_clk_periphs_per[ PER_ID_I2C + g_i2c] ),
+        .rstn_i      ( sys_resetn_i                           ),
+        .cfg_data_i  ( s_periph_data_to                       ),
+        .cfg_addr_i  ( s_periph_addr                          ),
+        .cfg_valid_i ( s_periph_valid[    PER_ID_I2C + g_i2c] ),
+        .cfg_rwn_i   ( s_periph_rwn                           ),
+        .cfg_ready_o ( s_periph_ready[    PER_ID_I2C + g_i2c] ),
+        .cfg_data_o  ( s_periph_data_from[PER_ID_I2C + g_i2c] ),
+        .events_o    ( s_evt_i2c[                      g_i2c] ),
+        .err_o       ( s_evt_i2c_err[g_i2c]                   ),
+        .nack_o      ( s_evt_i2c_nack[g_i2c]                  ),
+        .events_i    ( s_trigger_events                       ),
+        //pads
+        .i2c_to_pad ( i2c_to_pad[ g_i2c]                      ),
+        .pad_to_i2c ( pad_to_i2c[ g_i2c]                      ),
+        // data channels
+        .rx_ch       ( lin_ch_rx[    CH_ID_LIN_RX_I2C + g_i2c:    CH_ID_LIN_RX_I2C + g_i2c] ),
+        .tx_ch       ( lin_ch_tx[    CH_ID_LIN_TX_I2C + g_i2c:    CH_ID_LIN_TX_I2C + g_i2c] ),
+        .cmd_ch      ( lin_ch_tx[CH_ID_LIN_TX_CMD_I2C + g_i2c:CH_ID_LIN_TX_CMD_I2C + g_i2c] )
+      );
+      // bind i2c events
+      assign s_events[PER_ID_I2C + g_i2c] = s_evt_i2c[g_i2c];
+      // bind the additional i2c events to the end of the events array to not
+      // alter the existing ID assignment of all other peripherals
+      assign s_events[N_PERIPHS + g_i2c] = {2'b0, s_evt_i2c_nack[g_i2c], s_evt_i2c_err[g_i2c]};
     end: i2c
+
+
+    // SDIO Peripheral
+    udma_evt_t [N_SDIO-1:0] s_evt_sdio;
+    for (genvar g_sdio = 0; g_sdio < N_SDIO; g_sdio++) begin :gen_sdio
+      udma_sdio_wrap i_udma_sdio_wrap (
+          .sys_clk_i   ( s_clk_periphs_core[PER_ID_SDIO + g_sdio] ),
+          .periph_clk_i( s_clk_periphs_per[ PER_ID_SDIO + g_sdio] ),
+          .rstn_i      ( sys_resetn_i                             ),
+          .cfg_data_i  ( s_periph_data_to                         ),
+          .cfg_addr_i  ( s_periph_addr                            ),
+          .cfg_valid_i ( s_periph_valid[PER_ID_SDIO + g_sdio]     ),
+          .cfg_rwn_i   ( s_periph_rwn                             ),
+          .cfg_ready_o ( s_periph_ready[PER_ID_SDIO + g_sdio]     ),
+          .cfg_data_o  ( s_periph_data_from[PER_ID_SDIO + g_sdio] ),
+          .events_o    ( s_evt_sdio[g_sdio]                       ),
+          .events_i    ( s_trigger_events                         ),
+          // pads
+          .sdio_to_pad ( sdio_to_pad[g_sdio]                      ),
+          .pad_to_sdio ( pad_to_sdio[g_sdio]                      ),
+          // channels
+          .tx_ch       ( lin_ch_tx[CH_ID_LIN_TX_SDIO + g_sdio:    CH_ID_LIN_TX_SDIO + g_sdio]     ),
+          .rx_ch       ( lin_ch_rx[CH_ID_LIN_RX_SDIO + g_sdio:    CH_ID_LIN_RX_SDIO + g_sdio]     )
+      );
+    end
+
+
+    // I2S Peripheral
+    udma_evt_t [N_I2S-1:0] s_evt_i2s;
+    for (genvar g_i2s = 0; g_i2s < N_I2S; g_i2s++) begin :gen_i2s
+      udma_i2s_wrap i_udma_i2s_wrap (
+          .sys_clk_i   ( s_clk_periphs_core[PER_ID_I2S + g_i2s] ),
+          .periph_clk_i( s_clk_periphs_per[ PER_ID_I2S + g_i2s] ),
+          .rstn_i      ( sys_resetn_i                           ),
+          .dft_test_mode_i(dft_test_mode_i                      ),
+          .dft_cg_enable_i(dft_cg_enable_i                      ),
+          .cfg_data_i  ( s_periph_data_to                       ),
+          .cfg_addr_i  ( s_periph_addr                          ),
+          .cfg_valid_i ( s_periph_valid[PER_ID_I2S + g_i2s]     ),
+          .cfg_rwn_i   ( s_periph_rwn                           ),
+          .cfg_ready_o ( s_periph_ready[PER_ID_I2S + g_i2s]     ),
+          .cfg_data_o  ( s_periph_data_from[PER_ID_I2S + g_i2s] ),
+          .events_o    ( s_evt_i2s[g_i2s]                       ),
+          .events_i    ( s_trigger_events                       ),
+          // pads
+          .i2s_to_pad ( i2s_to_pad[g_i2s]                       ),
+          .pad_to_i2s ( pad_to_i2s[g_i2s]                       ),
+          // channels
+          .tx_ch       ( lin_ch_tx[CH_ID_LIN_TX_I2S + g_i2s:    CH_ID_LIN_TX_I2S + g_i2s]     ),
+          .rx_ch       ( lin_ch_rx[CH_ID_LIN_RX_I2S + g_i2s:    CH_ID_LIN_RX_I2S + g_i2s]     )
+      );
+    end
 
     // QSPI Peripheral
     udma_evt_t [N_QSPIM-1:0] s_evt_qspi;
@@ -303,7 +364,7 @@ module udma_subsystem
             .cfg_rwn_i   ( s_periph_rwn                              ),
             .cfg_ready_o ( s_periph_ready[    PER_ID_QSPIM + g_qspi] ),
             .cfg_data_o  ( s_periph_data_from[PER_ID_QSPIM + g_qspi] ),
-            .events_o    ( s_evt_qspi[                       g_qspi] ), 
+            .events_o    ( s_evt_qspi[                       g_qspi] ),
             .events_i    ( s_trigger_events                          ),
             // pads
             .qspi_to_pad ( qspi_to_pad[                      g_qspi] ),
@@ -325,13 +386,15 @@ module udma_subsystem
             .sys_clk_i   ( s_clk_periphs_core[PER_ID_CPI + g_cpi]  ),
             .periph_clk_i( s_clk_periphs_per[ PER_ID_CPI + g_cpi]  ),
             .rstn_i      ( sys_resetn_i                            ),
+            .dft_test_mode_i,
+            .dft_cg_enable_i,
             .cfg_data_i  ( s_periph_data_to                        ),
             .cfg_addr_i  ( s_periph_addr                           ),
             .cfg_valid_i ( s_periph_valid[    PER_ID_CPI + g_cpi]  ),
             .cfg_rwn_i   ( s_periph_rwn                            ),
             .cfg_ready_o ( s_periph_ready[    PER_ID_CPI + g_cpi]  ),
             .cfg_data_o  ( s_periph_data_from[PER_ID_CPI + g_cpi]  ),
-            .events_o    ( s_evt_cpi[                       g_cpi] ), 
+            .events_o    ( s_evt_cpi[                       g_cpi] ),
             .events_i    ( s_trigger_events                        ),
             .pad_to_cpi  ( pad_to_cpi[                      g_cpi] ),
             .rx_ch       ( lin_ch_rx[  CH_ID_LIN_RX_CPI + g_cpi:    CH_ID_LIN_RX_CPI + g_cpi]       )
@@ -339,38 +402,6 @@ module udma_subsystem
         //bind cpi events
         assign s_events[PER_ID_CPI + g_cpi] = s_evt_cpi[g_cpi];
     end: cpi
-
-    // DVSI peripheral
-    udma_evt_t [N_DVSI-1:0] s_evt_dvsi;
-    for (genvar g_dvsi = 0; g_dvsi < N_DVSI; g_dvsi++) begin: dvsi
-      logic cutie_start_s;
-        udma_dvsi_wrap i_udma_dvsi_wrap (
-
-            .sys_clk_i     ( s_clk_periphs_core[PER_ID_DVSI + g_dvsi] ),
-            .periph_clk_i  ( s_clk_periphs_per[ PER_ID_DVSI + g_dvsi] ),
-            .rstn_i        ( sys_resetn_i                             ),
-            .cfg_data_i    ( s_periph_data_to                         ),
-            .cfg_addr_i    ( s_periph_addr                            ),
-            .cfg_valid_i   ( s_periph_valid[    PER_ID_DVSI + g_dvsi] ),
-            .cfg_rwn_i     ( s_periph_rwn                             ),
-            .cfg_ready_o   ( s_periph_ready[    PER_ID_DVSI + g_dvsi] ),
-            .cfg_data_o    ( s_periph_data_from[PER_ID_DVSI + g_dvsi] ),
-            .events_o      ( s_evt_dvsi[                      g_dvsi] ),
-            .events_i      ( s_trigger_events                         ),
-            .cutie_start_o ( cutie_start_s                            ),
-            .saer_frame_timer_i( dvsi_saer_frame_timer_i              ),
-            .framebuf_frame_timer_i( dvsi_framebuf_frame_timer_i      ),
-            .dvsi_to_pad   ( dvsi_to_pad[                     g_dvsi] ),
-            .pad_to_dvsi   ( pad_to_dvsi[                     g_dvsi] ),
-            .rx_ch         ( ext_ch_rx[CH_ID_EXT_RX_DVSI + g_dvsi:    CH_ID_EXT_RX_DVSI + g_dvsi] )
-        );
-        //bind DVSI events
-        assign s_events[PER_ID_DVSI + g_dvsi] = s_evt_dvsi[g_dvsi];
-        if (g_dvsi == 0) begin
-          // CUTIE can be triggered by the framebuffer_done event -> #2
-          assign cutie_trigger_o = cutie_start_s;
-        end
-    end: dvsi
 
     udma_evt_t [N_HYPER-1:0] s_evt_hyper;
     // Hyperbus peripheral
@@ -399,7 +430,7 @@ module udma_subsystem
             for (genvar i=0; i<N_CH_HYPER; i++) begin : hyper_open_events
               assign s_events[PER_ID_HYPER + g_hyper * N_CH_HYPER + i + 1] = '0;
             end
-        `else 
+        `else
             hyper_macro_bridge i_hyper_macro_bridge (
                 .sys_clk_i           ( s_clk_periphs_core[PER_ID_HYPER + g_hyper] ),
                 .periph_clk_i        ( s_clk_periphs_per[ PER_ID_HYPER + g_hyper] ),
@@ -414,7 +445,7 @@ module udma_subsystem
                 .events_i            ( s_trigger_events                           ),
                 .tx_ch               ( lin_ch_tx[  CH_ID_LIN_TX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_TX_HYPER + g_hyper*N_CH_HYPER] ),
                 .rx_ch               ( lin_ch_rx[  CH_ID_LIN_RX_HYPER + (g_hyper+1)*N_CH_HYPER-1:    CH_ID_LIN_RX_HYPER + g_hyper*N_CH_HYPER] ),
-                
+
                 .hyper_macro_evt_i   ( hyper_macro_evt_i[g_hyper]                 ),
                 .hyper_macro_evt_o   ( hyper_macro_evt_o[g_hyper]                 ),
                 .hyper_cfg_req_o     ( hyper_cfg_req_o[g_hyper]                   ),
@@ -446,7 +477,7 @@ module udma_subsystem
             .cfg_rwn_i    (s_periph_rwn                                 ),
             .cfg_ready_o  (s_periph_ready[    PER_ID_FILTER + g_filter] ),
             .cfg_data_o   (s_periph_data_from[PER_ID_FILTER + g_filter] ),
-            .events_o     (s_evt_filter[                      g_filter] ), 
+            .events_o     (s_evt_filter[                      g_filter] ),
             .events_i     (4'h0                                         ),
             .rx_ch        (ext_ch_rx[   CH_ID_EXT_RX_FILTER + g_filter: CH_ID_EXT_RX_FILTER + g_filter] ),
             .tx_ch        (ext_ch_tx[   CH_ID_EXT_TX_FILTER + g_filter*2 + 1: CH_ID_EXT_TX_FILTER + g_filter*2] ),
@@ -459,8 +490,10 @@ module udma_subsystem
     // here we are connecting the last stream to the output port
     // `EXPORT_UDMA_STREAM(str_ch_tx[STREAM_ID_EXTERNAL],udma_stream)
 
-    // pad unused events
-    for (genvar i = N_PERIPHS; i < 32; i++) begin: evt_zero
+    // pad unused events (the I2C peripherals use one additional slot at the
+    // very end to pack the err_o and nack_o signals that do not fit into the 4
+    // events dedicated per peripheral)
+    for (genvar i = N_PERIPHS+N_I2C; i < 32; i++) begin: evt_zero
         assign s_events[i] = 4'b0000;
     end: evt_zero
 

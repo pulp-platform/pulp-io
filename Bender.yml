@@ -3,21 +3,23 @@ package:
 
 dependencies:
   common_cells: {git: "https://github.com/pulp-platform/common_cells.git", version: 1.21.0 }
-  gpio:         {git: "git@github.com:siracusa-soc/gpio.git", rev: "master" }
-  udma_uart:    {git: "git@github.com:siracusa-soc/udma_uart.git", rev: "master"}
-  udma_core:    {git: "git@github.com:siracusa-soc/udma_core.git", rev: "master" }
-  udma_i2c:     {git: "git@github.com:siracusa-soc/udma_i2c.git", rev: "master"}
-  udma_camera:  {git: "git@github.com:siracusa-soc/udma_camera.git", rev: "master"}
-  udma_qspi:    {git: "git@github.com:siracusa-soc/udma_qspi.git", rev: "master"}
-  udma_dvsi:    {git: "git@github.com:siracusa-soc/udma_dvsi.git", rev: "master"}
-  udma_filter:  {git: "git@github.com:siracusa-soc/udma_filter.git", rev: "master"}
-  udma_hyper:   {git: "git@github.com:siracusa-soc/udma_hyper.git", rev: "master"}
+  apb:           { git: "https://github.com/pulp-platform/apb.git",        version: 0.2.2  }
+  gpio:         {git: "https://github.com/pulp-platform/gpio.git",         version: 0.2.0  }
+  udma_uart:    {git: "https://github.com/pulp-platform/udma_uart.git",    version: 2.0.0  }
+  udma_core:    {git: "https://github.com/pulp-platform/udma_core.git",    version: 2.0.0  }
+  udma_i2c:     {git: "https://github.com/pulp-platform/udma_i2c.git",     version: 3.0.0  }
+  udma_sdio:    {git: "https://github.com/pulp-platform/udma_sdio.git",    version: 2.0.0  }
+  udma_i2s:     {git: "https://github.com/pulp-platform/udma_i2s.git",     version: 2.0.0  }
+  udma_camera:  {git: "https://github.com/pulp-platform/udma_camera.git",  version: 2.0.0  }
+  udma_qspi:    {git: "https://github.com/pulp-platform/udma_qspi.git",    version: 2.0.0  }
+  udma_filter:  {git: "https://github.com/pulp-platform/udma_filter.git",  version: 2.0.0  }
+  udma_hyper:   {git: "https://github.com/pulp-platform/udma_hyper.git",   version: 0.1.0  }
 
 export_include_dirs:
   - inc
 
 sources:
-  - 
+  -
     files:
       - src/udma_cfg_pkg.sv
       - src/pulp_io_pkg.sv
